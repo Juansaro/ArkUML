@@ -1,0 +1,64 @@
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  line-height: 1.25;
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  padding: var(--space-1) var(--space-3);
+}
+
+button:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+button:not([aria-disabled="true"]):hover {
+  background-color: var(--color-bg);
+}
+
+button[aria-disabled="true"] {
+  cursor: not-allowed;
+  color: var(--color-muted);
+  opacity: 0.7;
+}

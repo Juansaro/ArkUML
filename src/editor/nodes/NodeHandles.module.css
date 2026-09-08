@@ -1,0 +1,30 @@
+.host {
+  position: relative;
+}
+
+.handle {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  min-height: 12px;
+  border: 1px solid var(--color-surface);
+  background-color: var(--color-focus);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.handle::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+.host:hover .handle,
+.host[data-selected="true"] .handle,
+:global([data-testid="diagram-canvas"][data-show-handles="true"]) .handle {
+  opacity: 1;
+}
+
+:global([data-testid="diagram-canvas"][data-show-handles="true"]) .handle {
+  pointer-events: auto;
+}

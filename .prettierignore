@@ -1,0 +1,11 @@
+dist
+coverage
+playwright-report
+test-results
+blob-report
+playwright/.cache
+node_modules
+package-lock.json
+*.tsbuildinfo
+docs
+.cursor

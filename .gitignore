@@ -1,0 +1,39 @@
+# Dependencias y entorno
+node_modules/
+
+# Build
+dist/
+*.tsbuildinfo
+.vite/
+
+# Tests — artefactos generados (el código de tests SÍ se versiona)
+coverage/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Secretos
+.env
+.env.*
+!.env.example
+
+# SO / editor
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Excepción: baselines visuales de Playwright se versionan
+# e2e/**/__screenshots__/

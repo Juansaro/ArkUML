@@ -1,0 +1,178 @@
+.shell {
+  display: grid;
+  grid-template-areas:
+    "topbar topbar topbar"
+    "palette canvas inspector"
+    "statusbar statusbar statusbar";
+  grid-template-columns: var(--shell-palette-width) minmax(0, 1fr) var(
+      --shell-inspector-width
+    );
+  grid-template-rows: var(--shell-topbar-height) minmax(0, 1fr) var(
+      --shell-statusbar-height
+    );
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+}
+
+.topbar {
+  grid-area: topbar;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.narrowNotice {
+  display: none;
+}
+
+.panel {
+  min-height: 0;
+  overflow: auto;
+  background-color: var(--color-surface);
+}
+
+.palette {
+  grid-area: palette;
+  border-right: 1px solid var(--color-border);
+}
+
+.inspector {
+  grid-area: inspector;
+  border-left: 1px solid var(--color-border);
+}
+
+.canvas {
+  grid-area: canvas;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--color-canvas);
+}
+
+.canvasHeading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.statusbar {
+  grid-area: statusbar;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 0 var(--space-4);
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.backdrop {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .shell {
+    grid-template-areas:
+      "topbar"
+      "canvas"
+      "statusbar";
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .palette,
+  .inspector {
+    position: fixed;
+    top: var(--shell-topbar-height);
+    bottom: var(--shell-statusbar-height);
+    z-index: var(--z-drawer);
+    width: min(var(--shell-drawer-max), 90vw);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 0.5rem 1.5rem var(--color-shadow);
+    transition: transform 0.16s ease;
+  }
+
+  .palette {
+    left: 0;
+    border-right: 1px solid var(--color-border);
+    transform: translateX(-100%);
+  }
+
+  .inspector {
+    right: 0;
+    border-left: 1px solid var(--color-border);
+    transform: translateX(100%);
+  }
+
+  .drawerOpen {
+    transform: translateX(0);
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    top: var(--shell-topbar-height);
+    right: 0;
+    bottom: var(--shell-statusbar-height);
+    left: 0;
+    z-index: var(--z-backdrop);
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--color-overlay);
+    color: transparent;
+  }
+
+  .backdrop:hover {
+    background-color: var(--color-overlay);
+  }
+}
+
+@media (max-width: 767px) {
+  .narrowNotice {
+    display: block;
+    grid-area: canvas;
+    align-self: start;
+    z-index: var(--z-notice);
+    margin: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--color-notice-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-notice-bg);
+    color: var(--color-notice-fg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .palette,
+  .inspector {
+    transition: none;
+  }
+}

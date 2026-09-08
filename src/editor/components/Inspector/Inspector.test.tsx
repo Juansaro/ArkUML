@@ -1,0 +1,226 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { Profiler } from "react";
+import { describe, expect, it } from "vitest";
+import { NAME_MAX_LENGTH } from "../../../domain/diagram/defaults.ts";
+import {
+  createDiagramDocument,
+  type IdFactory,
+} from "../../../domain/diagram/factories.ts";
+import type { Geometry, Result } from "../../../domain/diagram/model.ts";
+import { createEditorStore } from "../../store/editorStore.ts";
+import { selectInspectorView, shallow } from "../../store/selectors.ts";
+import { EditorStoreProvider } from "../../store/EditorStoreProvider.tsx";
+import { Inspector } from "./Inspector.tsx";
+
+function sequentialIds(start = 1): IdFactory {
+  let next = start;
+  return () => {
+    const serial = next.toString(16).padStart(12, "0");
+    next += 1;
+    return `00000000-0000-4000-8000-${serial}`;
+  };
+}
+
+const CREATED_AT = new Date("2026-09-07T12:00:00.000Z");
+const ACTOR_GEOMETRY: Geometry = { x: -120, y: 40, width: 72, height: 112 };
+const USE_CASE_GEOMETRY: Geometry = { x: 80, y: 80, width: 160, height: 80 };
+
+function expectOk<T>(result: Result<T>): T {
+  expect(result.ok).toBe(true);
+  if (!result.ok) {
+    throw new Error("Expected ok result");
+  }
+  return result.value;
+}
+
+function createStore() {
+  const createId = sequentialIds();
+  return createEditorStore({
+    document: createDiagramDocument({
+      createId,
+      now: () => CREATED_AT,
+    }),
+    deps: { createId, now: () => new Date("2026-09-08T08:00:00.000Z") },
+  });
+}
+
+function actorOf(store: ReturnType<typeof createStore>) {
+  const actor = store
+    .getState()
+    .document.elements.find((element) => element.kind === "actor");
+  if (actor === undefined) {
+    throw new Error("Falta el actor");
+  }
+  return actor;
+}
+
+function renderInspector(store: ReturnType<typeof createStore>) {
+  return render(
+    <EditorStoreProvider store={store}>
+      <Inspector headingId="inspector-heading" />
+    </EditorStoreProvider>,
+  );
+}
+
+describe("Inspector", () => {
+  it("muestra el estado vacío sin selección", () => {
+    renderInspector(createStore());
+
+    expect(
+      screen.getByText(/Selecciona un elemento o una relación/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText("Nombre")).not.toBeInTheDocument();
+  });
+
+  it("muestra tipo y nombre del elemento seleccionado", () => {
+    const store = createStore();
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    const actor = actorOf(store);
+    store.getState().setSelection({
+      elementIds: [actor.id],
+      relationshipIds: [],
+    });
+
+    renderInspector(store);
+
+    expect(screen.getByTestId("inspector-type")).toHaveTextContent("Actor");
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Usuario");
+  });
+
+  it("confirma un nombre válido y conserva el anterior si es inválido", async () => {
+    const user = userEvent.setup();
+    const store = createStore();
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    const actor = actorOf(store);
+    store.getState().setSelection({
+      elementIds: [actor.id],
+      relationshipIds: [],
+    });
+
+    renderInspector(store);
+    const input = screen.getByLabelText("Nombre");
+
+    await user.clear(input);
+    await user.type(input, "Cliente");
+    await user.keyboard("{Enter}");
+
+    expect(actorOf(store).name).toBe("Cliente");
+    expect(input).toHaveValue("Cliente");
+
+    await user.clear(input);
+    await user.keyboard("{Enter}");
+
+    expect(actorOf(store).name).toBe("Cliente");
+    expect(screen.getByText(/entre 1 y 80 caracteres/i)).toBeInTheDocument();
+
+    await user.clear(input);
+    await user.type(input, "x".repeat(NAME_MAX_LENGTH + 1));
+    await user.keyboard("{Enter}");
+
+    expect(actorOf(store).name).toBe("Cliente");
+    expect(input).toHaveValue("x".repeat(NAME_MAX_LENGTH + 1));
+  });
+
+  it("cancela el borrador con Escape", async () => {
+    const user = userEvent.setup();
+    const store = createStore();
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    const actor = actorOf(store);
+    store.getState().setSelection({
+      elementIds: [actor.id],
+      relationshipIds: [],
+    });
+
+    renderInspector(store);
+    const input = screen.getByLabelText("Nombre");
+
+    await user.clear(input);
+    await user.type(input, "Temporal");
+    await user.keyboard("{Escape}");
+
+    expect(actorOf(store).name).toBe("Usuario");
+    expect(input).toHaveValue("Usuario");
+  });
+
+  it("muestra n seleccionados sin edición batch", () => {
+    const store = createStore();
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    const ids = store.getState().document.elements.map((element) => element.id);
+    store.getState().setSelection({
+      elementIds: ids,
+      relationshipIds: [],
+    });
+
+    renderInspector(store);
+
+    expect(screen.getByTestId("inspector-multiple")).toHaveTextContent(
+      "3 seleccionados",
+    );
+    expect(screen.queryByLabelText("Nombre")).not.toBeInTheDocument();
+  });
+
+  it("no se re-renderiza cuando solo cambia la geometría", () => {
+    const store = createStore();
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    const actor = actorOf(store);
+    store.getState().setSelection({
+      elementIds: [actor.id],
+      relationshipIds: [],
+    });
+
+    let commits = 0;
+    render(
+      <EditorStoreProvider store={store}>
+        <Profiler
+          id="inspector"
+          onRender={() => {
+            commits += 1;
+          }}
+        >
+          <Inspector headingId="inspector-heading" />
+        </Profiler>
+      </EditorStoreProvider>,
+    );
+
+    const afterMount = commits;
+    const firstView = selectInspectorView(store.getState());
+
+    store.getState().beginTransaction();
+    expectOk(store.getState().commitMove([{ id: actor.id, x: 10, y: 20 }]));
+    expectOk(store.getState().commitMove([{ id: actor.id, x: 30, y: 40 }]));
+    store.getState().commitTransaction();
+
+    expect(shallow(firstView, selectInspectorView(store.getState()))).toBe(
+      true,
+    );
+    expect(commits).toBe(afterMount);
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Usuario");
+  });
+});

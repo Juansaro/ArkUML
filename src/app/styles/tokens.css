@@ -1,0 +1,46 @@
+:root {
+  color-scheme: light;
+
+  --color-bg: #f4f4f5;
+  --color-fg: #18181b;
+  --color-muted: #52525b;
+  --color-surface: #ffffff;
+  --color-border: #d4d4d8;
+  --color-canvas: #e4e4e7;
+  --color-grid: #d4d4d8;
+  --color-focus: #1d4ed8;
+  --color-notice-bg: #fef3c7;
+  --color-notice-fg: #78350f;
+  --color-notice-border: #d97706;
+  --color-overlay: rgb(24 24 27 / 0.4);
+  --color-shadow: rgb(24 24 27 / 0.18);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+
+  --font-sans: "Segoe UI", system-ui, sans-serif;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.875rem;
+  --font-size-lg: 1.125rem;
+  --line-height: 1.5;
+  --font-weight-semibold: 600;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  --shell-topbar-height: 3rem;
+  --shell-statusbar-height: 1.75rem;
+  --shell-palette-width: 13.75rem;
+  --shell-inspector-width: 17.5rem;
+  --shell-drawer-max: 18rem;
+
+  --z-drawer: 20;
+  --z-backdrop: 15;
+  --z-notice: 25;
+}

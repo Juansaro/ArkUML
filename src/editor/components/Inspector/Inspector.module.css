@@ -1,0 +1,42 @@
+.body {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.heading {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.empty,
+.multiple {
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.label {
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.value {
+  font-size: var(--font-size-md);
+}

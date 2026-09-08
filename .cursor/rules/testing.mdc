@@ -1,0 +1,15 @@
+---
+description: Convenciones de tests unitarios, integration y E2E
+globs: "**/*.{test,spec}.{ts,tsx}",e2e/**,src/test/**
+alwaysApply: false
+---
+
+# Testing
+
+- Unidad: dominio, mapper, historial, bounds, schema. Integration jsdom: chrome, no canvas gráfico.
+- E2E (Playwright): drag, edges reales, reload, descargas, a11y de chrome.
+- Locators por rol, nombre o `data-testid` estable. Prohibido `waitForTimeout`.
+- No borrar ni skippear tests para obtener verde. No mockear el dominio para «probar» el dominio.
+- Baselines en `e2e/**/__screenshots__/` se versionan. `coverage/`, `playwright-report/`, `test-results/` no.
+- Descargas: esperar el evento `download` antes del click; verificar firma PNG/JPEG.
+- Detalle: `docs/architecture/testing-strategy.md`.

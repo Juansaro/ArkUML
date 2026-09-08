@@ -1,0 +1,31 @@
+.field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  padding: var(--space-1) var(--space-2);
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  text-overflow: clip;
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--color-notice-border);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-notice-fg);
+  font-size: var(--font-size-sm);
+}

@@ -1,0 +1,15 @@
+---
+description: Invariantes del dominio UML puro
+globs: src/domain/**
+alwaysApply: false
+---
+
+# Dominio
+
+- Funciones puras: sin I/O, sin store, sin React.
+- Uniones discriminadas por `kind`. No clases base UML.
+- IDs UUID vía factory inyectable. Geometría con números finitos.
+- Códigos de error de `docs/architecture/domain-model.md`; no strings sueltos.
+- Association se normaliza actor → use case. Include/Extend no se invierten.
+- Tests de matriz de conexión y round-trip de schema en la misma carpeta o `*.test.ts` colocalizado.
+- Prohibido persistir tipos de `@xyflow/react`.

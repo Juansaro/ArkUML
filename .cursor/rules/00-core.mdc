@@ -1,0 +1,15 @@
+---
+alwaysApply: true
+---
+
+# ArkUML — reglas globales
+
+- Lee primero la TASK adjunta y **solo** los documentos que esa TASK lista en «Contexto obligatorio».
+- La especificación canónica de alcance es `docs/product/mvp-spec.md`. Los ADRs ganan sobre ocurrencias locales.
+- Implementa **únicamente** la tarea asignada. Prohibido: refactors no pedidos, features de otras TASK, «mejoras» de arquitectura, actualizar dependencias, borrar tests para hacerlos pasar.
+- No instales paquetes ni cambies versiones fijadas (TypeScript 6.0.3, `html-to-image@1.11.11`, Prettier 3.9.6) sin un ADR nuevo y aprobación.
+- Si falta una decisión que cambia comportamiento, **párate** y pregunta. No inventes UML, persistencia ni export.
+- `src/domain` no importa React, DOM ni `@xyflow/react`.
+- TypeScript `strict` sin `any` injustificado. Sin código muerto.
+- Al terminar: ejecuta los comandos de la TASK (incluido `npm run check` cuando exista), revisa el diff por scope creep, actualiza docs **solo** si cambió un contrato, y entrega handoff (archivos, comandos realmente corridos, desviaciones).
+- No crees `AGENTS.md`. No dupliques este texto en README.

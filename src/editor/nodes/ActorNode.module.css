@@ -1,0 +1,42 @@
+.node {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  color: var(--color-fg);
+  font-size: var(--font-size-sm);
+}
+
+.node[data-selected="true"] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.figure {
+  width: 48px;
+  height: 72px;
+  flex: 1 1 auto;
+  overflow: visible;
+}
+
+.figure circle,
+.figure line {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

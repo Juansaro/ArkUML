@@ -1,0 +1,34 @@
+.node {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  color: var(--color-fg);
+  font-size: var(--font-size-sm);
+}
+
+.node[data-selected="true"] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.ellipse {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-fg);
+  border-radius: 50%;
+  background-color: var(--color-surface);
+}
+
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

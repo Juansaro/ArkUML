@@ -1,0 +1,33 @@
+.node {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  color: var(--color-fg);
+  font-size: var(--font-size-sm);
+}
+
+.node[data-selected="true"] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.rect {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--color-fg);
+  background-color: rgb(255 255 255 / 0.28);
+}
+
+.name {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-3);
+  left: var(--space-3);
+  overflow: hidden;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
