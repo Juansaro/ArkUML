@@ -14,7 +14,8 @@
 }
 
 .empty,
-.multiple {
+.multiple,
+.help {
   color: var(--color-muted);
   font-size: var(--font-size-sm);
 }

@@ -15,6 +15,7 @@ type TopBarProps = {
   onTogglePalette: () => void;
   onToggleInspector: () => void;
   onToggleHelp: () => void;
+  onNewDiagram: () => void;
 };
 
 export function TopBar({
@@ -25,6 +26,7 @@ export function TopBar({
   onTogglePalette,
   onToggleInspector,
   onToggleHelp,
+  onNewDiagram,
 }: TopBarProps) {
   const store = useEditorStoreApi();
   const { canUndo, canRedo } = useEditorStore(
@@ -60,9 +62,9 @@ export function TopBar({
         </button>
       </div>
       <div className={styles.actions}>
-        <InertButton reason="Nuevo diagrama aún no está disponible.">
+        <button type="button" onClick={onNewDiagram}>
           Nuevo
-        </InertButton>
+        </button>
         <button
           type="button"
           disabled={!canUndo}

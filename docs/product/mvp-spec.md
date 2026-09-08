@@ -96,6 +96,13 @@ No se validan ciclos Include/Extend en el MVP.
 
 Si el usuario arrastra Association UseCase → Actor, el dominio **normaliza** `sourceId` al actor. Include y Extend **no** se invierten: un drag en sentido contrario es otra semántica o un error si los tipos no coinciden.
 
+Ayuda contextual (copy de UI, antes de conectar):
+
+- Include: "Origen: caso que incluye. Destino: caso incluido. Arrastra del origen al destino; el sentido no se invierte."
+- Extend: "Origen: caso que extiende. Destino: caso base. Arrastra del origen al destino; el sentido no se invierte."
+
+El handle de salida es el origen persistido. En el inspector, Include usa «Origen (incluye)» / «Destino (incluido)» y Extend usa «Origen (extiende)» / «Destino (caso base)».
+
 ## Geometría, selección y edición
 
 - Coordenadas relativas al `parentId` si existe; absolutas en el canvas en caso contrario.

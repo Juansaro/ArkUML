@@ -62,7 +62,7 @@ describe("EditorShell", () => {
     ).toBeInTheDocument();
   });
 
-  it("activa las herramientas de elemento y Asociación, y mantiene Include/Extend inertes", async () => {
+  it("activa las herramientas de elemento y de relación", async () => {
     const user = userEvent.setup();
     render(<EditorShell />);
 
@@ -70,6 +70,8 @@ describe("EditorShell", () => {
     const useCase = screen.getByRole("button", { name: "Caso de uso" });
     const boundary = screen.getByRole("button", { name: "Límite del sistema" });
     const association = screen.getByRole("button", { name: "Asociación" });
+    const include = screen.getByRole("button", { name: "Include" });
+    const extend = screen.getByRole("button", { name: "Extend" });
 
     expect(actor).not.toHaveAttribute("aria-disabled", "true");
     expect(useCase).not.toHaveAttribute("aria-disabled", "true");
@@ -79,6 +81,16 @@ describe("EditorShell", () => {
       "Ya existe un límite del sistema. El documento admite uno solo.",
     );
     expect(association).not.toHaveAttribute("aria-disabled", "true");
+    expect(include).not.toHaveAttribute("aria-disabled", "true");
+    expect(extend).not.toHaveAttribute("aria-disabled", "true");
+    expect(include).toHaveAttribute(
+      "title",
+      "Origen: caso que incluye. Destino: caso incluido. Arrastra del origen al destino; el sentido no se invierte.",
+    );
+    expect(extend).toHaveAttribute(
+      "title",
+      "Origen: caso que extiende. Destino: caso base. Arrastra del origen al destino; el sentido no se invierte.",
+    );
 
     await user.click(actor);
     expect(actor).toHaveAttribute("aria-pressed", "true");
@@ -86,18 +98,12 @@ describe("EditorShell", () => {
     await user.keyboard("{Escape}");
     expect(actor).toHaveAttribute("aria-pressed", "false");
 
-    await user.click(association);
-    expect(association).toHaveAttribute("aria-pressed", "true");
-    await user.keyboard("{Escape}");
-    expect(association).toHaveAttribute("aria-pressed", "false");
-
     for (const tool of PALETTE_RELATIONSHIP_TOOLS) {
-      if (!("reason" in tool)) {
-        continue;
-      }
       const button = screen.getByRole("button", { name: tool.label });
-      expect(button).toHaveAttribute("aria-disabled", "true");
-      expect(button).toHaveAttribute("title", tool.reason);
+      await user.click(button);
+      expect(button).toHaveAttribute("aria-pressed", "true");
+      await user.keyboard("{Escape}");
+      expect(button).toHaveAttribute("aria-pressed", "false");
     }
   });
 
@@ -128,19 +134,12 @@ describe("EditorShell", () => {
     expect(button).toHaveAttribute("aria-pressed", "false");
   });
 
-  it("explica por qué las acciones aún no operativas del top bar están inertes", () => {
+  it("explica por qué Exportar sigue inerte", () => {
     render(<EditorShell />);
 
-    const actions = [
-      ["Nuevo", "Nuevo diagrama aún no está disponible."],
-      ["Exportar", "Exportar aún no está disponible."],
-    ] as const;
-
-    for (const [name, reason] of actions) {
-      const button = screen.getByRole("button", { name });
-      expect(button).toHaveAttribute("aria-disabled", "true");
-      expect(button).toHaveAttribute("title", reason);
-    }
+    const button = screen.getByRole("button", { name: "Exportar" });
+    expect(button).toHaveAttribute("aria-disabled", "true");
+    expect(button).toHaveAttribute("title", "Exportar aún no está disponible.");
   });
 
   it("habilita deshacer y rehacer según canUndo/canRedo", async () => {
@@ -210,12 +209,16 @@ describe("EditorShell", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("muestra zoom y un estado de guardado que no finge persistencia", () => {
+  it("muestra zoom y el estado de guardado idle", () => {
     render(<EditorShell zoomPercent={100} />);
 
     const status = screen.getByRole("status", { name: "Estado del editor" });
     expect(status).toHaveTextContent("Zoom 100%");
-    expect(status).toHaveTextContent("Guardado: —");
+    expect(status).toHaveTextContent("—");
+    expect(screen.getByTestId("save-status")).toHaveAttribute(
+      "data-state",
+      "idle",
+    );
   });
 
   it("conserva el aviso de viewport estrecho en el árbol", () => {
@@ -256,5 +259,71 @@ describe("EditorShell", () => {
 
     await user.keyboard("{Escape}");
     expect(toggle).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("Nuevo cancelado conserva el documento; confirmado resetea a Sistema", async () => {
+    const user = userEvent.setup();
+    const createId = sequentialIds();
+    const deps = {
+      createId,
+      now: () => new Date("2026-09-07T12:00:00.000Z"),
+    };
+    const store = createEditorStore({
+      document: createDiagramDocument(deps),
+      deps: { ...deps, now: () => new Date("2026-09-08T08:00:00.000Z") },
+    });
+    render(
+      <EditorStoreProvider store={store}>
+        <EditorShell />
+      </EditorStoreProvider>,
+    );
+
+    act(() => {
+      expectOk(
+        store
+          .getState()
+          .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+      );
+    });
+    expect(
+      store
+        .getState()
+        .document.elements.some((element) => element.kind === "actor"),
+    ).toBe(true);
+
+    await user.click(screen.getByRole("button", { name: "Nuevo" }));
+    const dialog = screen.getByRole("dialog", { name: "Nuevo diagrama" });
+    expect(dialog).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(
+      screen.queryByRole("dialog", { name: "Nuevo diagrama" }),
+    ).not.toBeInTheDocument();
+    expect(
+      store
+        .getState()
+        .document.elements.some((element) => element.kind === "actor"),
+    ).toBe(true);
+
+    await user.click(screen.getByRole("button", { name: "Nuevo" }));
+    await user.click(
+      screen.getByRole("button", { name: "Crear diagrama nuevo" }),
+    );
+    expect(
+      screen.queryByRole("dialog", { name: "Nuevo diagrama" }),
+    ).not.toBeInTheDocument();
+    expect(
+      store
+        .getState()
+        .document.elements.some((element) => element.kind === "actor"),
+    ).toBe(false);
+    expect(
+      store
+        .getState()
+        .document.elements.find((element) => element.kind === "system-boundary")
+        ?.name,
+    ).toBe("Sistema");
+    expect(store.getState().history.past).toHaveLength(0);
+    expect(screen.getByRole("button", { name: "Deshacer" })).toBeDisabled();
   });
 });

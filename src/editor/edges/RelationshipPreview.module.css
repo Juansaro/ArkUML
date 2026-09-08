@@ -1,11 +1,26 @@
-.line {
+.line,
+.marker {
   fill: none;
   pointer-events: none;
   stroke: var(--color-focus);
   stroke-width: 2;
 }
 
+.marker {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.line[data-kind="include"],
+.line[data-kind="extend"] {
+  stroke-dasharray: 8 6;
+}
+
 .line[data-status="invalid"] {
   stroke: var(--color-notice-fg);
   stroke-dasharray: 6 4;
+}
+
+.line[data-status="invalid"] + .marker {
+  stroke: var(--color-notice-fg);
 }

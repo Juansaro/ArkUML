@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { workspaceNeedsNewDiagramConfirmation } from "../../../app/bootstrap.ts";
+import { useOptionalWorkspaceSession } from "../../../app/WorkspaceSessionProvider.tsx";
+import { DEFAULT_VIEWPORT } from "../../../domain/diagram/defaults.ts";
+import { createDiagramDocument } from "../../../domain/diagram/factories.ts";
 import { DiagramCanvas } from "../../canvas/DiagramCanvas.tsx";
 import { useEditorShortcuts } from "../../shortcuts/useEditorShortcuts.ts";
 import {
@@ -11,9 +15,12 @@ import {
   selectDialogMode,
   selectDocumentTitle,
   selectLiveAnnouncement,
+  selectMessage,
   selectViewport,
 } from "../../store/selectors.ts";
 import { Inspector } from "../Inspector/Inspector.tsx";
+import { NewDiagramDialog } from "../NewDiagramDialog.tsx";
+import { RecoveryDialog } from "../RecoveryDialog.tsx";
 import { HelpDialog } from "./HelpDialog.tsx";
 import { Palette } from "./Palette.tsx";
 import { StatusBar } from "./StatusBar.tsx";
@@ -39,9 +46,14 @@ export function EditorShell(props: EditorShellProps) {
 
 function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   const store = useEditorStoreApi();
+  const session = useOptionalWorkspaceSession();
   const storeTitle = useEditorStore(selectDocumentTitle);
   const viewport = useEditorStore(selectViewport);
-  const helpOpen = useEditorStore(selectDialogMode) === "help";
+  const dialogMode = useEditorStore(selectDialogMode);
+  const recoveryMessage = useEditorStore(selectMessage);
+  const helpOpen = dialogMode === "help";
+  const newDiagramOpen = dialogMode === "new-diagram";
+  const recoveryOpen = dialogMode === "recovery";
   const title = documentTitle ?? storeTitle;
   const zoom = zoomPercent ?? Math.round(viewport.zoom * 100);
   const paletteHeadingId = useId();
@@ -50,6 +62,7 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   const helpTitleId = useId();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [canvasNonce, setCanvasNonce] = useState(0);
   const drawerOpen = paletteOpen || inspectorOpen;
   const fitViewRef = useRef<() => void>(() => {
     /* registered by the canvas */
@@ -60,8 +73,11 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   const runFitView = useCallback(() => {
     fitViewRef.current();
   }, []);
+  const flushAutosave = useCallback(() => {
+    void session?.coordinator.flush({ announce: true });
+  }, [session]);
 
-  useEditorShortcuts({ fitView: runFitView });
+  useEditorShortcuts({ fitView: runFitView, flushAutosave });
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -102,6 +118,40 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
     store.getState().setDialogMode("none");
   }
 
+  function resetInMemory() {
+    store
+      .getState()
+      .hydrateWorkspace(createDiagramDocument(), DEFAULT_VIEWPORT);
+    store.getState().setTool("select");
+    store.getState().setDialogMode("none");
+    setCanvasNonce((value) => value + 1);
+  }
+
+  async function confirmNewWorkspace() {
+    if (session === undefined) {
+      resetInMemory();
+      return;
+    }
+    await session.coordinator.startNewDiagram();
+    setCanvasNonce((value) => value + 1);
+  }
+
+  function requestNewDiagram() {
+    const needsConfirmation = workspaceNeedsNewDiagramConfirmation(
+      store.getState(),
+      session?.coordinator.isOverwriteBlocked() === true,
+    );
+    if (needsConfirmation) {
+      store.getState().setDialogMode("new-diagram");
+      return;
+    }
+    void confirmNewWorkspace();
+  }
+
+  function cancelDialog() {
+    store.getState().setDialogMode("none");
+  }
+
   return (
     <div className={styles.shell}>
       <header className={styles.topbar}>
@@ -113,6 +163,7 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
           onTogglePalette={togglePalette}
           onToggleInspector={toggleInspector}
           onToggleHelp={toggleHelp}
+          onNewDiagram={requestNewDiagram}
         />
       </header>
       <div className={styles.narrowNotice} role="alert">
@@ -130,7 +181,7 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
         <h2 id={canvasHeadingId} className={styles.canvasHeading}>
           Lienzo
         </h2>
-        <DiagramCanvas onFitViewReady={registerFitView} />
+        <DiagramCanvas key={canvasNonce} onFitViewReady={registerFitView} />
       </main>
       <aside
         id="editor-inspector"
@@ -142,6 +193,7 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
       <div
         className={styles.statusbar}
         role="status"
+        aria-live="off"
         aria-label="Estado del editor"
       >
         <StatusBar zoomPercent={zoom} />
@@ -151,6 +203,23 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
         <div id="editor-help">
           <HelpDialog titleId={helpTitleId} onClose={closeHelp} />
         </div>
+      ) : null}
+      {newDiagramOpen ? (
+        <NewDiagramDialog
+          onCancel={cancelDialog}
+          onConfirm={() => {
+            void confirmNewWorkspace();
+          }}
+        />
+      ) : null}
+      {recoveryOpen ? (
+        <RecoveryDialog
+          message={recoveryMessage ?? "El documento guardado no es válido."}
+          onCancel={cancelDialog}
+          onConfirm={() => {
+            void confirmNewWorkspace();
+          }}
+        />
       ) : null}
       {drawerOpen ? (
         <button

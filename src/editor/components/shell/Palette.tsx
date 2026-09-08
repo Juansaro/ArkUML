@@ -59,19 +59,16 @@ export function Palette({ headingId }: PaletteProps) {
         <ul className={styles.list}>
           {PALETTE_RELATIONSHIP_TOOLS.map((item) => (
             <li key={item.id}>
-              {"reason" in item ? (
-                <InertButton reason={item.reason}>{item.label}</InertButton>
-              ) : (
-                <button
-                  type="button"
-                  aria-pressed={tool === item.id}
-                  onClick={() => {
-                    selectElementTool(item.id);
-                  }}
-                >
-                  {item.label}
-                </button>
-              )}
+              <button
+                type="button"
+                aria-pressed={tool === item.id}
+                title={"hint" in item ? item.hint : undefined}
+                onClick={() => {
+                  selectElementTool(item.id);
+                }}
+              >
+                {item.label}
+              </button>
             </li>
           ))}
         </ul>

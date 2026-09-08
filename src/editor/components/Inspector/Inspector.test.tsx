@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Profiler } from "react";
+import { act, Profiler } from "react";
 import { describe, expect, it } from "vitest";
 import { NAME_MAX_LENGTH } from "../../../domain/diagram/defaults.ts";
 import {
@@ -297,6 +297,87 @@ describe("Inspector", () => {
     expect(screen.getByTestId("inspector-target")).toHaveTextContent(
       "Caso de uso Login",
     );
+    expect(screen.queryByLabelText("Nombre")).not.toBeInTheDocument();
+  });
+
+  it("explica origen y destino al activar include o extend", () => {
+    const store = createStore();
+    store.getState().setTool("include");
+    renderInspector(store);
+
+    expect(screen.getByTestId("connection-help")).toHaveTextContent(
+      "Origen: caso que incluye. Destino: caso incluido.",
+    );
+    expect(screen.getByTestId("connection-help")).toHaveTextContent(
+      "el sentido no se invierte",
+    );
+
+    act(() => {
+      store.getState().setTool("extend");
+    });
+    expect(screen.getByTestId("connection-help")).toHaveTextContent(
+      "Origen: caso que extiende. Destino: caso base.",
+    );
+  });
+
+  it("muestra extremos semánticos de include y extend", () => {
+    const store = createStore();
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Logout",
+        geometry: { ...USE_CASE_GEOMETRY, x: 280 },
+      }),
+    );
+    const login = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Login",
+      );
+    const logout = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Logout",
+      );
+    if (login === undefined || logout === undefined) {
+      throw new Error("Faltan casos de uso");
+    }
+    expectOk(
+      store.getState().connect({
+        kind: "include",
+        sourceId: logout.id,
+        targetId: login.id,
+        sourceAnchor: "left",
+        targetAnchor: "right",
+      }),
+    );
+    const include = store.getState().document.relationships[0];
+    if (include === undefined) {
+      throw new Error("Falta include");
+    }
+    store.getState().setTool("include");
+    store.getState().setSelection({
+      elementIds: [],
+      relationshipIds: [include.id],
+    });
+
+    renderInspector(store);
+
+    expect(screen.getByTestId("inspector-type")).toHaveTextContent("Include");
+    expect(screen.getByText("Origen (incluye)")).toBeInTheDocument();
+    expect(screen.getByText("Destino (incluido)")).toBeInTheDocument();
+    expect(screen.getByTestId("inspector-source")).toHaveTextContent(
+      "Caso de uso Logout",
+    );
+    expect(screen.getByTestId("inspector-target")).toHaveTextContent(
+      "Caso de uso Login",
+    );
+    expect(screen.getByTestId("connection-help")).toBeInTheDocument();
     expect(screen.queryByLabelText("Nombre")).not.toBeInTheDocument();
   });
 });

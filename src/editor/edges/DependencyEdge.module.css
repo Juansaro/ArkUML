@@ -1,0 +1,31 @@
+.path {
+  fill: none;
+  stroke: var(--color-fg);
+  stroke-dasharray: 8 6;
+  stroke-width: 2;
+}
+
+.marker {
+  fill: none;
+  pointer-events: none;
+  stroke: var(--color-fg);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.labelBg {
+  fill: var(--color-surface);
+}
+
+.label {
+  fill: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+}
+
+:global(.react-flow__edge.selected) .path,
+:global(.react-flow__edge.selected) .marker {
+  stroke: var(--color-focus);
+  stroke-width: 3;
+}

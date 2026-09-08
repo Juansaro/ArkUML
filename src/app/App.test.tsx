@@ -1,10 +1,17 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { WORKSPACE_STORAGE_KEY } from "../persistence/diagramRepository.ts";
 import { App } from "./App.tsx";
 
 describe("App", () => {
-  it("renderiza el heading ArkUML", () => {
+  afterEach(() => {
+    window.localStorage.removeItem(WORKSPACE_STORAGE_KEY);
+  });
+
+  it("renderiza el heading ArkUML", async () => {
     render(<App />);
-    expect(screen.getByRole("heading", { name: "ArkUML" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "ArkUML" }),
+    ).toBeInTheDocument();
   });
 });

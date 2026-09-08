@@ -1,4 +1,8 @@
-import { STORAGE_VERSION } from "../domain/diagram/defaults.ts";
+import {
+  DEFAULT_VIEWPORT,
+  STORAGE_VERSION,
+} from "../domain/diagram/defaults.ts";
+import { createDiagramDocument } from "../domain/diagram/factories.ts";
 import type {
   DiagramDocument,
   Viewport,
@@ -15,6 +19,7 @@ import {
 } from "./diagramRepository.ts";
 
 export const AUTOSAVE_DEBOUNCE_MS = 750;
+export const SAVED_ANNOUNCEMENT = "Diagrama guardado.";
 
 export type AutosaveCoordinatorOptions = {
   store: EditorStoreApi;
@@ -24,9 +29,15 @@ export type AutosaveCoordinatorOptions = {
   eventTarget?: EventTarget;
 };
 
+export type FlushOptions = {
+  announce?: boolean;
+};
+
 export type AutosaveCoordinator = {
   hydrate(): Promise<PersistenceResult<WorkspaceSnapshot | undefined>>;
-  flush(): Promise<PersistenceResult<undefined>>;
+  flush(options?: FlushOptions): Promise<PersistenceResult<undefined>>;
+  startNewDiagram(): Promise<PersistenceResult<undefined>>;
+  isOverwriteBlocked(): boolean;
   allowOverwrite(): void;
   dispose(): void;
 };
@@ -81,12 +92,15 @@ export function createAutosaveCoordinator(
     }, debounceMs);
   }
 
-  async function writeNow(): Promise<PersistenceResult<undefined>> {
+  async function writeNow(
+    announce = false,
+  ): Promise<PersistenceResult<undefined>> {
     if (blockedByCorrupt) {
-      return persistenceErr(
-        "PARSE_INVALID",
-        "El documento guardado no es válido. No se ha sobrescrito.",
-      );
+      const message =
+        "El documento guardado no es válido. No se ha sobrescrito.";
+      store.getState().setSaveStatus("error");
+      store.getState().setMessage(message);
+      return persistenceErr("PARSE_INVALID", message);
     }
 
     const state = store.getState();
@@ -97,7 +111,7 @@ export function createAutosaveCoordinator(
       lastSavedDocument = state.document;
       lastSavedView = copyViewport(state.viewport);
       store.getState().setSaveStatus("saved", now().toISOString());
-      store.getState().setMessage(undefined);
+      store.getState().setMessage(announce ? SAVED_ANNOUNCEMENT : undefined);
       return result;
     }
 
@@ -130,6 +144,8 @@ export function createAutosaveCoordinator(
 
       const snapshot = result.value;
       if (snapshot === undefined) {
+        lastSavedDocument = store.getState().document;
+        lastSavedView = copyViewport(store.getState().viewport);
         return result;
       }
 
@@ -143,12 +159,40 @@ export function createAutosaveCoordinator(
       return result;
     },
 
-    flush() {
+    flush(options) {
       if (timer !== undefined) {
         clearTimeout(timer);
         timer = undefined;
       }
+      return writeNow(options?.announce === true);
+    },
+
+    async startNewDiagram() {
+      if (timer !== undefined) {
+        clearTimeout(timer);
+        timer = undefined;
+      }
+      blockedByCorrupt = false;
+      const nextDocument = createDiagramDocument();
+      suppressCommit = true;
+      store.getState().hydrateWorkspace(nextDocument, DEFAULT_VIEWPORT);
+      store.getState().setTool("select");
+      store.getState().setDialogMode("none");
+      lastSavedDocument = undefined;
+      lastSavedView = undefined;
+      suppressCommit = false;
+
+      const cleared = await repository.clear();
+      if (!cleared.ok) {
+        store.getState().setSaveStatus("error");
+        store.getState().setMessage(cleared.error.message);
+        return cleared;
+      }
       return writeNow();
+    },
+
+    isOverwriteBlocked() {
+      return blockedByCorrupt;
     },
 
     allowOverwrite() {

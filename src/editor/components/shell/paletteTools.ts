@@ -24,11 +24,11 @@ export const PALETTE_RELATIONSHIP_TOOLS = [
   {
     id: "include",
     label: "Include",
-    reason: "Include. La creación en el lienzo aún no está disponible.",
+    hint: "Origen: caso que incluye. Destino: caso incluido. Arrastra del origen al destino; el sentido no se invierte.",
   },
   {
     id: "extend",
     label: "Extend",
-    reason: "Extend. La creación en el lienzo aún no está disponible.",
+    hint: "Origen: caso que extiende. Destino: caso base. Arrastra del origen al destino; el sentido no se invierte.",
   },
 ] as const;

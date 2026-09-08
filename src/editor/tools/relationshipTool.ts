@@ -1,6 +1,7 @@
 import type {
   Anchor,
   DiagramDocument,
+  RelationshipKind,
   Result,
 } from "../../domain/diagram/model.ts";
 import { canConnect } from "../../domain/diagram/rules.ts";
@@ -53,7 +54,35 @@ export function createdRelationshipAnnouncement(
   if (kind === "association") {
     return "Se creó la asociación.";
   }
-  return `Se creó ${kind}.`;
+  if (kind === "include") {
+    return "Se creó include.";
+  }
+  return "Se creó extend.";
+}
+
+export function relationshipConnectionHelp(
+  tool: EditorTool,
+): string | undefined {
+  if (tool === "include") {
+    return "Origen: caso que incluye. Destino: caso incluido. Arrastra del origen al destino; el sentido no se invierte.";
+  }
+  if (tool === "extend") {
+    return "Origen: caso que extiende. Destino: caso base. Arrastra del origen al destino; el sentido no se invierte.";
+  }
+  return undefined;
+}
+
+export function relationshipEndpointFieldLabels(kind: RelationshipKind): {
+  source: string;
+  target: string;
+} {
+  if (kind === "include") {
+    return { source: "Origen (incluye)", target: "Destino (incluido)" };
+  }
+  if (kind === "extend") {
+    return { source: "Origen (extiende)", target: "Destino (caso base)" };
+  }
+  return { source: "Origen", target: "Destino" };
 }
 
 export function previewConnection(

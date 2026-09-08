@@ -9,9 +9,11 @@ import {
   type EditorStoreApi,
 } from "../editor/store/editorStore.ts";
 import { selectSaveStatus } from "../editor/store/selectors.ts";
+import { DEFAULT_BOUNDARY_NAME } from "../domain/diagram/defaults.ts";
 import {
   AUTOSAVE_DEBOUNCE_MS,
   createAutosaveCoordinator,
+  SAVED_ANNOUNCEMENT,
   type AutosaveCoordinator,
 } from "./autosaveCoordinator.ts";
 import {
@@ -279,5 +281,65 @@ describe("createAutosaveCoordinator", () => {
 
     expect(storage.getItem(WORKSPACE_STORAGE_KEY)).not.toBeNull();
     expect(selectSaveStatus(store.getState())).toBe("saved");
+  });
+
+  it("flush con anuncio no usa toast en el status, solo el mensaje de live region", async () => {
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    const flushed = await coordinator.flush({ announce: true });
+    expect(flushed.ok).toBe(true);
+    expect(selectSaveStatus(store.getState())).toBe("saved");
+    expect(store.getState().ui.message).toBe(SAVED_ANNOUNCEMENT);
+  });
+
+  it("startNewDiagram crea el default, vacía historial y sustituye el storage", async () => {
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    await coordinator.flush();
+    expect(store.getState().history.past.length).toBeGreaterThan(0);
+
+    const reset = await coordinator.startNewDiagram();
+    expect(reset.ok).toBe(true);
+    expect(
+      store
+        .getState()
+        .document.elements.some((element) => element.kind === "actor"),
+    ).toBe(false);
+    expect(
+      store
+        .getState()
+        .document.elements.find((element) => element.kind === "system-boundary")
+        ?.name,
+    ).toBe(DEFAULT_BOUNDARY_NAME);
+    expect(store.getState().history.past).toHaveLength(0);
+    expect(store.getState().history.future).toHaveLength(0);
+    expect(store.getState().tool).toBe("select");
+    expect(selectSaveStatus(store.getState())).toBe("saved");
+
+    const raw = storage.getItem(WORKSPACE_STORAGE_KEY);
+    expect(raw).not.toBeNull();
+    expect(JSON.parse(raw ?? "")).toMatchObject({
+      document: {
+        elements: [{ kind: "system-boundary", name: DEFAULT_BOUNDARY_NAME }],
+      },
+    });
+  });
+
+  it("startNewDiagram puede sustituir un blob corrupto tras confirmar", async () => {
+    const corrupt = "{not-json";
+    storage.setItem(WORKSPACE_STORAGE_KEY, corrupt);
+    await coordinator.hydrate();
+    expect(coordinator.isOverwriteBlocked()).toBe(true);
+
+    const reset = await coordinator.startNewDiagram();
+    expect(reset.ok).toBe(true);
+    expect(coordinator.isOverwriteBlocked()).toBe(false);
+    expect(storage.getItem(WORKSPACE_STORAGE_KEY)).not.toBe(corrupt);
   });
 });

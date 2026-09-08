@@ -58,15 +58,6 @@ test("conecta Actor y Caso de uso, mueve, selecciona, borra y deshace", async ({
   await canvas.click({ position: { x: 240, y: 180 } });
   await expect(canvas.getByText("Caso de uso", { exact: true })).toBeVisible();
 
-  await expect(page.getByRole("button", { name: "Include" })).toHaveAttribute(
-    "aria-disabled",
-    "true",
-  );
-  await expect(page.getByRole("button", { name: "Extend" })).toHaveAttribute(
-    "aria-disabled",
-    "true",
-  );
-
   await page.getByRole("button", { name: "Asociación" }).click();
   await expect(
     page.getByRole("button", { name: "Asociación" }),

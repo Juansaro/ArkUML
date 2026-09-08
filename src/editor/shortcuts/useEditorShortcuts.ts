@@ -24,7 +24,12 @@ export function useEditorShortcuts(options?: EditorShortcutOptions): void {
       }
 
       const dialogMode = store.getState().ui.dialogMode;
-      if (dialogMode === "help" && event.key === "Escape") {
+      if (
+        (dialogMode === "help" ||
+          dialogMode === "new-diagram" ||
+          dialogMode === "recovery") &&
+        event.key === "Escape"
+      ) {
         event.preventDefault();
         store.getState().setDialogMode("none");
         return;

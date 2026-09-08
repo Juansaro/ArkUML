@@ -1,0 +1,31 @@
+.status {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.label,
+.message {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+}
+
+.error .label,
+.error .message {
+  color: var(--color-notice-fg);
+}
+
+.message {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.retry {
+  flex-shrink: 0;
+  padding: 0 var(--space-2);
+  font-size: var(--font-size-sm);
+}
