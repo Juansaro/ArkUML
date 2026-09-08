@@ -7,7 +7,7 @@ import {
 type InlineNameEditorProps = {
   id: string;
   name: string;
-  className: string;
+  className: string | undefined;
 };
 
 export function InlineNameEditor({
@@ -30,11 +30,14 @@ export function InlineNameEditor({
     store.getState().endRename();
   }
 
+  const fieldClassName =
+    className === undefined ? "nodrag nopan" : `${className} nodrag nopan`;
+
   return (
     <ElementNameField
       elementId={id}
       name={name}
-      className={`${className} nodrag nopan`}
+      className={fieldClassName}
       autoFocus
       ariaLabel="Nombre del elemento"
       onCommitted={close}

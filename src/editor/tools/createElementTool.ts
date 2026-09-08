@@ -40,10 +40,6 @@ export function isCreateElementTool(
   return tool === "actor" || tool === "use-case" || tool === "system-boundary";
 }
 
-export function isRelationshipTool(tool: EditorTool): boolean {
-  return tool === "association" || tool === "include" || tool === "extend";
-}
-
 export function nextDefaultName(
   existingNames: readonly string[],
   base: string,

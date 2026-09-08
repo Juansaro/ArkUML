@@ -4,6 +4,7 @@ import type { DiagramNode } from "../adapters/reactFlowMapper.ts";
 import { selectInspectorView } from "../store/selectors.ts";
 import { useEditorStoreApi } from "../store/EditorStoreProvider.tsx";
 import { isCreateElementTool } from "../tools/createElementTool.ts";
+import { isRelationshipTool } from "../tools/relationshipTool.ts";
 import { isRenameShortcutBlocked, isTypingTarget } from "./rename.ts";
 
 export function useElementRename() {
@@ -11,7 +12,10 @@ export function useElementRename() {
 
   const onNodeDoubleClick = useCallback<NodeMouseHandler<DiagramNode>>(
     (_event, node) => {
-      if (isCreateElementTool(store.getState().tool)) {
+      if (
+        isCreateElementTool(store.getState().tool) ||
+        isRelationshipTool(store.getState().tool)
+      ) {
         return;
       }
       store.getState().beginRename(node.id);

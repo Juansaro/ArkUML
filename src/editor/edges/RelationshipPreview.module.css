@@ -1,0 +1,11 @@
+.line {
+  fill: none;
+  pointer-events: none;
+  stroke: var(--color-focus);
+  stroke-width: 2;
+}
+
+.line[data-status="invalid"] {
+  stroke: var(--color-notice-fg);
+  stroke-dasharray: 6 4;
+}

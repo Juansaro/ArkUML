@@ -56,7 +56,9 @@ export function excludeReactFlowChrome(node: HTMLElement): boolean {
   return (
     !className.includes("react-flow__controls") &&
     !className.includes("react-flow__attribution") &&
-    !className.includes("react-flow__minimap")
+    !className.includes("react-flow__minimap") &&
+    !className.includes("react-flow__handle") &&
+    !className.includes("react-flow__edge-interaction")
   );
 }
 

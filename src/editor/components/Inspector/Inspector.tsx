@@ -1,6 +1,9 @@
 import { useShallow } from "zustand/react/shallow";
 import { ElementNameField } from "../../interactions/ElementNameField.tsx";
-import { selectInspectorView } from "../../store/selectors.ts";
+import {
+  selectDiagramWarnings,
+  selectInspectorView,
+} from "../../store/selectors.ts";
 import { useEditorStore } from "../../store/EditorStoreProvider.tsx";
 import styles from "./Inspector.module.css";
 
@@ -10,6 +13,7 @@ type InspectorProps = {
 
 export function Inspector({ headingId }: InspectorProps) {
   const view = useEditorStore(useShallow(selectInspectorView));
+  const warnings = useEditorStore(selectDiagramWarnings);
 
   return (
     <div className={styles.body} data-testid="inspector">
@@ -17,6 +21,24 @@ export function Inspector({ headingId }: InspectorProps) {
         Inspector
       </h2>
       <InspectorBody view={view} />
+      {warnings.length > 0 ? (
+        <ul
+          className={styles.warnings}
+          data-testid="inspector-warnings"
+          aria-label="Avisos del diagrama"
+        >
+          {warnings.map((warning) => (
+            <li
+              key={`${warning.code}:${warning.elementId}`}
+              className={styles.warning}
+              data-testid="inspector-warning"
+              data-warning-code={warning.code}
+            >
+              {warning.label}
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }
@@ -44,7 +66,21 @@ function InspectorBody({
   }
 
   if (view.status === "relationship") {
-    return <TypeField label={view.typeLabel} />;
+    return (
+      <div className={styles.fields}>
+        <TypeField label={view.typeLabel} />
+        <EndpointField
+          label="Origen"
+          value={view.sourceLabel}
+          testId="inspector-source"
+        />
+        <EndpointField
+          label="Destino"
+          value={view.targetLabel}
+          testId="inspector-target"
+        />
+      </div>
+    );
   }
 
   return (
@@ -53,12 +89,32 @@ function InspectorBody({
       <label className={styles.field}>
         <span className={styles.label}>Nombre</span>
         <ElementNameField
+          key={view.id}
           elementId={view.id}
           name={view.name}
           ariaLabel="Nombre"
           showError
         />
       </label>
+    </div>
+  );
+}
+
+function EndpointField({
+  label,
+  value,
+  testId,
+}: {
+  label: string;
+  value: string;
+  testId: string;
+}) {
+  return (
+    <div className={styles.field}>
+      <p className={styles.label}>{label}</p>
+      <p className={styles.value} data-testid={testId}>
+        {value}
+      </p>
     </div>
   );
 }

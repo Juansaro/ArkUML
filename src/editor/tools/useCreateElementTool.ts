@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, type MouseEvent } from "react";
 import {
   clientToFlowPosition,
   isCreateElementTool,
-  isRelationshipTool,
   placeElement,
 } from "./createElementTool.ts";
 import { selectTool } from "../store/selectors.ts";
@@ -22,7 +21,6 @@ export function useCreateElementTool() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const placingRef = useRef(false);
   const placing = isCreateElementTool(tool);
-  const showHandles = isRelationshipTool(tool);
 
   const placeAtEvent = useCallback(
     (event: PlaceEvent) => {
@@ -95,7 +93,6 @@ export function useCreateElementTool() {
   return {
     canvasRef,
     placing,
-    showHandles,
     onPaneClick,
     onNodeClick,
     shouldIgnoreSelectionChange,

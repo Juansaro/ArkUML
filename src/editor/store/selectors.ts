@@ -4,7 +4,12 @@ import type {
   RelationshipKind,
   Viewport,
 } from "../../domain/diagram/model.ts";
+import {
+  collectWarnings,
+  type DiagramWarning,
+} from "../../domain/diagram/validation.ts";
 import type {
+  DialogMode,
   EditorStore,
   EditorTool,
   HoverState,
@@ -64,6 +69,72 @@ export function selectMessage(state: EditorStore): string | undefined {
   return state.ui.message;
 }
 
+export type VisibleDiagramWarning = DiagramWarning & {
+  label: string;
+};
+
+type WarningsCacheEntry = {
+  warnings: readonly VisibleDiagramWarning[];
+  announcement: string;
+};
+
+const EMPTY_WARNINGS: readonly VisibleDiagramWarning[] = [];
+const warningsCache = new WeakMap<DiagramDocument, WarningsCacheEntry>();
+
+export function selectDiagramWarnings(
+  state: EditorStore,
+): readonly VisibleDiagramWarning[] {
+  if (state.history.transactionBaseline !== undefined) {
+    return EMPTY_WARNINGS;
+  }
+  const { warnings } = warningsFor(state.document);
+  return warnings.length === 0 ? EMPTY_WARNINGS : warnings;
+}
+
+export function selectLiveAnnouncement(state: EditorStore): string {
+  if (state.ui.message !== undefined) {
+    return state.ui.message;
+  }
+  if (state.history.transactionBaseline !== undefined) {
+    return "";
+  }
+  return warningsFor(state.document).announcement;
+}
+
+function warningsFor(document: DiagramDocument): WarningsCacheEntry {
+  const cached = warningsCache.get(document);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const warnings = collectWarnings(document).map((warning) => ({
+    ...warning,
+    label: formatWarning(document, warning),
+  }));
+  const entry: WarningsCacheEntry = {
+    warnings: warnings.length === 0 ? EMPTY_WARNINGS : warnings,
+    announcement: warnings.map((warning) => warning.label).join(" "),
+  };
+  warningsCache.set(document, entry);
+  return entry;
+}
+
+function formatWarning(
+  document: DiagramDocument,
+  warning: DiagramWarning,
+): string {
+  const element = document.elements.find(
+    (candidate) => candidate.id === warning.elementId,
+  );
+  if (element === undefined) {
+    return warning.message;
+  }
+  return `${element.name}: ${warning.message}`;
+}
+
+export function selectDialogMode(state: EditorStore): DialogMode {
+  return state.ui.dialogMode;
+}
+
 export function selectCanUndo(state: EditorStore): boolean {
   return (
     state.history.transactionBaseline === undefined && canUndo(state.history)
@@ -78,10 +149,6 @@ export function selectCanRedo(state: EditorStore): boolean {
 
 export function selectIsTransacting(state: EditorStore): boolean {
   return state.history.transactionBaseline !== undefined;
-}
-
-export function selectEditingElementId(state: EditorStore): string | undefined {
-  return state.ui.editingElementId;
 }
 
 export type InspectorView =
@@ -99,6 +166,8 @@ export type InspectorView =
       id: string;
       kind: RelationshipKind;
       typeLabel: string;
+      sourceLabel: string;
+      targetLabel: string;
     };
 
 const EMPTY_INSPECTOR_VIEW: InspectorView = { status: "empty" };
@@ -145,10 +214,22 @@ export function selectInspectorView(state: EditorStore): InspectorView {
     id: relationship.id,
     kind: relationship.kind,
     typeLabel: relationshipTypeLabel(relationship.kind),
+    sourceLabel: endpointLabel(state.document, relationship.sourceId),
+    targetLabel: endpointLabel(state.document, relationship.targetId),
   };
 }
 
-export function elementTypeLabel(kind: DiagramElement["kind"]): string {
+function endpointLabel(document: DiagramDocument, elementId: string): string {
+  const element = document.elements.find(
+    (candidate) => candidate.id === elementId,
+  );
+  if (element === undefined) {
+    return "—";
+  }
+  return `${elementTypeLabel(element.kind)} ${element.name}`;
+}
+
+function elementTypeLabel(kind: DiagramElement["kind"]): string {
   if (kind === "actor") {
     return "Actor";
   }
@@ -158,7 +239,7 @@ export function elementTypeLabel(kind: DiagramElement["kind"]): string {
   return "Límite del sistema";
 }
 
-export function relationshipTypeLabel(kind: RelationshipKind): string {
+function relationshipTypeLabel(kind: RelationshipKind): string {
   if (kind === "association") {
     return "Asociación";
   }

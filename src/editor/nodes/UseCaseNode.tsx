@@ -11,11 +11,13 @@ function UseCaseNodeView({
   selected,
   width,
   height,
+  parentId,
 }: NodeProps<DiagramNode>) {
   return (
     <div
       className={`${styles.node} ${handleHostClassName}`}
       data-kind={data.kind}
+      data-parented={parentId === undefined ? "false" : "true"}
       data-selected={selected ? "true" : "false"}
       data-testid={`diagram-node-${id}`}
       style={{ width, height }}

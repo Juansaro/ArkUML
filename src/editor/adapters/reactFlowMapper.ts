@@ -2,6 +2,7 @@ import type { Edge, Node } from "@xyflow/react";
 import type {
   DiagramDocument,
   DiagramElement,
+  Relationship,
   RelationshipKind,
 } from "../../domain/diagram/model.ts";
 import type { SelectionState } from "../store/editorStore.ts";
@@ -46,8 +47,10 @@ export function mapDocumentToReactFlow(
       target: relationship.targetId,
       sourceHandle: relationship.sourceAnchor,
       targetHandle: relationship.targetAnchor,
+      className: `diagram-edge diagram-edge-${relationship.kind}`,
       data: { kind: relationship.kind },
       selected: selectedRelationships.has(relationship.id),
+      ariaLabel: relationshipAriaLabel(document, relationship),
     })),
   };
 }
@@ -98,6 +101,7 @@ function mapElement(element: DiagramElement, selected: boolean): DiagramNode {
       style: {
         width: element.geometry.width,
         height: element.geometry.height,
+        overflow: "visible",
       },
     };
   }
@@ -110,6 +114,33 @@ function mapElement(element: DiagramElement, selected: boolean): DiagramNode {
   }
 
   return node;
+}
+
+function relationshipAriaLabel(
+  document: DiagramDocument,
+  relationship: Relationship,
+): string {
+  const source = document.elements.find(
+    (element) => element.id === relationship.sourceId,
+  );
+  const target = document.elements.find(
+    (element) => element.id === relationship.targetId,
+  );
+  const kindLabel = relationshipKindLabel(relationship.kind);
+  if (source === undefined || target === undefined) {
+    return kindLabel;
+  }
+  return `${kindLabel} entre ${source.name} y ${target.name}`;
+}
+
+function relationshipKindLabel(kind: RelationshipKind): string {
+  if (kind === "association") {
+    return "Asociación";
+  }
+  if (kind === "include") {
+    return "Include";
+  }
+  return "Extend";
 }
 
 function elementAriaLabel(element: DiagramElement): string {

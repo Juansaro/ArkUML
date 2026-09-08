@@ -10,7 +10,8 @@
   height: 100%;
 }
 
-.root[data-placing="true"] :global(.react-flow) {
+.root[data-placing="true"] :global(.react-flow),
+.root[data-connecting="true"] :global(.react-flow) {
   cursor: crosshair;
 }
 
@@ -26,4 +27,20 @@
 
 .flow :global(.react-flow__node.selected) {
   box-shadow: none;
+}
+
+.flow :global(.react-flow__node-system-boundary) {
+  overflow: visible;
+}
+
+.flow :global(.react-flow__edge-path) {
+  stroke: var(--color-fg);
+}
+
+.flow :global(.react-flow__edge.selected .react-flow__edge-path) {
+  stroke: var(--color-focus);
+}
+
+.flow :global(.react-flow__connectionline) {
+  pointer-events: none;
 }

@@ -6,6 +6,7 @@ import type {
 } from "@xyflow/react";
 import type { DiagramNode } from "../adapters/reactFlowMapper.ts";
 import { useEditorStoreApi } from "../store/EditorStoreProvider.tsx";
+import { isBoundaryResizing } from "./boundaryResize.ts";
 import {
   startNodeDrag,
   stopNodeDrag,
@@ -56,12 +57,19 @@ export function useNodeDrag() {
 
   const onNodesChange = useCallback<OnNodesChange<DiagramNode>>(
     (changes) => {
+      if (isBoundaryResizing(store)) {
+        return;
+      }
+
       const moves: DraggedNodePosition[] = [];
       let dragging = false;
       let dragEnded = false;
 
       for (const change of changes) {
         if (change.type !== "position" || change.position === undefined) {
+          continue;
+        }
+        if (change.dragging !== true && change.dragging !== false) {
           continue;
         }
         moves.push({ id: change.id, position: change.position });

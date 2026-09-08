@@ -1,0 +1,78 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background-color: var(--color-overlay);
+}
+
+.backdrop:hover {
+  background-color: var(--color-overlay);
+}
+
+.dialog {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  max-width: 36rem;
+  max-height: min(36rem, 90vh);
+  width: 100%;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: auto;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  box-shadow: 0 0.5rem 1.5rem var(--color-shadow);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.lead,
+.caption {
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.caption {
+  text-align: start;
+  font-weight: var(--font-weight-semibold);
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--font-size-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-2) var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table th[scope="row"] {
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.close {
+  align-self: flex-end;
+}

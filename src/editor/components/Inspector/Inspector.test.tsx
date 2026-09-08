@@ -213,8 +213,8 @@ describe("Inspector", () => {
     const firstView = selectInspectorView(store.getState());
 
     store.getState().beginTransaction();
-    expectOk(store.getState().commitMove([{ id: actor.id, x: 10, y: 20 }]));
-    expectOk(store.getState().commitMove([{ id: actor.id, x: 30, y: 40 }]));
+    expectOk(store.getState().commitMove([{ id: actor.id, x: -200, y: 20 }]));
+    expectOk(store.getState().commitMove([{ id: actor.id, x: -180, y: 10 }]));
     store.getState().commitTransaction();
 
     expect(shallow(firstView, selectInspectorView(store.getState()))).toBe(
@@ -222,5 +222,81 @@ describe("Inspector", () => {
     );
     expect(commits).toBe(afterMount);
     expect(screen.getByLabelText("Nombre")).toHaveValue("Usuario");
+  });
+
+  it("muestra avisos no bloqueantes de geometría", () => {
+    const store = createStore();
+    expectOk(
+      store.getState().createActor({
+        name: "Usuario",
+        geometry: { x: 40, y: 40, width: 72, height: 112 },
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: { x: 900, y: 80, width: 160, height: 80 },
+      }),
+    );
+
+    renderInspector(store);
+
+    const warnings = screen.getByTestId("inspector-warnings");
+    expect(warnings).toHaveAttribute("aria-label", "Avisos del diagrama");
+    expect(screen.getAllByTestId("inspector-warning")).toHaveLength(2);
+    expect(warnings).toHaveTextContent(/Usuario:.*actor/i);
+    expect(warnings).toHaveTextContent(/Login:.*fuera/i);
+  });
+
+  it("muestra tipo y extremos de la asociación, sin etiqueta editable", () => {
+    const store = createStore();
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    const actor = actorOf(store);
+    const useCase = store
+      .getState()
+      .document.elements.find((element) => element.kind === "use-case");
+    if (useCase === undefined) {
+      throw new Error("Falta el caso de uso");
+    }
+    expectOk(
+      store.getState().connect({
+        kind: "association",
+        sourceId: useCase.id,
+        targetId: actor.id,
+        sourceAnchor: "left",
+        targetAnchor: "right",
+      }),
+    );
+    const relationship = store.getState().document.relationships[0];
+    if (relationship === undefined) {
+      throw new Error("Falta la asociación");
+    }
+    store.getState().setSelection({
+      elementIds: [],
+      relationshipIds: [relationship.id],
+    });
+
+    renderInspector(store);
+
+    expect(screen.getByTestId("inspector-type")).toHaveTextContent(
+      "Asociación",
+    );
+    expect(screen.getByTestId("inspector-source")).toHaveTextContent(
+      "Actor Usuario",
+    );
+    expect(screen.getByTestId("inspector-target")).toHaveTextContent(
+      "Caso de uso Login",
+    );
+    expect(screen.queryByLabelText("Nombre")).not.toBeInTheDocument();
   });
 });

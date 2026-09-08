@@ -113,6 +113,7 @@ describe("nodos UML", () => {
 
     const useCaseNode = screen.getByTestId(`diagram-node-${useCase.id}`);
     expect(useCaseNode).toHaveAttribute("data-kind", "use-case");
+    expect(useCaseNode).toHaveAttribute("data-parented", "true");
     expect(screen.getByTestId("use-case-ellipse")).toBeInTheDocument();
     expect(within(useCaseNode).getByText("Login")).toBeInTheDocument();
     expect(useCaseNode.querySelectorAll(".react-flow__handle")).toHaveLength(8);
@@ -124,5 +125,8 @@ describe("nodos UML", () => {
     expect(boundaryNode.querySelectorAll(".react-flow__handle")).toHaveLength(
       8,
     );
+    expect(
+      globalThis.document.querySelector(".react-flow__resize-control"),
+    ).toBeInTheDocument();
   });
 });

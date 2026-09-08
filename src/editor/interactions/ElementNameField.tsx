@@ -1,10 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type FocusEvent,
-  type KeyboardEvent,
-} from "react";
+import { useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
 import { useEditorStoreApi } from "../store/EditorStoreProvider.tsx";
 import styles from "./ElementNameField.module.css";
 
@@ -34,12 +28,14 @@ export function ElementNameField({
   const store = useEditorStoreApi();
   const [draft, setDraft] = useState(name);
   const [error, setError] = useState<string | undefined>(undefined);
+  const [source, setSource] = useState({ elementId, name });
   const ignoreBlurRef = useRef(false);
 
-  useEffect(() => {
+  if (source.elementId !== elementId || source.name !== name) {
+    setSource({ elementId, name });
     setDraft(name);
     setError(undefined);
-  }, [elementId, name]);
+  }
 
   function commit(): boolean {
     const result = store.getState().renameElement(elementId, draft);

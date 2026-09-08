@@ -23,7 +23,6 @@ export function NodeHandles() {
           type="target"
           position={handle.position}
           className={styles.handle}
-          isConnectable={false}
         />
       ))}
       {HANDLE_POSITIONS.map((handle) => (
@@ -33,7 +32,6 @@ export function NodeHandles() {
           type="source"
           position={handle.position}
           className={styles.handle}
-          isConnectable={false}
         />
       ))}
     </>

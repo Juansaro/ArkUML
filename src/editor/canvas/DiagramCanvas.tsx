@@ -1,10 +1,12 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Background,
   BackgroundVariant,
+  ConnectionLineType,
   Controls,
   ReactFlow,
   SelectionMode,
+  useReactFlow,
   type OnMoveEnd,
   type OnSelectionChangeFunc,
 } from "@xyflow/react";
@@ -18,6 +20,7 @@ import {
   useEditorStoreApi,
 } from "../store/EditorStoreProvider.tsx";
 import { useCreateElementTool } from "../tools/useCreateElementTool.ts";
+import { useRelationshipTool } from "../tools/useRelationshipTool.ts";
 import { isCreateElementTool } from "../tools/createElementTool.ts";
 import { edgeTypes } from "./edgeTypes.ts";
 import { nodeTypes } from "./nodeTypes.ts";
@@ -30,18 +33,29 @@ const CANVAS_ARIA_LABELS = {
   "controls.fitView.ariaLabel": "Ajustar vista",
 } as const;
 
-export function DiagramCanvas() {
+type DiagramCanvasProps = {
+  onFitViewReady?: (fitView: () => void) => void;
+};
+
+export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
   const store = useEditorStoreApi();
   const document = useEditorStore(selectDocument);
   const selection = useEditorStore(selectSelection);
   const {
     canvasRef,
     placing,
-    showHandles,
     onPaneClick: createToolPaneClick,
     onNodeClick,
     shouldIgnoreSelectionChange,
   } = useCreateElementTool();
+  const {
+    connecting,
+    connectionMode,
+    connectionLineComponent,
+    isValidConnection,
+    onConnect,
+    onConnectEnd,
+  } = useRelationshipTool();
   const nodeDrag = useNodeDrag();
   const { onNodeDoubleClick } = useElementRename();
   const [defaultViewport] = useState(() => store.getState().viewport);
@@ -114,7 +128,8 @@ export function DiagramCanvas() {
       className={styles.root}
       data-testid="diagram-canvas"
       data-placing={placing ? "true" : "false"}
-      data-show-handles={showHandles ? "true" : "false"}
+      data-connecting={connecting ? "true" : "false"}
+      data-show-handles={connecting ? "true" : "false"}
     >
       <ReactFlow
         nodes={nodes}
@@ -134,17 +149,26 @@ export function DiagramCanvas() {
         onSelectionDrag={nodeDrag.onSelectionDrag}
         onSelectionDragStop={nodeDrag.onSelectionDragStop}
         onNodesChange={nodeDrag.onNodesChange}
-        selectionOnDrag={!placing}
+        onConnect={onConnect}
+        onConnectEnd={onConnectEnd}
+        isValidConnection={isValidConnection}
+        connectionMode={connectionMode}
+        connectionLineType={ConnectionLineType.Straight}
+        connectionLineComponent={connectionLineComponent}
+        selectionOnDrag={!placing && !connecting}
         selectionMode={SelectionMode.Partial}
         multiSelectionKeyCode="Shift"
         panOnDrag={[1]}
         panActivationKeyCode="Space"
         zoomOnScroll
         zoomOnPinch
-        nodesDraggable={!placing}
-        nodesConnectable={false}
+        nodesDraggable={!placing && !connecting}
+        nodesConnectable={connecting}
         elementsSelectable={!placing}
+        edgesReconnectable={false}
+        connectOnClick={false}
         deleteKeyCode={null}
+        disableKeyboardA11y
         minZoom={0.5}
         maxZoom={2}
         colorMode="light"
@@ -164,6 +188,9 @@ export function DiagramCanvas() {
           aria-label="Controles del lienzo"
           fitViewOptions={{ padding: 0.2, duration: 0 }}
         />
+        {onFitViewReady !== undefined ? (
+          <FitViewRegistration onReady={onFitViewReady} />
+        ) : null}
       </ReactFlow>
     </div>
   );
@@ -175,4 +202,20 @@ function sameIds(left: readonly string[], right: readonly string[]): boolean {
   }
   const rightSet = new Set(right);
   return left.every((id) => rightSet.has(id));
+}
+
+function FitViewRegistration({
+  onReady,
+}: {
+  onReady: (fitView: () => void) => void;
+}) {
+  const { fitView } = useReactFlow();
+
+  useEffect(() => {
+    onReady(() => {
+      void fitView({ padding: 0.2, duration: 0 });
+    });
+  }, [fitView, onReady]);
+
+  return null;
 }

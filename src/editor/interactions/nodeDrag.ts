@@ -1,6 +1,7 @@
 import type { DiagramDocument } from "../../domain/diagram/model.ts";
 import type { ElementMove } from "../../domain/diagram/operations.ts";
 import type { EditorStoreApi } from "../store/editorStore.ts";
+import { applyReparentOnDrop } from "./reparent.ts";
 
 export type DraggedNodePosition = {
   id: string;
@@ -54,5 +55,9 @@ export function stopNodeDrag(
   nodes: readonly DraggedNodePosition[],
 ): void {
   updateNodeDrag(store, nodes);
+  applyReparentOnDrop(
+    store,
+    nodes.map((node) => node.id),
+  );
   store.getState().commitTransaction();
 }

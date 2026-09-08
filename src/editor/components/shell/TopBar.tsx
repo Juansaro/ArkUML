@@ -1,3 +1,9 @@
+import { useShallow } from "zustand/react/shallow";
+import { selectCanRedo, selectCanUndo } from "../../store/selectors.ts";
+import {
+  useEditorStore,
+  useEditorStoreApi,
+} from "../../store/EditorStoreProvider.tsx";
 import { InertButton } from "./InertButton.tsx";
 import styles from "./TopBar.module.css";
 
@@ -5,17 +11,29 @@ type TopBarProps = {
   documentTitle: string;
   paletteOpen: boolean;
   inspectorOpen: boolean;
+  helpOpen: boolean;
   onTogglePalette: () => void;
   onToggleInspector: () => void;
+  onToggleHelp: () => void;
 };
 
 export function TopBar({
   documentTitle,
   paletteOpen,
   inspectorOpen,
+  helpOpen,
   onTogglePalette,
   onToggleInspector,
+  onToggleHelp,
 }: TopBarProps) {
+  const store = useEditorStoreApi();
+  const { canUndo, canRedo } = useEditorStore(
+    useShallow((state) => ({
+      canUndo: selectCanUndo(state),
+      canRedo: selectCanRedo(state),
+    })),
+  );
+
   return (
     <>
       <div className={styles.identity}>
@@ -45,15 +63,38 @@ export function TopBar({
         <InertButton reason="Nuevo diagrama aún no está disponible.">
           Nuevo
         </InertButton>
-        <InertButton reason="Deshacer aún no está disponible.">
+        <button
+          type="button"
+          disabled={!canUndo}
+          title="Deshacer (Ctrl+Z)"
+          onClick={() => {
+            store.getState().undo();
+          }}
+        >
           Deshacer
-        </InertButton>
-        <InertButton reason="Rehacer aún no está disponible.">
+        </button>
+        <button
+          type="button"
+          disabled={!canRedo}
+          title="Rehacer (Ctrl+Y)"
+          onClick={() => {
+            store.getState().redo();
+          }}
+        >
           Rehacer
-        </InertButton>
+        </button>
         <InertButton reason="Exportar aún no está disponible.">
           Exportar
         </InertButton>
+        <button
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={helpOpen}
+          aria-controls={helpOpen ? "editor-help" : undefined}
+          onClick={onToggleHelp}
+        >
+          Ayuda
+        </button>
       </div>
     </>
   );

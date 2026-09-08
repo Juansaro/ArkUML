@@ -68,6 +68,11 @@ describe("mapDocumentToReactFlow", () => {
       data: { kind: "system-boundary", name: "Sistema" },
       selected: false,
       ariaLabel: "Límite del sistema Sistema",
+      style: {
+        width: 640,
+        height: 400,
+        overflow: "visible",
+      },
     });
     expect(first.nodes[0]).not.toHaveProperty("measured");
     expect(first.nodes[0]).not.toHaveProperty("parentId");
@@ -223,8 +228,10 @@ describe("mapDocumentToReactFlow", () => {
       target: login.id,
       sourceHandle: "right",
       targetHandle: "left",
+      className: "diagram-edge diagram-edge-association",
       data: { kind: "association" },
       selected: true,
+      ariaLabel: `Asociación entre ${actor.name} y ${login.name}`,
     });
     expect(edges[1]).toMatchObject({
       type: "include",

@@ -17,6 +17,7 @@ import {
   selectCanUndo,
   selectDocument,
   selectIsTransacting,
+  selectLiveAnnouncement,
   selectMessage,
   selectSaveStatus,
   selectSelectedElementIds,
@@ -416,5 +417,23 @@ describe("selectors", () => {
 
     store.getState().setViewport(VIEWPORT);
     expect(shallow(first, selectViewport(store.getState()))).toBe(false);
+  });
+
+  it("anuncia avisos cuando no hay otro mensaje", () => {
+    const store = createStore();
+    expect(selectLiveAnnouncement(store.getState())).toBe("");
+
+    expectOk(
+      store.getState().createActor({
+        name: "Usuario",
+        geometry: { x: 40, y: 40, width: 48, height: 96 },
+      }),
+    );
+    expect(selectLiveAnnouncement(store.getState())).toMatch(
+      /Usuario:.*actor/i,
+    );
+
+    store.getState().setMessage("Se creó Usuario.");
+    expect(selectLiveAnnouncement(store.getState())).toBe("Se creó Usuario.");
   });
 });

@@ -20,7 +20,6 @@ export const PALETTE_RELATIONSHIP_TOOLS = [
   {
     id: "association",
     label: "Asociación",
-    reason: "Asociación. La creación en el lienzo aún no está disponible.",
   },
   {
     id: "include",
