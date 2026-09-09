@@ -248,6 +248,118 @@ describe("Inspector", () => {
     expect(warnings).toHaveTextContent(/Login:.*fuera/i);
   });
 
+  it("lista ciclos Include y Extend con data-warning-code, sin aria-live", () => {
+    const store = createStore();
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Logout",
+        geometry: { ...USE_CASE_GEOMETRY, x: 280 },
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Pago",
+        geometry: { ...USE_CASE_GEOMETRY, y: 200 },
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Reembolso",
+        geometry: { ...USE_CASE_GEOMETRY, x: 280, y: 200 },
+      }),
+    );
+    const byName = (name: string) => {
+      const found = store
+        .getState()
+        .document.elements.find(
+          (element) => element.kind === "use-case" && element.name === name,
+        );
+      if (found === undefined) {
+        throw new Error(`Falta ${name}`);
+      }
+      return found;
+    };
+    const login = byName("Login");
+    const logout = byName("Logout");
+    const pago = byName("Pago");
+    const reembolso = byName("Reembolso");
+
+    expectOk(
+      store.getState().connect({
+        kind: "include",
+        sourceId: login.id,
+        targetId: logout.id,
+        sourceAnchor: "right",
+        targetAnchor: "left",
+      }),
+    );
+    expectOk(
+      store.getState().connect({
+        kind: "include",
+        sourceId: logout.id,
+        targetId: login.id,
+        sourceAnchor: "left",
+        targetAnchor: "right",
+      }),
+    );
+    expectOk(
+      store.getState().connect({
+        kind: "extend",
+        sourceId: pago.id,
+        targetId: reembolso.id,
+        sourceAnchor: "right",
+        targetAnchor: "left",
+      }),
+    );
+    expectOk(
+      store.getState().connect({
+        kind: "extend",
+        sourceId: reembolso.id,
+        targetId: pago.id,
+        sourceAnchor: "left",
+        targetAnchor: "right",
+      }),
+    );
+
+    renderInspector(store);
+
+    const warnings = screen.getByTestId("inspector-warnings");
+    expect(warnings).toHaveAttribute("aria-label", "Avisos del diagrama");
+    expect(warnings).not.toHaveAttribute("aria-live");
+    const includeWarnings = screen
+      .getAllByTestId("inspector-warning")
+      .filter(
+        (node) => node.getAttribute("data-warning-code") === "INCLUDE_CYCLE",
+      );
+    const extendWarnings = screen
+      .getAllByTestId("inspector-warning")
+      .filter(
+        (node) => node.getAttribute("data-warning-code") === "EXTEND_CYCLE",
+      );
+    expect(includeWarnings).toHaveLength(2);
+    expect(extendWarnings).toHaveLength(2);
+    expect(includeWarnings[0]).toHaveTextContent(
+      "Login: Participa en un ciclo de Include.",
+    );
+    expect(includeWarnings[1]).toHaveTextContent(
+      "Logout: Participa en un ciclo de Include.",
+    );
+    expect(extendWarnings[0]).toHaveTextContent(
+      "Pago: Participa en un ciclo de Extend.",
+    );
+    expect(extendWarnings[1]).toHaveTextContent(
+      "Reembolso: Participa en un ciclo de Extend.",
+    );
+    expect(store.getState().ui.message).toBeUndefined();
+    expect(store.getState().document).not.toHaveProperty("warnings");
+  });
+
   it("muestra tipo y extremos de la asociación, sin etiqueta editable", () => {
     const store = createStore();
     expectOk(

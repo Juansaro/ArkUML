@@ -25,8 +25,8 @@ TASK-025 habilita rutas y protocolo. TASK-026–032 están `Hecha`. TASK-030
 cerró el gate de fase 10 (**ship**, 2026-09-09). TASK-031 publicó
 [`post-mvp-spec.md`](../../product/post-mvp-spec.md). TASK-032 publicó
 [`schema-evolution.md`](../../architecture/schema-evolution.md).
-TASK-033 congeló la Wave 1 (**Editor local sobre schema 1**). Próximo
-contrato ejecutable: TASK-034.
+TASK-033 congeló la Wave 1 (**Editor local sobre schema 1**). TASK-034
+está `Hecha`. Próximo contrato ejecutable: TASK-035.
 
 ## Estado
 
@@ -41,7 +41,7 @@ contrato ejecutable: TASK-034.
 | 031 | [`11-governance/TASK-031.md`](11-governance/TASK-031.md) | Hecha | P0 | 030 | 2026-09-09: `post-mvp-spec.md`; waves 12–17 con destino; O-01–O-10 dispuestos; mvp-spec enlaza Post-MVP |
 | 032 | [`11-governance/TASK-032.md`](11-governance/TASK-032.md) | Hecha | P0 | 031 | 2026-09-09: `schema-evolution.md`; schema 1 cerrado; IndexedDB condicional; FR-P03 envelope; ningún ADR reabierto |
 | 033 | [`11-governance/TASK-033.md`](11-governance/TASK-033.md) | Hecha | P0 | 031, 032 | 2026-09-09: Wave 1 **Editor local sobre schema 1** (W12-01, W13-02); TASK-034 y TASK-035 |
-| 034 | [`12-uml/TASK-034.md`](12-uml/TASK-034.md) | Lista | P0 | 033 | FR-P01: ciclos Include/Extend como warning |
+| 034 | [`12-uml/TASK-034.md`](12-uml/TASK-034.md) | Hecha | P0 | 033 | 2026-09-09: FR-P01; `INCLUDE_CYCLE`/`EXTEND_CYCLE`; schema 1 |
 | 035 | [`13-editor/TASK-035.md`](13-editor/TASK-035.md) | Lista | P0 | 033 | FR-P02: guías de alineación (chrome) |
 
 ## Fases y gates
@@ -93,10 +93,9 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-TASK-033 está `Hecha`. Siguiente contrato ejecutable:
+TASK-034 está `Hecha`. Siguiente contrato ejecutable:
 
-- [TASK-034](12-uml/TASK-034.md) (FR-P01, ciclos como warning).
-  Después, [TASK-035](13-editor/TASK-035.md) (FR-P02, guías).
+- [TASK-035](13-editor/TASK-035.md) (FR-P02, guías de alineación).
   Multi-documento: no. IndexedDB: no elegido (condicional C-QUOTA).
   No implementar Generalization, JSON de usuario, PDF ni temas en estos
   chats.

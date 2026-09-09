@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -88,16 +88,16 @@ sigue abriéndose.
 
 ## Criterios de aceptación
 
-- [ ] Include A→B→A produce `INCLUDE_CYCLE` en A y B; no impide crear la
+- [x] Include A→B→A produce `INCLUDE_CYCLE` en A y B; no impide crear la
       segunda relación.
-- [ ] Extend cíclico produce `EXTEND_CYCLE`; no se confunde con Include.
-- [ ] Cadena acíclica A→B→C no avisa. Association A↔B no avisa.
-- [ ] Include A→B más Extend B→A no avisa (grafos separados).
-- [ ] El aviso no muta el documento ni aparece en el JSON persistido.
-- [ ] Schema `1` / round-trip Zod sin claves nuevas.
-- [ ] Inspector: mismo contenedor que los avisos geométricos; copy en
+- [x] Extend cíclico produce `EXTEND_CYCLE`; no se confunde con Include.
+- [x] Cadena acíclica A→B→C no avisa. Association A↔B no avisa.
+- [x] Include A→B más Extend B→A no avisa (grafos separados).
+- [x] El aviso no muta el documento ni aparece en el JSON persistido.
+- [x] Schema `1` / round-trip Zod sin claves nuevas.
+- [x] Inspector: mismo contenedor que los avisos geométricos; copy en
       español; no `aria-live`.
-- [ ] `domain-model.md` lista los dos códigos.
+- [x] `domain-model.md` lista los dos códigos.
 
 ## Tests
 
@@ -128,4 +128,31 @@ FR-P01 observable; schema `1` intacto; criterios `[x]` con evidencia.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-09. Criterios `[x]`. FR-P01 observable: ciclos Include/Extend
+como warning no bloqueante. Schema `1` / `storageVersion` `1` intactos.
+`createRelationship` / `canConnect` sin chequeo de ciclo. Copy no afirma
+ilegalidad UML. Avisos no persistidos ni en `aria-live`.
+
+Códigos en `domain-model.md`: `INCLUDE_CYCLE`, `EXTEND_CYCLE`.
+`formatWarning` reutiliza `elementId`; no se tocó el ocultado durante
+transacción.
+
+Comandos realmente corridos:
+
+```bash
+npm run test -- src/domain/diagram/validation.test.ts src/editor/components/Inspector/Inspector.test.tsx
+npm run test:e2e -- e2e/include-extend.spec.ts
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+npm run check
+```
+
+Unidad: 24/24 en los dos archivos; suite 264/264. E2E Chromium: 4/4
+(`include-extend.spec.ts`, incluido el 2-ciclo). Lint, typecheck y
+`vite build` OK.
+
+`npm run check` falla en `format:check` por los mismos 10 archivos de
+chrome/tooltips de TASK-024 (028–033). Esta TASK no los reformateó. Los
+archivos tocados pasan Prettier.

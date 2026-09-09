@@ -192,3 +192,63 @@ test("extend apunta al caso base y rechaza self o actor", async ({ page }) => {
   );
   await expect(canvas.locator(".diagram-edge-extend")).toHaveCount(1);
 });
+
+test("un ciclo include avisa en el inspector y no bloquea la edición", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const inspector = page.getByRole("complementary", { name: "Inspector" });
+  const { canvas, including, included } = await createTwoUseCases(page);
+
+  await page.getByRole("button", { name: "Include" }).click();
+  await connectHandles(
+    page,
+    including.locator(".react-flow__handle-right").last(),
+    included.locator(".react-flow__handle-left").first(),
+  );
+  await expect(
+    canvas.getByLabel("Include entre Caso de uso y Caso de uso 2"),
+  ).toBeVisible();
+
+  await connectHandles(
+    page,
+    included.locator(".react-flow__handle-left").last(),
+    including.locator(".react-flow__handle-right").first(),
+  );
+  await expect(
+    canvas.getByLabel("Include entre Caso de uso 2 y Caso de uso"),
+  ).toBeVisible();
+  await expect(page.getByTestId("editor-live")).toHaveText("Se creó include.");
+
+  const warnings = inspector.getByTestId("inspector-warnings");
+  await expect(warnings).toBeVisible();
+  await expect(warnings).not.toHaveAttribute("aria-live");
+  const cycleWarnings = inspector.locator(
+    '[data-warning-code="INCLUDE_CYCLE"]',
+  );
+  await expect(cycleWarnings).toHaveCount(2);
+  await expect(cycleWarnings.first()).toHaveText(
+    /Participa en un ciclo de Include\./,
+  );
+  await expect(
+    inspector.locator('[data-warning-code="EXTEND_CYCLE"]'),
+  ).toHaveCount(0);
+
+  await page.keyboard.press("Escape");
+  await canvas
+    .locator(".react-flow__pane")
+    .click({ position: { x: 700, y: 80 } });
+  await canvas.getByText("Caso de uso", { exact: true }).click();
+  const name = inspector.getByLabel("Nombre");
+  await expect(name).toHaveValue("Caso de uso");
+  await name.fill("Login");
+  await name.press("Enter");
+  await expect(name).toHaveValue("Login");
+  await expect(
+    inspector.locator('[data-warning-code="INCLUDE_CYCLE"]'),
+  ).toHaveCount(2);
+  await expect(warnings).toContainText(
+    "Login: Participa en un ciclo de Include.",
+  );
+});

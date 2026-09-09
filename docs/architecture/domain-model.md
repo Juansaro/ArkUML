@@ -83,6 +83,15 @@ Validaciones no bloqueantes (no impiden el commit ni mutan el documento; la UI l
 - Actor cuyo centro está dentro del rectángulo del boundary.
 - UseCase sin padre cuyo centro está fuera del boundary.
 - UseCase con padre cuyo centro está fuera del rectángulo de ese padre.
+- `INCLUDE_CYCLE`: caso de uso en un componente fuertemente conexo de
+  tamaño ≥ 2 del grafo dirigido Include (`sourceId` → `targetId`). Copy:
+  «Participa en un ciclo de Include.»
+- `EXTEND_CYCLE`: análogo en el grafo dirigido Extend. Copy: «Participa
+  en un ciclo de Extend.»
+
+Association no participa. Include y Extend son grafos distintos. El aviso
+no afirma ilegalidad UML, no se persiste y no entra al historial. Un
+self-loop sigue siendo el error bloqueante `SELF_RELATIONSHIP`.
 
 ## Errores de dominio (códigos)
 
