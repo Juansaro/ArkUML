@@ -4,7 +4,6 @@ import {
   useEditorStore,
   useEditorStoreApi,
 } from "../../store/EditorStoreProvider.tsx";
-import { InertButton } from "./InertButton.tsx";
 import styles from "./TopBar.module.css";
 
 type TopBarProps = {
@@ -12,10 +11,12 @@ type TopBarProps = {
   paletteOpen: boolean;
   inspectorOpen: boolean;
   helpOpen: boolean;
+  exportOpen: boolean;
   onTogglePalette: () => void;
   onToggleInspector: () => void;
   onToggleHelp: () => void;
   onNewDiagram: () => void;
+  onExport: () => void;
 };
 
 export function TopBar({
@@ -23,10 +24,12 @@ export function TopBar({
   paletteOpen,
   inspectorOpen,
   helpOpen,
+  exportOpen,
   onTogglePalette,
   onToggleInspector,
   onToggleHelp,
   onNewDiagram,
+  onExport,
 }: TopBarProps) {
   const store = useEditorStoreApi();
   const { canUndo, canRedo } = useEditorStore(
@@ -85,9 +88,15 @@ export function TopBar({
         >
           Rehacer
         </button>
-        <InertButton reason="Exportar aún no está disponible.">
+        <button
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={exportOpen}
+          aria-controls={exportOpen ? "editor-export" : undefined}
+          onClick={onExport}
+        >
           Exportar
-        </InertButton>
+        </button>
         <button
           type="button"
           aria-haspopup="dialog"

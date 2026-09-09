@@ -134,12 +134,20 @@ describe("EditorShell", () => {
     expect(button).toHaveAttribute("aria-pressed", "false");
   });
 
-  it("explica por qué Exportar sigue inerte", () => {
+  it("abre el diálogo de exportar", async () => {
+    const user = userEvent.setup();
     render(<EditorShell />);
 
-    const button = screen.getByRole("button", { name: "Exportar" });
-    expect(button).toHaveAttribute("aria-disabled", "true");
-    expect(button).toHaveAttribute("title", "Exportar aún no está disponible.");
+    await user.click(screen.getByRole("button", { name: "Exportar" }));
+    const dialog = screen.getByRole("dialog", { name: "Exportar" });
+    expect(dialog).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "PNG" })).toBeChecked();
+    expect(dialog).toHaveTextContent("704 × 464 px");
+
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(
+      screen.queryByRole("dialog", { name: "Exportar" }),
+    ).not.toBeInTheDocument();
   });
 
   it("habilita deshacer y rehacer según canUndo/canRedo", async () => {

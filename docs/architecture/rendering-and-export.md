@@ -54,6 +54,18 @@ TASK-008 instala React Flow **y** `html-to-image@1.11.11`, y ejecuta un spike E2
 
 Resultado del spike (2026-09-07, Windows): Chromium y Firefox conservan rectángulo, texto y marker SVG de forma estable. WebKit conserva rectángulo y texto; el `marker-end` SVG es intermitente (aparece en algunas corridas y no en otras). El diagrama sigue siendo usable (no se reabre ADR-006). TASK-016 debe tratar los markers como riesgo en WebKit.
 
+## Producto (TASK-016)
+
+El diálogo **Exportar** rasteriza el bounding box de todos los elementos + 32 px de padding. El transform se aplica solo al clon de `html-to-image`; el zoom/pan del usuario no cambia.
+
+Límites de canvas: 4096 px por lado y 16 megapíxeles. Si 2x no cabe, la UI sugiere 1x. La descarga usa `canvas.toBlob` y revoca el object URL.
+
+Limitaciones de navegador:
+
+- Safari/WebKit puede omitir de forma intermitente los `marker-end` SVG (flechas de include/extend), igual que el spike.
+- El techo de tamaño es el del canvas del navegador; iOS suele ser más estricto (~4096).
+- La calidad del texto depende de fuentes locales (Segoe UI / system-ui), no de Google Fonts remotas.
+
 ## Evolución a SVG / PDF
 
 No implementarlos. Cuando existan:

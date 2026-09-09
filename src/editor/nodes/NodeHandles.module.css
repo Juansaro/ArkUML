@@ -28,3 +28,8 @@
 :global([data-testid="diagram-canvas"][data-show-handles="true"]) .handle {
   pointer-events: auto;
 }
+
+:global([data-testid="diagram-canvas"][data-exporting="true"]) .handle {
+  opacity: 0;
+  pointer-events: none;
+}

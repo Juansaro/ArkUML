@@ -44,3 +44,23 @@
 .flow :global(.react-flow__connectionline) {
   pointer-events: none;
 }
+
+.root[data-exporting="true"] :global(.react-flow__handle),
+.root[data-exporting="true"] :global(.react-flow__resize-control),
+.root[data-exporting="true"] :global(.react-flow__background),
+.root[data-exporting="true"] :global(.react-flow__controls),
+.root[data-exporting="true"] :global(.react-flow__attribution),
+.root[data-exporting="true"] :global(.react-flow__minimap),
+.root[data-exporting="true"] :global(.react-flow__selection),
+.root[data-exporting="true"] :global(.react-flow__nodesselection) {
+  visibility: hidden;
+}
+
+.root[data-exporting="true"] :global([data-selected="true"]) {
+  outline: none;
+}
+
+.root[data-exporting="true"] :global(.react-flow__edge.selected) path {
+  stroke: var(--color-fg);
+  stroke-width: 2;
+}

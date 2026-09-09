@@ -18,6 +18,7 @@ import {
   selectMessage,
   selectViewport,
 } from "../../store/selectors.ts";
+import { ExportDialog } from "../ExportDialog.tsx";
 import { Inspector } from "../Inspector/Inspector.tsx";
 import { NewDiagramDialog } from "../NewDiagramDialog.tsx";
 import { RecoveryDialog } from "../RecoveryDialog.tsx";
@@ -52,6 +53,7 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   const dialogMode = useEditorStore(selectDialogMode);
   const recoveryMessage = useEditorStore(selectMessage);
   const helpOpen = dialogMode === "help";
+  const exportOpen = dialogMode === "export";
   const newDiagramOpen = dialogMode === "new-diagram";
   const recoveryOpen = dialogMode === "recovery";
   const title = documentTitle ?? storeTitle;
@@ -118,6 +120,10 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
     store.getState().setDialogMode("none");
   }
 
+  function toggleExport() {
+    store.getState().setDialogMode(exportOpen ? "none" : "export");
+  }
+
   function resetInMemory() {
     store
       .getState()
@@ -160,10 +166,12 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
           paletteOpen={paletteOpen}
           inspectorOpen={inspectorOpen}
           helpOpen={helpOpen}
+          exportOpen={exportOpen}
           onTogglePalette={togglePalette}
           onToggleInspector={toggleInspector}
           onToggleHelp={toggleHelp}
           onNewDiagram={requestNewDiagram}
+          onExport={toggleExport}
         />
       </header>
       <div className={styles.narrowNotice} role="alert">
@@ -202,6 +210,11 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
       {helpOpen ? (
         <div id="editor-help">
           <HelpDialog titleId={helpTitleId} onClose={closeHelp} />
+        </div>
+      ) : null}
+      {exportOpen ? (
+        <div id="editor-export">
+          <ExportDialog onCancel={cancelDialog} />
         </div>
       ) : null}
       {newDiagramOpen ? (

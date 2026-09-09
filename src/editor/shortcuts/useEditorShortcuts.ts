@@ -26,6 +26,7 @@ export function useEditorShortcuts(options?: EditorShortcutOptions): void {
       const dialogMode = store.getState().ui.dialogMode;
       if (
         (dialogMode === "help" ||
+          dialogMode === "export" ||
           dialogMode === "new-diagram" ||
           dialogMode === "recovery") &&
         event.key === "Escape"

@@ -8,6 +8,12 @@ Editor web de diagramas UML. El MVP cubre únicamente **diagramas de casos de us
 - npm, con `package-lock.json` versionado.
 - Navegadores: Chrome/Edge actuales, Firefox actual, Safari `>=16.4`.
 
+## Exportación
+
+PNG (transparencia) y JPG (fondo blanco, calidad 0.92) a 1x o 2x. El archivo cubre el diagrama completo, no el viewport recortado. Techo: 4096 px por lado y 16 megapíxeles; si 2x no cabe, usar 1x.
+
+Safari/WebKit puede omitir de forma intermitente los `marker-end` SVG (flechas de include/extend). El resto del diagrama se rasteriza. Detalle en [rendering-and-export.md](docs/architecture/rendering-and-export.md).
+
 ## Scripts
 
 | Script                  | Descripción                                     |
