@@ -431,4 +431,117 @@ describe("Inspector", () => {
       "Asociación",
     );
   });
+
+  it("muestra la razón de asociación caso–caso y no crea la relación", async () => {
+    const user = userEvent.setup();
+    const store = createStore();
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Logout",
+        geometry: { ...USE_CASE_GEOMETRY, x: 280 },
+      }),
+    );
+    const login = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Login",
+      );
+    const logout = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Logout",
+      );
+    if (login === undefined || logout === undefined) {
+      throw new Error("Faltan casos de uso");
+    }
+    store.getState().setTool("association");
+    renderInspector(store);
+
+    await user.selectOptions(screen.getByLabelText("Origen"), login.id);
+
+    const reason = screen.getByTestId("connect-error");
+    expect(reason).toHaveTextContent(
+      /solo puede unir un actor y un caso de uso/i,
+    );
+    expect(screen.getByRole("button", { name: "Conectar" })).toBeDisabled();
+    expect(store.getState().ui.message).toMatch(
+      /solo puede unir un actor y un caso de uso/i,
+    );
+    expect(store.getState().document.relationships).toEqual([]);
+
+    await user.selectOptions(screen.getByLabelText("Destino"), logout.id);
+    expect(reason).toHaveTextContent(
+      /solo puede unir un actor y un caso de uso/i,
+    );
+    expect(screen.getByRole("button", { name: "Conectar" })).toBeDisabled();
+    expect(store.getState().document.relationships).toEqual([]);
+  });
+
+  it("muestra include reflexivo y conserva include válido", async () => {
+    const user = userEvent.setup();
+    const store = createStore();
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Logout",
+        geometry: { ...USE_CASE_GEOMETRY, x: 280 },
+      }),
+    );
+    const login = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Login",
+      );
+    const logout = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Logout",
+      );
+    if (login === undefined || logout === undefined) {
+      throw new Error("Faltan casos de uso");
+    }
+    store.getState().setTool("include");
+    renderInspector(store);
+
+    await user.selectOptions(
+      screen.getByLabelText("Origen (incluye)"),
+      login.id,
+    );
+    await user.selectOptions(
+      screen.getByLabelText("Destino (incluido)"),
+      login.id,
+    );
+
+    expect(screen.getByTestId("connect-error")).toHaveTextContent(
+      /no se permite una relación de un elemento consigo mismo/i,
+    );
+    expect(screen.getByRole("button", { name: "Conectar" })).toBeDisabled();
+    expect(store.getState().document.relationships).toEqual([]);
+
+    await user.selectOptions(
+      screen.getByLabelText("Destino (incluido)"),
+      logout.id,
+    );
+    expect(screen.queryByTestId("connect-error")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Conectar" }));
+
+    expect(store.getState().document.relationships).toHaveLength(1);
+    expect(store.getState().document.relationships[0]).toMatchObject({
+      kind: "include",
+      sourceId: login.id,
+      targetId: logout.id,
+    });
+    expect(store.getState().ui.message).toBe("Se creó include.");
+  });
 });

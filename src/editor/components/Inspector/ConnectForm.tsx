@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from "react";
+import { useEffect, useId, useState, type FormEvent } from "react";
 import { selectDocument } from "../../store/selectors.ts";
 import {
   useEditorStore,
@@ -6,9 +6,9 @@ import {
 } from "../../store/EditorStoreProvider.tsx";
 import {
   commitRelationship,
+  connectionRejectionMessage,
   connectableEndpointOptions,
   relationshipEndpointFieldLabels,
-  validRelationshipTargets,
   type RelationshipTool,
 } from "../../tools/relationshipTool.ts";
 import styles from "./Inspector.module.css";
@@ -22,21 +22,32 @@ export function ConnectForm({ kind }: ConnectFormProps) {
   const document = useEditorStore(selectDocument);
   const sourceFieldId = useId();
   const targetFieldId = useId();
+  const errorId = useId();
   const labels = relationshipEndpointFieldLabels(kind);
   const options = connectableEndpointOptions(document, kind);
   const [source, setSource] = useState("");
   const [target, setTarget] = useState("");
-  const targets =
-    source.length === 0
-      ? options
-      : validRelationshipTargets(document, kind, source, options);
-  const selectedTarget = targets.some((option) => option.id === target)
+  const selectedTarget = options.some((option) => option.id === target)
     ? target
     : "";
+  const rejection = connectionRejectionMessage(
+    document,
+    kind,
+    source,
+    selectedTarget,
+  );
+  const canSubmit =
+    source.length > 0 && selectedTarget.length > 0 && rejection === undefined;
+
+  useEffect(() => {
+    if (rejection !== undefined) {
+      store.getState().setMessage(rejection);
+    }
+  }, [rejection, store]);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (source.length === 0 || selectedTarget.length === 0) {
+    if (!canSubmit) {
       return;
     }
     commitRelationship(store, {
@@ -48,10 +59,12 @@ export function ConnectForm({ kind }: ConnectFormProps) {
     });
   }
 
-  const canSubmit = source.length > 0 && selectedTarget.length > 0;
-
   return (
-    <form className={styles.connect} onSubmit={onSubmit}>
+    <form
+      className={styles.connect}
+      onSubmit={onSubmit}
+      aria-describedby={rejection !== undefined ? errorId : undefined}
+    >
       <label className={styles.field} htmlFor={sourceFieldId}>
         <span className={styles.label}>{labels.source}</span>
         <select
@@ -59,6 +72,8 @@ export function ConnectForm({ kind }: ConnectFormProps) {
           className={styles.select}
           value={source}
           data-testid="connect-source"
+          aria-invalid={rejection !== undefined}
+          aria-describedby={rejection !== undefined ? errorId : undefined}
           onChange={(event) => {
             setSource(event.target.value);
           }}
@@ -78,18 +93,25 @@ export function ConnectForm({ kind }: ConnectFormProps) {
           className={styles.select}
           value={selectedTarget}
           data-testid="connect-target"
+          aria-invalid={rejection !== undefined && selectedTarget.length > 0}
+          aria-describedby={rejection !== undefined ? errorId : undefined}
           onChange={(event) => {
             setTarget(event.target.value);
           }}
         >
           <option value="">Elegir destino</option>
-          {targets.map((option) => (
+          {options.map((option) => (
             <option key={option.id} value={option.id}>
               {option.label}
             </option>
           ))}
         </select>
       </label>
+      {rejection !== undefined ? (
+        <p className={styles.error} id={errorId} data-testid="connect-error">
+          {rejection}
+        </p>
+      ) : null}
       <button
         type="submit"
         className={styles.connectSubmit}

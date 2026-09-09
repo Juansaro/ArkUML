@@ -78,3 +78,9 @@
 .connectSubmit {
   align-self: flex-start;
 }
+
+.error {
+  margin: 0;
+  color: var(--color-notice-fg);
+  font-size: var(--font-size-sm);
+}

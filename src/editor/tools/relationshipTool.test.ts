@@ -9,6 +9,7 @@ import {
   announceInvalidConnection,
   anchorFromHandle,
   commitRelationship,
+  connectionRejectionMessage,
   createdRelationshipAnnouncement,
   isRelationshipTool,
   isValidRelationshipConnection,
@@ -521,5 +522,120 @@ describe("connectableEndpointOptions", () => {
         association,
       ).map((option) => option.label),
     ).toEqual(["Caso de uso Login"]);
+  });
+});
+
+describe("connectionRejectionMessage", () => {
+  it("explica asociación caso–caso y no exige destino si no hay válido", () => {
+    const store = createStore();
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Logout",
+        geometry: { ...USE_CASE_GEOMETRY, x: 280 },
+      }),
+    );
+    const login = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Login",
+      );
+    const logout = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Logout",
+      );
+    if (login === undefined || logout === undefined) {
+      throw new Error("Faltan casos de uso");
+    }
+    const document = store.getState().document;
+    const fromDomain = previewConnection(document, {
+      kind: "association",
+      sourceId: login.id,
+      targetId: logout.id,
+    });
+    expect(fromDomain.ok).toBe(false);
+    if (fromDomain.ok) {
+      throw new Error("Expected invalid association");
+    }
+
+    expect(connectionRejectionMessage(document, "association", "", "")).toBe(
+      undefined,
+    );
+    expect(
+      connectionRejectionMessage(document, "association", login.id, ""),
+    ).toBe(fromDomain.error.message);
+    expect(
+      connectionRejectionMessage(document, "association", login.id, logout.id),
+    ).toBe(fromDomain.error.message);
+  });
+
+  it("devuelve la copy de include reflexivo o con actor", () => {
+    const store = createStore();
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    expectOk(
+      store.getState().createActor({
+        name: "Usuario",
+        geometry: ACTOR_GEOMETRY,
+      }),
+    );
+    const login = store
+      .getState()
+      .document.elements.find((element) => element.kind === "use-case");
+    const actor = store
+      .getState()
+      .document.elements.find((element) => element.kind === "actor");
+    if (login === undefined || actor === undefined) {
+      throw new Error("Faltan extremos");
+    }
+    const document = store.getState().document;
+    const self = previewConnection(document, {
+      kind: "include",
+      sourceId: login.id,
+      targetId: login.id,
+    });
+    const withActor = previewConnection(document, {
+      kind: "include",
+      sourceId: actor.id,
+      targetId: login.id,
+    });
+    expect(self.ok).toBe(false);
+    expect(withActor.ok).toBe(false);
+    if (self.ok || withActor.ok) {
+      throw new Error("Expected domain errors");
+    }
+
+    expect(
+      connectionRejectionMessage(document, "include", login.id, login.id),
+    ).toBe(self.error.message);
+    expect(
+      connectionRejectionMessage(document, "include", actor.id, login.id),
+    ).toBe(withActor.error.message);
+    expect(
+      connectionRejectionMessage(document, "extend", actor.id, login.id),
+    ).toBe(withActor.error.message);
+  });
+
+  it("no rechaza un par válido aunque el origen sea un caso de uso", () => {
+    const store = createStore();
+    const { actor, useCase } = seedActorAndUseCase(store);
+    const document = store.getState().document;
+
+    expect(
+      connectionRejectionMessage(document, "association", useCase.id, ""),
+    ).toBeUndefined();
+    expect(
+      connectionRejectionMessage(document, "association", useCase.id, actor.id),
+    ).toBeUndefined();
   });
 });

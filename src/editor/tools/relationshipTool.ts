@@ -123,6 +123,48 @@ export function validRelationshipTargets(
   );
 }
 
+export function connectionRejectionMessage(
+  document: DiagramDocument,
+  kind: RelationshipTool,
+  sourceId: string,
+  targetId: string,
+): string | undefined {
+  if (sourceId.length === 0) {
+    return undefined;
+  }
+
+  if (targetId.length > 0) {
+    return rejectionFromPreview(
+      previewConnection(document, {
+        kind,
+        sourceId,
+        targetId,
+      }),
+    );
+  }
+
+  const options = connectableEndpointOptions(document, kind);
+  if (validRelationshipTargets(document, kind, sourceId, options).length > 0) {
+    return undefined;
+  }
+
+  const probeId =
+    options.find((option) => option.id !== sourceId)?.id ?? sourceId;
+  return rejectionFromPreview(
+    previewConnection(document, {
+      kind,
+      sourceId,
+      targetId: probeId,
+    }),
+  );
+}
+
+function rejectionFromPreview(
+  preview: Result<{ sourceId: string; targetId: string }>,
+): string | undefined {
+  return preview.ok ? undefined : preview.error.message;
+}
+
 function isConnectableEndpoint(
   kind: RelationshipTool,
   element: DiagramElement,
