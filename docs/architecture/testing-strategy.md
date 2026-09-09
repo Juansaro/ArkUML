@@ -43,8 +43,8 @@ No perseguir 100 % de UI. Cubrir caminos de error de persistencia y exportación
 - Screenshots: viewport, fuentes y `deviceScaleFactor` fijos. Baselines en `e2e/**/__screenshots__/` **versionados**. Actualizar solo con inspección humana.
 - Trace, video y screenshot de fallo: solo `on-first-retry` / `retain-on-failure`. Salida en `test-results/` y `playwright-report/` **ignorados**.
 - Tags: `@smoke`, `@a11y`, `@export`, `@export-spike`, `@perf`.
-- Chromium: suite completa. Firefox/WebKit: `@smoke` y `@export-spike`.
-- CI y baselines visuales deben coincidir de SO; no mezclar capturas Windows locales con Linux CI sin política explícita. Hasta TASK-020, documentar el SO de los baselines.
+- Chromium: suite completa. Firefox/WebKit: `@smoke` y `@export-spike` (PNG 1x de producto; no hay página oculta de spike).
+- Baselines visuales: Windows, Chromium, `deviceScaleFactor` 1, Segoe UI, sufijo `-win32`. El job E2E de CI corre en `windows-latest` para coincidir. No generar ni comparar capturas Linux contra esos PNG.
 
 ## Unit / integration
 

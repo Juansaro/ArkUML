@@ -50,9 +50,11 @@ No usar `toDataURL` para el archivo final (memoria). No capturar la pantalla del
 
 ## Spike temprano
 
-TASK-008 instala React Flow **y** `html-to-image@1.11.11`, y ejecuta un spike E2E cross-browser (`@export-spike`) que rasteriza texto + nodo + marker SVG. Si Chromium, Firefox o WebKit fallan de forma material, se detiene el trabajo y se reabre [ADR-006](../decisions/ADR-006-export.md) **antes** de construir más UI. El diálogo de export de producto es TASK-016.
+TASK-008 instaló React Flow **y** `html-to-image@1.11.11`, y ejecutó un spike E2E cross-browser que rasterizaba texto + nodo + marker SVG. Si Chromium, Firefox o WebKit fallaban de forma material, se detenía el trabajo y se reabría [ADR-006](../decisions/ADR-006-export.md) **antes** de construir más UI.
 
-Resultado del spike (2026-09-07, Windows): Chromium y Firefox conservan rectángulo, texto y marker SVG de forma estable. WebKit conserva rectángulo y texto; el `marker-end` SVG es intermitente (aparece en algunas corridas y no en otras). El diagrama sigue siendo usable (no se reabre ADR-006). TASK-016 debe tratar los markers como riesgo en WebKit.
+Resultado del spike (2026-09-07, Windows): Chromium y Firefox conservan rectángulo, texto y marker SVG de forma estable. WebKit conserva rectángulo y texto; el `marker-end` SVG es intermitente (aparece en algunas corridas y no en otras). El diagrama sigue siendo usable (no se reabrió ADR-006).
+
+TASK-020 eliminó la página oculta `?export-spike`. El tag `@export-spike` cubre el PNG 1x de producto en Firefox/WebKit.
 
 ## Producto (TASK-016)
 
@@ -62,7 +64,7 @@ Límites de canvas: 4096 px por lado y 16 megapíxeles. Si 2x no cabe, la UI sug
 
 Limitaciones de navegador:
 
-- Safari/WebKit puede omitir de forma intermitente los `marker-end` SVG (flechas de include/extend), igual que el spike.
+- Safari/WebKit puede omitir de forma intermitente los `marker-end` SVG (flechas de include/extend).
 - El techo de tamaño es el del canvas del navegador; iOS suele ser más estricto (~4096).
 - La calidad del texto depende de fuentes locales (Segoe UI / system-ui), no de Google Fonts remotas.
 

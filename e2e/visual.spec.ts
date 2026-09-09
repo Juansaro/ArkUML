@@ -15,8 +15,8 @@ test.describe("diagrama de referencia", () => {
     colorScheme: "light",
   });
 
-  // Baselines: Windows 10 (build 26200), Chromium, deviceScaleFactor 1,
-  // fuente Segoe UI. No mezclar con capturas Linux de CI hasta TASK-020.
+  // Baselines: Windows (build 26200), Chromium, deviceScaleFactor 1,
+  // fuente Segoe UI. CI E2E corre en windows-latest para coincidir.
   test("captura el diagrama de referencia con viewport y fuentes fijos", async ({
     page,
   }) => {

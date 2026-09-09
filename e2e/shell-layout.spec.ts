@@ -73,8 +73,8 @@ for (const viewport of viewports) {
       colorScheme: "light",
     });
 
-    // Baselines: Windows 10 (build 26200), Chromium, deviceScaleFactor 1.
-    // No mezclar con capturas Linux de CI hasta la política de TASK-020.
+    // Baselines: Windows (build 26200), Chromium, deviceScaleFactor 1.
+    // CI E2E corre en windows-latest para coincidir.
     test(`captura el shell a ${viewport.width}×${viewport.height}`, async ({
       page,
     }) => {

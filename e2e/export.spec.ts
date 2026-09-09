@@ -9,30 +9,32 @@ const PNG_1X = { width: 704, height: 464 };
 const PNG_2X = { width: 1408, height: 928 };
 
 test.describe("exportación de producto", { tag: "@export" }, () => {
-  test("PNG 1x: firma, transparencia, tamaño y sin chrome de edición", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    const canvas = page.getByTestId("diagram-canvas");
-    await expect(canvas.getByText("Sistema")).toBeVisible();
-    await expect(
-      canvas.locator(".react-flow__resize-control").first(),
-    ).toBeVisible();
+  test(
+    "PNG 1x: firma, transparencia, tamaño y sin chrome de edición",
+    { tag: "@export-spike" },
+    async ({ page }) => {
+      await page.goto("/");
+      const canvas = page.getByTestId("diagram-canvas");
+      await expect(canvas.getByText("Sistema")).toBeVisible();
+      await expect(
+        canvas.locator(".react-flow__resize-control").first(),
+      ).toBeVisible();
 
-    const download = await downloadExport(page, { format: "png", scale: 1 });
-    expect(download.suggestedFilename()).toBe("Diagrama de casos de uso.png");
+      const download = await downloadExport(page, { format: "png", scale: 1 });
+      expect(download.suggestedFilename()).toBe("Diagrama de casos de uso.png");
 
-    const bytes = await fileBytes(download);
-    expect(bytes.subarray(0, 8).equals(PNG_SIGNATURE)).toBe(true);
-    expect(bytes.byteLength).toBeGreaterThan(32);
+      const bytes = await fileBytes(download);
+      expect(bytes.subarray(0, 8).equals(PNG_SIGNATURE)).toBe(true);
+      expect(bytes.byteLength).toBeGreaterThan(32);
 
-    const report = await inspectRaster(page, bytes, "image/png");
-    expect(report.width).toBe(PNG_1X.width);
-    expect(report.height).toBe(PNG_1X.height);
-    expect(report.opaqueCount).toBeGreaterThan(100);
-    expect(report.corners.every((pixel) => pixel.a < 16)).toBe(true);
-    expect(report.focusBlueCount).toBe(0);
-  });
+      const report = await inspectRaster(page, bytes, "image/png");
+      expect(report.width).toBe(PNG_1X.width);
+      expect(report.height).toBe(PNG_1X.height);
+      expect(report.opaqueCount).toBeGreaterThan(100);
+      expect(report.corners.every((pixel) => pixel.a < 16)).toBe(true);
+      expect(report.focusBlueCount).toBe(0);
+    },
+  );
 
   test("JPG 1x: firma JPEG, fondo opaco y mismas dimensiones CSS", async ({
     page,

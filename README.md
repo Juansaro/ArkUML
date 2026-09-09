@@ -2,11 +2,27 @@
 
 Editor web de diagramas UML. El MVP cubre únicamente **diagramas de casos de uso**, con edición visual, undo/redo, persistencia local y exportación a PNG/JPG.
 
+Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación.
+
 ## Requisitos
 
 - Node.js `>=24.15 <25` (LTS). `.nvmrc` fija la major `24`.
 - npm, con `package-lock.json` versionado.
 - Navegadores: Chrome/Edge actuales, Firefox actual, Safari `>=16.4`.
+
+## Cómo servir `dist/` (SPA estática)
+
+El `base` de Vite es `./`: los assets son relativos al `index.html`. Sirve la carpeta en la raíz de cualquier host estático simple (no hace falta un path de aplicación ni un fallback de router: hay una sola página).
+
+```bash
+npm ci
+npm run build
+npm run preview
+```
+
+`vite preview` escucha en `http://localhost:4173` por defecto. Cualquier servidor de archivos estáticos que sirva el contenido de `dist/` (por ejemplo el `index.html` en la raíz del sitio) también vale. No abras `dist/index.html` como `file://`: los módulos ES requieren HTTP.
+
+CI usa el mismo bundle: `npm run build` y después Playwright contra `vite preview`.
 
 ## Exportación
 
@@ -38,14 +54,46 @@ npm run check
 npm run test:e2e -- --project=chromium
 ```
 
+En CI (`.github/workflows/ci.yml`): `npm ci`, `npm run check`, `npm audit --audit-level=high` en Ubuntu; suite Playwright (Chromium completo, smokes Firefox/WebKit) en `windows-latest` contra `dist/`.
+
+## Limitaciones conocidas
+
+Alcance canónico: [mvp-spec.md](docs/product/mvp-spec.md). Números de rendimiento: [performance.md](docs/architecture/performance.md).
+
+- Un solo documento en `localStorage`. Sin cuentas, sync ni multi-archivo.
+- Un `SystemBoundary` como máximo. Sin generalization, notas, extension points ni otros tipos UML.
+- Pantalla objetivo `>=1024×720`. Entre 768 y 1023 px, paleta e inspector van en drawers. Por debajo de 768 px hay aviso; la edición no está soportada y el documento no se borra.
+- Chrome de la aplicación orientado a WCAG 2.2 AA. El lienzo de React Flow no se recorre como documento equivalente para lector de pantalla; los handles son ratón-first. Axe cubre el chrome y excluye `.react-flow`.
+- Safari/WebKit: las flechas de include/extend pueden faltar en el PNG/JPG de forma intermitente.
+- Baselines visuales versionados en Windows (Segoe UI). No compararlos con capturas Linux.
+- Sin virtualización del lienzo. El escenario 100/150 cumple presupuesto en la máquina de referencia; un perfil que lo incumpla se documenta antes de cambiar de motor.
+
+## Checklist manual (RC)
+
+Correr en Chrome o Edge actual, y repetir smokes en Firefox y Safari `>=16.4`.
+
+1. **Arranque:** abrir limpio; título, paleta, lienzo con boundary «Sistema», inspector y status «Guardado».
+2. **UX:** crear actor y caso de uso; association válida; include y extend; intento inválido muestra razón y no muta; mover, reparentar, redimensionar boundary, duplicar, borrar, undo/redo.
+3. **Viewport:** zoom, pan, fit; recargar conserva documento y vista; «Nuevo diagrama» cancelar/confirmar.
+4. **Export:** PNG 1x transparente y JPG 1x fondo blanco; PNG 2x; abrir los archivos en un visor; el zoom visible no cambia.
+5. **A11y:** tabulación por paleta, inspector y diálogos; foco visible; `aria-live` en crear/borrar/error de conexión/guardado; drawers operables a ~800 px; aviso bajo 768 px sin perder datos.
+6. **Teclado:** Delete, undo/redo, duplicar, F2, Escape, flechas, Ctrl/Cmd+0, Ctrl/Cmd+S.
+7. **Persistencia:** recarga tras editar; no hay pérdida silenciosa si el storage falla (edición en memoria sigue).
+
+## Licencias
+
+Dependencias de runtime (van en `dist/`): MIT (`react`, `react-dom`, `@xyflow/react`, `zustand`, `zod`, `html-to-image`). La atribución de React Flow permanece visible.
+
+Herramientas de test: `@axe-core/playwright` y `axe-core` son **MPL-2.0** (solo dev; no se empaquetan). El resto del toolchain es MIT, Apache-2.0, BlueOak-1.0.0 o MIT-0. No hay GPL/AGPL.
+
 ## Estado
 
-| Área                          | Estado                                                        |
-| ----------------------------- | ------------------------------------------------------------- |
-| Documentación y ADRs          | Completa                                                      |
-| Código de aplicación          | Scaffold Vite + React + TypeScript (TASK-001)                 |
-| Calidad / tests               | ESLint, Prettier, Vitest y smoke E2E Chromium (TASK-002)      |
-| Dependencias / `package.json` | Vite, React, TypeScript, ESLint, Prettier, Vitest, Playwright |
+| Área                          | Estado                                              |
+| ----------------------------- | --------------------------------------------------- |
+| Documentación y ADRs          | Completa (MVP de casos de uso)                      |
+| Código de aplicación          | Release candidate estático                          |
+| Calidad / tests               | `npm run check` + Playwright (CI en GitHub Actions) |
+| Dependencias / `package.json` | Lockfile versionado; `npm audit --audit-level=high` |
 
 ## Stack cerrado
 
@@ -71,11 +119,16 @@ Versiones de referencia verificadas el 2026-09-07. El detalle y las alternativas
 3. [Modelo de dominio](docs/architecture/domain-model.md)
 4. [Rendering y exportación](docs/architecture/rendering-and-export.md)
 5. [Estrategia de testing](docs/architecture/testing-strategy.md)
-6. [ADRs](docs/decisions/README.md)
-7. [Workflow para agentes](docs/development/agent-workflow.md)
-8. [Backlog](docs/tasks/README.md)
+6. [Rendimiento](docs/architecture/performance.md)
+7. [ADRs](docs/decisions/README.md)
+8. [Workflow para agentes](docs/development/agent-workflow.md)
+9. [Backlog](docs/tasks/README.md)
 
 Las reglas de Cursor viven en [`.cursor/rules/`](.cursor/rules/). No hay `AGENTS.md`: las Project Rules cubren el mismo rol sin duplicar instrucciones.
+
+## Después del MVP (no implementado)
+
+Siguientes pasos explícitamente **fuera** de este RC: generalization, IndexedDB / multi-documento, otros tipos de diagrama, PDF/SVG persistido, edición táctil, a11y avanzada del lienzo, hosting y analytics.
 
 ## Implementación
 
