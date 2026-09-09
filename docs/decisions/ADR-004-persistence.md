@@ -34,7 +34,7 @@ No persistir «nada» fue rechazado por UX. Guardar solo como descarga JSON obli
 
 ## Consequences
 
-- Límite ~5 MiB. Un diagrama 100/150 debe caber holgadamente; si se acerca a 1 MiB de forma habitual, migrar a IndexedDB.
+- Límite ~5 MiB. Un diagrama 100/150 debe caber holgadamente; si se acerca a 1 MiB de forma habitual, migrar a IndexedDB. Medido en TASK-029: ~95 KiB UTF-16 en 100/150; ver [performance.md](../architecture/performance.md).
 - Escrituras síncronas: solo al commit, no en el rAF del drag.
 - Multi-tab: último write gana; no hay sync. Aceptable para un solo usuario.
 - No hay lista de documentos.

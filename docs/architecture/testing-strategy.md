@@ -15,9 +15,16 @@ Pirámide estricta: la lógica UML vive en unit tests; el editor gráfico se pru
 
 ## Cobertura orientada a riesgo
 
-Objetivo en dominio (`src/domain`): `>=90 %` líneas y `>=85 %` ramas, medido en TASK-004/005.
+Objetivo en dominio (`src/domain`): `>=90 %` líneas y `>=85 %` ramas. Sigue vigente.
 
-No perseguir 100 % de UI. Cubrir caminos de error de persistencia y exportación.
+Medido 2026-09-09 (Vitest 5, coverage v8):
+
+| Comando | Líneas | Ramas |
+| --- | --- | --- |
+| `npx vitest run --coverage --coverage.include=src/domain/**` (suite unitaria completa) | 97.56 % | 96.69 % |
+| `npm run test:coverage -- src/domain` (solo tests de dominio; fila `domain/diagram`) | 97.56 % | 96.32 % |
+
+El resumen «All files» del segundo comando incluye `src/` entero con tests filtrados: no usarlo como cifra de dominio. `schema.ts` es el archivo más bajo (88.6 % líneas / 85.48 % ramas). No perseguir 100 % de UI. Cubrir caminos de error de persistencia y exportación.
 
 ## E2E críticos de release
 

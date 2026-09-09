@@ -2,7 +2,7 @@
 
 Editor web de diagramas UML. El MVP cubre únicamente **diagramas de casos de uso**, con edición visual, undo/redo, persistencia local y exportación a PNG/JPG.
 
-Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación. El código es **Open Source** bajo [Apache License 2.0](LICENSE). El checklist RC está firmado (TASK-026). La identidad (fase 9) no bloqueó ese RC; el ship de remediación (TASK-030) exige TASK-024 cerrada — ya lo está. Pendiente de TASK-030: evidencia de rendimiento (TASK-029) y el gate de salida.
+Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación. El código es **Open Source** bajo [Apache License 2.0](LICENSE). El checklist RC está firmado (TASK-026). La identidad (fase 9) no bloqueó ese RC; el ship de remediación (TASK-030) exige TASK-024 cerrada — ya lo está. Pendiente de TASK-030: el gate de salida. TASK-029 (evidencia de rendimiento) está hecha.
 
 ## Requisitos
 
@@ -26,9 +26,9 @@ CI usa el mismo bundle: `npm run build` y después Playwright contra `vite previ
 
 ## Exportación
 
-PNG (transparencia) y JPG (fondo blanco, calidad 0.92) a 1x o 2x. El archivo cubre el diagrama completo, no el viewport recortado. Techo: 4096 px por lado y 16 megapíxeles; si 2x no cabe, usar 1x.
+PNG (transparencia) y JPG (fondo blanco, calidad 0.92) a 1x o 2x. El archivo cubre el diagrama completo, no el viewport recortado. Techo: 4096 px por lado y 16 megapíxeles; si 2x no cabe, usar 1x. El estrés 200/300 a 2x no cabe; la UI sugiere 1x.
 
-Safari/WebKit puede omitir de forma intermitente los `marker-end` SVG (flechas de include/extend). El resto del diagrama se rasteriza. Detalle en [rendering-and-export.md](docs/architecture/rendering-and-export.md).
+Safari/WebKit puede omitir de forma intermitente los `marker-end` SVG (flechas de include/extend). Limitación de producto aceptada (TASK-029); no se reabrió ADR-006. El resto del diagrama se rasteriza. Detalle en [rendering-and-export.md](docs/architecture/rendering-and-export.md). Números: [performance.md](docs/architecture/performance.md).
 
 ## Scripts
 
@@ -65,9 +65,10 @@ Alcance canónico: [mvp-spec.md](docs/product/mvp-spec.md). Números de rendimie
 - Pantalla objetivo `>=1024×720`. Entre 768 y 1023 px, paleta e inspector van en drawers. Por debajo de 768 px hay aviso; la edición no está soportada y el documento no se borra.
 - Chrome de la aplicación orientado a WCAG 2.2 AA. El lienzo de React Flow no se recorre como documento equivalente para lector de pantalla; los handles son ratón-first. Axe cubre el chrome y excluye `.react-flow`. Chrome DevTools MCP no sustituye Playwright ni el ratón real para pan, reparent o resize: los nodos no son clicables vía árbol a11y.
 - El status de un workspace vacío arranca en «—»; «Guardado» aparece tras autosave o restore.
-- Safari/WebKit: las flechas de include/extend pueden faltar en el PNG/JPG de forma intermitente.
+- Safari/WebKit: las flechas de include/extend pueden faltar en el PNG/JPG de forma intermitente (limitación aceptada; ADR-006 no reabierto).
 - Baselines visuales versionados en Windows (Segoe UI). No compararlos con capturas Linux.
-- Sin virtualización del lienzo. El escenario 100/150 cumple presupuesto en la máquina de referencia; un perfil que lo incumpla se documenta antes de cambiar de motor.
+- Sin virtualización del lienzo. El escenario 100/150 cumple presupuesto en la máquina de referencia; un perfil que lo incumpla se documenta antes de cambiar de motor. Los umbrales `@perf` de CI no son SLO: ver [performance.md](docs/architecture/performance.md).
+- `interactionWidth` 24 px puede tapar nodos en hit-test de Playwright; el ratón real sobre el actor sigue seleccionando.
 
 ## Checklist manual (RC)
 

@@ -140,6 +140,53 @@ test.describe("presupuesto de rendimiento", { tag: "@perf" }, () => {
     await expect(node).toBeVisible();
     expect(pageErrors).toEqual([]);
   });
+
+  test("200/300: PNG 2x no cabe; 1x descarga", async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on("pageerror", (error) => {
+      if (error.message.includes("ResizeObserver loop")) {
+        return;
+      }
+      pageErrors.push(error.message);
+    });
+
+    await seedWorkspace(page, "perf-stress.json");
+    await page.goto("/");
+    await expect(page.getByText("Rendimiento 200/300")).toBeVisible();
+    await expect(page.locator(".react-flow__node")).toHaveCount(
+      STRESS_NODE_COUNT,
+    );
+
+    await page.getByRole("button", { name: "Exportar" }).click();
+    const dialog = page.getByRole("dialog", { name: "Exportar" });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("radio", { name: "PNG" }).click();
+    await dialog.getByRole("radio", { name: "2x" }).click();
+    await expect(dialog.getByTestId("export-dimensions")).toContainText(
+      "4864 × 6496 px",
+    );
+    await expect(dialog.getByRole("alert")).toContainText("Prueba 1x");
+    await expect(
+      dialog.getByRole("button", { name: "Descargar" }),
+    ).toBeDisabled();
+
+    await dialog.getByRole("radio", { name: "1x" }).click();
+    await expect(dialog.getByTestId("export-dimensions")).toContainText(
+      "2432 × 3248 px",
+    );
+
+    const exportStarted = Date.now();
+    const pending = page.waitForEvent("download");
+    await dialog.getByRole("button", { name: "Descargar" }).click();
+    const download = await pending;
+    const exportMs = Date.now() - exportStarted;
+    annotate(test.info(), "stress-export-1x-ms", exportMs);
+    const bytes = await downloadBytes(download);
+    expect(bytes.subarray(0, 8).equals(PNG_SIGNATURE)).toBe(true);
+    expect(bytes.byteLength).toBeGreaterThan(32);
+    expect(exportMs).toBeLessThan(60_000);
+    expect(pageErrors).toEqual([]);
+  });
 });
 
 async function dragFromCenter(

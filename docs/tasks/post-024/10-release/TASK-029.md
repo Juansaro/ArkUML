@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -87,15 +87,15 @@ aceptados con fecha y máquina.
 
 ## Criterios de aceptación
 
-- [ ] Export 2x 200/300 tiene número, degradación 1x justificada, o
+- [x] Export 2x 200/300 tiene número, degradación 1x justificada, o
       aceptación explícita de no medir.
-- [ ] Tamaño JSON/snapshot del objetivo publicado o aceptado como desconocido
+- [x] Tamaño JSON/snapshot del objetivo publicado o aceptado como desconocido
       con dueño.
-- [ ] Cobertura de dominio publicada o el objetivo retirado/ajustado.
-- [ ] Markers Safari: limitación de producto **o** ADR-006 reabierto (sin
+- [x] Cobertura de dominio publicada o el objetivo retirado/ajustado.
+- [x] Markers Safari: limitación de producto **o** ADR-006 reabierto (sin
       implementar).
-- [ ] CI perf ≠ SLO, escrito.
-- [ ] Índice y risk-register actualizados.
+- [x] CI perf ≠ SLO, escrito.
+- [x] Índice y risk-register actualizados.
 
 ## Tests
 
@@ -124,4 +124,41 @@ Riesgos técnicos con cifra o aceptación fechada; sin features nuevas.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-09. Criterios `[x]`. Máquina de referencia: Windows 11 25H2, Ryzen 7
+7800X3D, 32 GB, Playwright 1.63 Chromium (igual que TASK-019).
+
+Comandos realmente corridos:
+
+```bash
+npx vitest run src/test/performanceFixture.test.ts
+npx vitest run --coverage --coverage.include=src/domain/**
+npm run test:coverage -- src/domain
+npx playwright test --project=chromium --workers=1 e2e/performance.spec.ts
+npx prettier --check e2e/performance.spec.ts src/test/performanceFixture.test.ts
+```
+
+`npm run format:check` (repo entero) falla en 10 archivos de chrome/tooltips
+**fuera** de esta TASK; no se reformatearon (scope). Los archivos tocados
+aquí pasan Prettier.
+
+El grep de la TASK (`@perf|export`) se ajustó al spec de números:
+`e2e/performance.spec.ts` con `--workers=1`. El smoke paralelo
+(`npm run test:e2e -- --grep @perf --project=chromium`) no es SLO.
+
+Hallazgos:
+
+- 100/150 aislado: restore 397 ms, click 22 ms, drag p95 17 ms, PNG 2x
+  1915 ms. NFR-03/04 cumplen. No se activa C-PERF.
+- 200/300 PNG 2x: `4864 × 6496` (31.6 MP) supera 4096/16 MP. UI sugiere 1x.
+  PNG 1x `2432 × 3248` en 3280 ms.
+- Snapshot 100/150: 48646 B UTF-8 / ~95 KiB UTF-16; 200/300 ~191 KiB UTF-16.
+  Lejos de 1 MiB / cuota ~5 MiB. Historial 100× no se persiste.
+- `src/domain` (suite unitaria, `--coverage.include=src/domain/**`): 97.56 %
+  líneas / 96.69 % ramas. Objetivo `>=90 / >=85` se mantiene.
+- Markers Safari/WebKit: limitación de producto aceptada; ADR-006 no
+  reabierto. Pin `html-to-image@1.11.11` intacto.
+- CI `@perf` ≠ SLO: escrito en `performance.md`.
+- `interactionWidth` 24 px: Playwright vs ratón real, escrito.
+
+Índice post-024 → `Hecha`. R-01, R-02, R-03, R-05, R-08, R-15, P-06–P-08
+dispuestos. Sin features nuevas.

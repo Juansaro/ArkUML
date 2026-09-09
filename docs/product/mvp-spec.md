@@ -156,7 +156,7 @@ El handle de salida es el origen persistido. En el inspector, Include usa «Orig
 | NFR-08 | Build estático reproducible con `npm ci` y lockfile. |
 | NFR-09 | Una tarea por cambio. Documentación canónica, no duplicada. |
 
-Los tiempos de NFR-03 y NFR-04 son **objetivos de diseño**. Solo se convierten en hechos medidos en TASK-019.
+Los tiempos de NFR-03 y NFR-04 son **objetivos de diseño** del escenario 100/150. Los hechos medidos (máquina, aislado vs CI, y la degradación 2x→1x en 200/300) viven en `docs/architecture/performance.md`. Los umbrales `@perf` de CI no son esos objetivos.
 
 ## Accesibilidad (alcance honesto)
 

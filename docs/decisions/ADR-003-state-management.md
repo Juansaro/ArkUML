@@ -34,7 +34,7 @@ Zustand tiene poco boilerplate, selectores baratos y tests simples (store sin Re
 ## Consequences
 
 - Hay que mapear ida y vuelta en cada commit de geometría.
-- 100 snapshots copian el documento; el tamaño JSON esperado es pequeño. Si crece, TASK-019 lo medirá.
+- 100 snapshots copian el documento; el tamaño JSON esperado es pequeño. Medido en TASK-029: ver [performance.md](../architecture/performance.md).
 - Undo no restaura selección ni zoom (intencional).
 
 ## Rejected alternatives

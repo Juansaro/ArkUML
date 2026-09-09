@@ -31,7 +31,7 @@ TASK-024 tenga evidencia de cierre. TASK-031+ espera además el gate TASK-030.
 | 026 | [`10-release/TASK-026.md`](10-release/TASK-026.md) | Hecha | P0 | 024, 025 | 2026-09-09: checklist RC firmado post-identidad (Chrome 152 preview; Playwright Chromium/Firefox/WebKit). Safari nativo: desviación Windows → WebKit |
 | 027 | [`10-release/TASK-027.md`](10-release/TASK-027.md) | Hecha | P0 | 025 | 2026-09-09: Juan Sarmiento eligió Apache-2.0; `LICENSE` versionada |
 | 028 | [`10-release/TASK-028.md`](10-release/TASK-028.md) | Hecha | P0 | 025 | 2026-09-09: A-01–A-12 dispuestas; ADR-005 CI=preview; fase 9 no bloqueó RC 020 |
-| 029 | [`10-release/TASK-029.md`](10-release/TASK-029.md) | Lista | P1 | 025 | Evidencia técnica pendiente |
+| 029 | [`10-release/TASK-029.md`](10-release/TASK-029.md) | Hecha | P1 | 025 | 2026-09-09: export 200/300 2x no cabe (1x 3280 ms); JSON ~95 KiB UTF-16; dominio 97.56 %/96.69 %; markers Safari aceptados |
 | 030 | [`10-release/TASK-030.md`](10-release/TASK-030.md) | Lista | P0 | 026–029 | Gate de salida fase 10 |
 | 031 | [`11-governance/TASK-031.md`](11-governance/TASK-031.md) | Lista | P0 | 030 | Spec Post-MVP |
 | 032 | [`11-governance/TASK-032.md`](11-governance/TASK-032.md) | Lista | P0 | 031 | Evolución schema/storage |
@@ -85,9 +85,8 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-TASK-026, TASK-027 y TASK-028 están `Hecha`. Siguiente en paralelo:
+TASK-026–029 están `Hecha`. Siguiente:
 
-- [TASK-029](10-release/TASK-029.md) (evidencia técnica).
+- [TASK-030](10-release/TASK-030.md) (gate de salida fase 10).
 
-[TASK-030](10-release/TASK-030.md) espera 026–029. TASK-031+ espera el gate
-TASK-030.
+TASK-031+ espera el gate TASK-030.
