@@ -19,6 +19,7 @@ import {
   selectMessage,
   selectViewport,
 } from "../../store/selectors.ts";
+import { TooltipProvider } from "../common/Tooltip.tsx";
 import { ExportDialog } from "../ExportDialog.tsx";
 import { Inspector } from "../Inspector/Inspector.tsx";
 import { NewDiagramDialog } from "../NewDiagramDialog.tsx";
@@ -212,99 +213,101 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   }
 
   return (
-    <div className={styles.shell}>
-      <header className={styles.topbar}>
-        <TopBar
-          documentTitle={title}
-          paletteOpen={paletteOpen}
-          inspectorOpen={inspectorOpen}
-          helpOpen={helpOpen}
-          exportOpen={exportOpen}
-          onTogglePalette={togglePalette}
-          onToggleInspector={toggleInspector}
-          onToggleHelp={toggleHelp}
-          onNewDiagram={requestNewDiagram}
-          onExport={toggleExport}
-          paletteButtonRef={paletteButtonRef}
-          inspectorButtonRef={inspectorButtonRef}
-        />
-      </header>
-      <div className={styles.narrowNotice} role="alert">
-        Esta ventana es más estrecha que 768 px. La edición no está soportada;
-        el diagrama no se borra.
-      </div>
-      <nav
-        id="editor-palette"
-        ref={paletteRef}
-        className={`${styles.panel} ${styles.palette} ${paletteOpen ? styles.drawerOpen : ""}`}
-        aria-labelledby={paletteHeadingId}
-        aria-hidden={paletteHidden || undefined}
-        inert={paletteHidden || undefined}
-      >
-        <Palette headingId={paletteHeadingId} />
-      </nav>
-      <main className={styles.canvas} aria-labelledby={canvasHeadingId}>
-        <h2 id={canvasHeadingId} className={styles.canvasHeading}>
-          Lienzo
-        </h2>
-        <DiagramCanvas key={canvasNonce} onFitViewReady={registerFitView} />
-      </main>
-      <aside
-        id="editor-inspector"
-        ref={inspectorPanelRef}
-        className={`${styles.panel} ${styles.inspector} ${inspectorOpen ? styles.drawerOpen : ""}`}
-        aria-labelledby={inspectorHeadingId}
-        aria-hidden={inspectorHidden || undefined}
-        inert={inspectorHidden || undefined}
-      >
-        <Inspector headingId={inspectorHeadingId} />
-      </aside>
-      <div
-        className={styles.statusbar}
-        role="status"
-        aria-live="off"
-        aria-label="Estado del editor"
-      >
-        <StatusBar zoomPercent={zoom} />
-      </div>
-      <EditorLiveRegion />
-      {helpOpen ? (
-        <div id="editor-help">
-          <HelpDialog titleId={helpTitleId} onClose={closeHelp} />
+    <TooltipProvider>
+      <div className={styles.shell}>
+        <header className={styles.topbar}>
+          <TopBar
+            documentTitle={title}
+            paletteOpen={paletteOpen}
+            inspectorOpen={inspectorOpen}
+            helpOpen={helpOpen}
+            exportOpen={exportOpen}
+            onTogglePalette={togglePalette}
+            onToggleInspector={toggleInspector}
+            onToggleHelp={toggleHelp}
+            onNewDiagram={requestNewDiagram}
+            onExport={toggleExport}
+            paletteButtonRef={paletteButtonRef}
+            inspectorButtonRef={inspectorButtonRef}
+          />
+        </header>
+        <div className={styles.narrowNotice} role="alert">
+          Esta ventana es más estrecha que 768 px. La edición no está soportada;
+          el diagrama no se borra.
         </div>
-      ) : null}
-      {exportOpen ? (
-        <div id="editor-export">
-          <ExportDialog onCancel={cancelDialog} />
-        </div>
-      ) : null}
-      {newDiagramOpen ? (
-        <NewDiagramDialog
-          onCancel={cancelDialog}
-          onConfirm={() => {
-            void confirmNewWorkspace();
-          }}
-        />
-      ) : null}
-      {recoveryOpen ? (
-        <RecoveryDialog
-          message={recoveryMessage ?? "El documento guardado no es válido."}
-          onCancel={cancelDialog}
-          onConfirm={() => {
-            void confirmNewWorkspace();
-          }}
-        />
-      ) : null}
-      {drawerOpen ? (
-        <button
-          type="button"
-          className={styles.backdrop}
-          onClick={closeDrawers}
+        <nav
+          id="editor-palette"
+          ref={paletteRef}
+          className={`${styles.panel} ${styles.palette} ${paletteOpen ? styles.drawerOpen : ""}`}
+          aria-labelledby={paletteHeadingId}
+          aria-hidden={paletteHidden || undefined}
+          inert={paletteHidden || undefined}
         >
-          Cerrar paneles
-        </button>
-      ) : null}
-    </div>
+          <Palette headingId={paletteHeadingId} />
+        </nav>
+        <main className={styles.canvas} aria-labelledby={canvasHeadingId}>
+          <h2 id={canvasHeadingId} className={styles.canvasHeading}>
+            Lienzo
+          </h2>
+          <DiagramCanvas key={canvasNonce} onFitViewReady={registerFitView} />
+        </main>
+        <aside
+          id="editor-inspector"
+          ref={inspectorPanelRef}
+          className={`${styles.panel} ${styles.inspector} ${inspectorOpen ? styles.drawerOpen : ""}`}
+          aria-labelledby={inspectorHeadingId}
+          aria-hidden={inspectorHidden || undefined}
+          inert={inspectorHidden || undefined}
+        >
+          <Inspector headingId={inspectorHeadingId} />
+        </aside>
+        <div
+          className={styles.statusbar}
+          role="status"
+          aria-live="off"
+          aria-label="Estado del editor"
+        >
+          <StatusBar zoomPercent={zoom} />
+        </div>
+        <EditorLiveRegion />
+        {helpOpen ? (
+          <div id="editor-help">
+            <HelpDialog titleId={helpTitleId} onClose={closeHelp} />
+          </div>
+        ) : null}
+        {exportOpen ? (
+          <div id="editor-export">
+            <ExportDialog onCancel={cancelDialog} />
+          </div>
+        ) : null}
+        {newDiagramOpen ? (
+          <NewDiagramDialog
+            onCancel={cancelDialog}
+            onConfirm={() => {
+              void confirmNewWorkspace();
+            }}
+          />
+        ) : null}
+        {recoveryOpen ? (
+          <RecoveryDialog
+            message={recoveryMessage ?? "El documento guardado no es válido."}
+            onCancel={cancelDialog}
+            onConfirm={() => {
+              void confirmNewWorkspace();
+            }}
+          />
+        ) : null}
+        {drawerOpen ? (
+          <button
+            type="button"
+            className={styles.backdrop}
+            onClick={closeDrawers}
+          >
+            Cerrar paneles
+          </button>
+        ) : null}
+      </div>
+    </TooltipProvider>
   );
 }
 

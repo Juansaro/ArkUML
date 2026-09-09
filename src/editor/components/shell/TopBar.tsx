@@ -1,5 +1,7 @@
 import type { Ref } from "react";
 import { useShallow } from "zustand/react/shallow";
+import { Icon } from "../common/Icon.tsx";
+import { ToolButton } from "../common/ToolButton.tsx";
 import { selectCanRedo, selectCanUndo } from "../../store/selectors.ts";
 import {
   useEditorStore,
@@ -47,72 +49,93 @@ export function TopBar({
   return (
     <>
       <div className={styles.identity}>
-        <h1 className={styles.product}>ArkUML</h1>
+        <div className={styles.brand}>
+          <span className={styles.mark}>
+            <Icon name="mark" size={24} />
+          </span>
+          <h1 className={styles.product}>ArkUML</h1>
+        </div>
         <p className={styles.documentTitle}>{documentTitle}</p>
       </div>
       <p className={styles.help}>Editor de diagramas de casos de uso</p>
       <div className={styles.drawerToggles}>
-        <button
+        <ToolButton
           ref={paletteButtonRef}
-          type="button"
+          icon="palette"
+          label="Paleta"
+          description={paletteOpen ? "Cerrar paleta." : "Abrir paleta."}
+          placement="bottom"
           aria-expanded={paletteOpen}
           aria-controls="editor-palette"
           onClick={onTogglePalette}
-        >
-          Paleta
-        </button>
-        <button
+        />
+        <ToolButton
           ref={inspectorButtonRef}
-          type="button"
+          icon="inspector"
+          label="Inspector"
+          description={inspectorOpen ? "Cerrar inspector." : "Abrir inspector."}
+          placement="bottom"
           aria-expanded={inspectorOpen}
           aria-controls="editor-inspector"
           onClick={onToggleInspector}
-        >
-          Inspector
-        </button>
+        />
       </div>
       <div className={styles.actions}>
-        <button type="button" onClick={onNewDiagram}>
-          Nuevo
-        </button>
-        <button
-          type="button"
-          disabled={!canUndo}
-          title="Deshacer (Ctrl+Z)"
+        <ToolButton
+          icon="newDiagram"
+          label="Nuevo"
+          description="Crear un diagrama nuevo."
+          placement="bottom"
+          onClick={onNewDiagram}
+        />
+        <ToolButton
+          icon="undo"
+          label="Deshacer"
+          description={
+            canUndo
+              ? "Deshacer (Ctrl/Cmd+Z)."
+              : "Nada que deshacer (Ctrl/Cmd+Z)."
+          }
+          placement="bottom"
+          unavailable={!canUndo}
           onClick={() => {
             store.getState().undo();
           }}
-        >
-          Deshacer
-        </button>
-        <button
-          type="button"
-          disabled={!canRedo}
-          title="Rehacer (Ctrl+Y)"
+        />
+        <ToolButton
+          icon="redo"
+          label="Rehacer"
+          description={
+            canRedo
+              ? "Rehacer (Ctrl/Cmd+Shift+Z o Ctrl/Cmd+Y)."
+              : "Nada que rehacer (Ctrl/Cmd+Shift+Z o Ctrl/Cmd+Y)."
+          }
+          placement="bottom"
+          unavailable={!canRedo}
           onClick={() => {
             store.getState().redo();
           }}
-        >
-          Rehacer
-        </button>
-        <button
-          type="button"
+        />
+        <ToolButton
+          icon="export"
+          label="Exportar"
+          description="Exportar como PNG o JPG."
+          placement="bottom"
           aria-haspopup="dialog"
           aria-expanded={exportOpen}
           aria-controls={exportOpen ? "editor-export" : undefined}
           onClick={onExport}
-        >
-          Exportar
-        </button>
-        <button
-          type="button"
+        />
+        <ToolButton
+          icon="help"
+          label="Ayuda"
+          description="Ver ayuda y atajos."
+          placement="bottom"
           aria-haspopup="dialog"
           aria-expanded={helpOpen}
           aria-controls={helpOpen ? "editor-help" : undefined}
           onClick={onToggleHelp}
-        >
-          Ayuda
-        </button>
+        />
       </div>
     </>
   );

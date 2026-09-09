@@ -28,7 +28,7 @@ TASK-024 tenga evidencia de cierre. TASK-031+ espera además el gate TASK-030.
 | ID | Ruta | Estado | Prioridad | Depende | Evidencia / bloqueo |
 | --- | --- | --- | --- | --- | --- |
 | 025 | [`../TASK-025.md`](../TASK-025.md) | Hecha | P0 | 023 + contrato 024 | 2026-09-09: árbol, registro, roadmap y 026–033 |
-| 026 | [`10-release/TASK-026.md`](10-release/TASK-026.md) | Bloqueada | P0 | 024, 025 | 2026-09-09: stop — TASK-024 sin evidencia de cierre (contrato docs; chrome sin iconos/tooltips/favicon). No se firmó el checklist |
+| 026 | [`10-release/TASK-026.md`](10-release/TASK-026.md) | Lista | P0 | 024, 025 | 2026-09-09: desbloqueada — TASK-024 con evidencia de cierre (iconos/tooltips/favicon/baselines). Re-signoff pendiente |
 | 027 | [`10-release/TASK-027.md`](10-release/TASK-027.md) | Lista | P0 | 025 | La elección humana ocurre dentro del gate |
 | 028 | [`10-release/TASK-028.md`](10-release/TASK-028.md) | Lista | P0 | 025 | Reconciliación documental |
 | 029 | [`10-release/TASK-029.md`](10-release/TASK-029.md) | Lista | P1 | 025 | Evidencia técnica pendiente |
@@ -85,13 +85,12 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-Próximo contrato ejecutable: [TASK-024](../TASK-024.md) si aún no tiene
-evidencia de cierre (bloquea el re-signoff). En paralelo, tras este puente:
+Próximo contrato ejecutable: [TASK-026](10-release/TASK-026.md) (re-signoff RC
+post-identidad). En paralelo:
 
 - [TASK-027](10-release/TASK-027.md) (decisión humana de licencia);
 - [TASK-028](10-release/TASK-028.md) (reconciliación documental);
 - [TASK-029](10-release/TASK-029.md) (evidencia técnica).
 
-[TASK-026](10-release/TASK-026.md) está **Bloqueada** (2026-09-09): TASK-024 no
-tiene evidencia de cierre. El re-signoff no se finge. TASK-031+ espera el gate
+TASK-024 tiene evidencia de cierre (2026-09-09). TASK-031+ espera el gate
 TASK-030.

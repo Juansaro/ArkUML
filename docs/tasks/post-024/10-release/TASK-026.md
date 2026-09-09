@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Bloqueada
+Lista
 
 ## Objetivo
 
@@ -109,28 +109,6 @@ Checklist firmado post-identidad; limitaciones honestas; índice actualizado.
 
 ## Evidencia de cierre
 
-2026-09-09. Stop: «TASK-024 no tiene evidencia de cierre». No se recorrió ni
-firmó el checklist RC; no se implementó TASK-024 (fuera de alcance). Criterios
-de aceptación quedan `[ ]`.
-
-Comprobación de la dependencia (no es cierre de 024):
-
-- `c3b69d8` («Implementación fase 24») solo añade `brand-system.md`,
-  `TASK-023.md`, `TASK-024.md` y ajustes de spec/backlog. Cero archivos de
-  chrome, iconos, tooltip, favicon, tokens `--color-brand` o baselines.
-- `bb1a044` («Implementación fase 25») retoca README, `brand-system.md` y el
-  contrato 024; no entrega producto.
-- `index.html` no declara favicon. No existe `public/favicon.svg`.
-- No hay `Icon` / `Tooltip` / `ToolButton` ni `e2e/tooltips.spec.ts`.
-- `TopBar` y `Palette` siguen en botones de texto (p. ej. «Paleta», «Nuevo»);
-  el `h1` no acompaña isotipo.
-- TASK-024: criterios `[ ]`, sin «Evidencia de cierre». El registro P-03 ya
-  exigía ejecutar 024 antes de 026.
-
-Comandos de esta TASK (`build`, `preview`, E2E Chromium del grep) **no** se
-ejecutaron: el stop dispara antes del pase post-identidad. Safari no está en
-esta máquina Windows; queda irrelevante hasta desbloquear.
-
-Desbloqueo: un chat de TASK-024 con evidencia versionada (criterios `[x]`,
-comandos del contrato, marca/favicon/tooltips/baselines). Entonces reabrir
-esta TASK desde `Lista`.
+Pendiente. Re-signoff no ejecutado. Bloqueo de 2026-09-09 levantado el mismo
+día: TASK-024 tiene criterios `[x]` y evidencia de comandos, baselines y
+navegador. Reabrir este contrato desde `Lista`.

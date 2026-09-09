@@ -103,6 +103,7 @@ test.describe("accesibilidad", { tag: "@a11y" }, () => {
     await expect(palette).toBeInViewport();
     await expect(page.getByRole("button", { name: "Actor" })).toBeFocused();
     await page.keyboard.press("Escape");
+    await page.keyboard.press("Escape");
     await expect(paletteToggle).toBeFocused();
     await expect(
       page.getByRole("navigation", { name: "Paleta", includeHidden: true }),

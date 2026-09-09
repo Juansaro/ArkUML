@@ -11,6 +11,7 @@ import type {
 } from "../../domain/diagram/model.ts";
 import { createElement } from "../../domain/diagram/operations.ts";
 import { DiagramCanvas } from "../canvas/DiagramCanvas.tsx";
+import { TooltipProvider } from "../components/common/Tooltip.tsx";
 import { createEditorStore } from "../store/editorStore.ts";
 import { EditorStoreProvider } from "../store/EditorStoreProvider.tsx";
 
@@ -68,11 +69,13 @@ function renderNodes() {
   const document = createPopulatedDocument();
   const store = createEditorStore({ document });
   render(
-    <EditorStoreProvider store={store}>
-      <div style={{ width: 800, height: 600 }}>
-        <DiagramCanvas />
-      </div>
-    </EditorStoreProvider>,
+    <TooltipProvider>
+      <EditorStoreProvider store={store}>
+        <div style={{ width: 800, height: 600 }}>
+          <DiagramCanvas />
+        </div>
+      </EditorStoreProvider>
+    </TooltipProvider>,
   );
   return { document, store };
 }

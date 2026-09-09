@@ -34,13 +34,3 @@
   gap: var(--space-2);
   list-style: none;
 }
-
-.list button {
-  width: 100%;
-  text-align: start;
-}
-
-.list button[aria-pressed="true"] {
-  border-color: var(--color-focus);
-  background-color: var(--color-bg);
-}

@@ -1,0 +1,49 @@
+.button {
+  box-sizing: border-box;
+  margin: 0;
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+  line-height: 1.25;
+}
+
+.button:not([aria-disabled="true"]):hover {
+  background-color: var(--color-bg);
+  cursor: pointer;
+}
+
+.button[aria-pressed="true"] {
+  border-color: var(--color-brand);
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+}
+
+.button[aria-disabled="true"] {
+  cursor: not-allowed;
+  border-color: var(--color-control-border);
+  background-color: var(--color-surface);
+  color: var(--color-muted);
+  opacity: 1;
+}
+
+.icon {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.row {
+  display: flex;
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 8px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  text-align: start;
+}

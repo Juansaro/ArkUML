@@ -3,15 +3,16 @@ import {
   Background,
   BackgroundVariant,
   ConnectionLineType,
-  Controls,
   ReactFlow,
   SelectionMode,
   useReactFlow,
+  useViewport,
   type OnMoveEnd,
   type OnSelectionChangeFunc,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { mapDocumentToReactFlow } from "../adapters/reactFlowMapper.ts";
+import { ToolButton } from "../components/common/ToolButton.tsx";
 import { useElementRename } from "../interactions/useElementRename.ts";
 import { useNodeDrag } from "../interactions/useNodeDrag.ts";
 import {
@@ -30,6 +31,11 @@ import { isCreateElementTool } from "../tools/createElementTool.ts";
 import { edgeTypes } from "./edgeTypes.ts";
 import { nodeTypes } from "./nodeTypes.ts";
 import styles from "./DiagramCanvas.module.css";
+
+export const CANVAS_MIN_ZOOM = 0.5;
+export const CANVAS_MAX_ZOOM = 2;
+export const CANVAS_ZOOM_OPTIONS = { duration: 0 } as const;
+export const CANVAS_FIT_VIEW_OPTIONS = { padding: 0.2, duration: 0 } as const;
 
 const CANVAS_ARIA_LABELS = {
   "controls.ariaLabel": "Controles del lienzo",
@@ -194,11 +200,11 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
         connectOnClick={false}
         deleteKeyCode={null}
         disableKeyboardA11y
-        minZoom={0.5}
-        maxZoom={2}
+        minZoom={CANVAS_MIN_ZOOM}
+        maxZoom={CANVAS_MAX_ZOOM}
         colorMode="light"
         ariaLabelConfig={CANVAS_ARIA_LABELS}
-        fitViewOptions={{ padding: 0.2, duration: 0 }}
+        fitViewOptions={CANVAS_FIT_VIEW_OPTIONS}
         className={styles.flow}
       >
         <Background
@@ -208,11 +214,7 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
           color="var(--color-grid)"
           bgColor="var(--color-canvas)"
         />
-        <Controls
-          showInteractive={false}
-          aria-label="Controles del lienzo"
-          fitViewOptions={{ padding: 0.2, duration: 0 }}
-        />
+        <CanvasViewportControls />
         {onFitViewReady !== undefined ? (
           <FitViewRegistration onReady={onFitViewReady} />
         ) : null}
@@ -238,9 +240,56 @@ function FitViewRegistration({
 
   useEffect(() => {
     onReady(() => {
-      void fitView({ padding: 0.2, duration: 0 });
+      void fitView(CANVAS_FIT_VIEW_OPTIONS);
     });
   }, [fitView, onReady]);
 
   return null;
+}
+
+function CanvasViewportControls() {
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
+  const { zoom } = useViewport();
+  const atMax = zoom >= CANVAS_MAX_ZOOM;
+  const atMin = zoom <= CANVAS_MIN_ZOOM;
+
+  return (
+    <div
+      className={`react-flow__controls ${styles.viewportControls}`}
+      role="group"
+      aria-label="Controles del lienzo"
+    >
+      <ToolButton
+        icon="zoomIn"
+        label="Acercar"
+        description={
+          atMax ? "El zoom ya está en el máximo (200%)." : "Acercar."
+        }
+        placement="left"
+        unavailable={atMax}
+        onClick={() => {
+          void zoomIn(CANVAS_ZOOM_OPTIONS);
+        }}
+      />
+      <ToolButton
+        icon="zoomOut"
+        label="Alejar"
+        description={atMin ? "El zoom ya está en el mínimo (50%)." : "Alejar."}
+        placement="left"
+        unavailable={atMin}
+        onClick={() => {
+          void zoomOut(CANVAS_ZOOM_OPTIONS);
+        }}
+      />
+      <ToolButton
+        icon="fitView"
+        label="Ajustar vista"
+        description="Ajustar todo el diagrama (Ctrl/Cmd+0)."
+        placement="left"
+        onClick={() => {
+          void fitView(CANVAS_FIT_VIEW_OPTIONS);
+        }}
+      />
+    </div>
+  );
 }

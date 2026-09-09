@@ -134,23 +134,23 @@ accesibles y flujos keyboard-only actuales están cubiertos por RTL/Playwright.
 
 ## Criterios de aceptación
 
-- [ ] La firma ArkUML y el favicon siguen las variantes y mínimos del contrato.
-- [ ] Top bar, paleta y zoom cubren toda la matriz de iconos; no hay SVG sin
+- [x] La firma ArkUML y el favicon siguen las variantes y mínimos del contrato.
+- [x] Top bar, paleta y zoom cubren toda la matriz de iconos; no hay SVG sin
       nombre de control asociado.
-- [ ] Los tooltips abren por hover/foco, respetan 400 ms solo para pointer,
+- [x] Los tooltips abren por hover/foco, respetan 400 ms solo para pointer,
       hideDelay 100 ms, permanecen hoverables, cierran con Escape y nunca hay
       más de uno visible.
-- [ ] Tooltip y trigger permanecen dentro del viewport en 768×720, 1024×720,
+- [x] Tooltip y trigger permanecen dentro del viewport en 768×720, 1024×720,
       1440×900 y 1920×1080.
-- [ ] Undo/redo y boundary indisponibles explican el motivo y no mutan.
-- [ ] `aria-pressed`, diálogos, drawers, creación, undo/redo, export y ayuda
+- [x] Undo/redo y boundary indisponibles explican el motivo y no mutan.
+- [x] `aria-pressed`, diálogos, drawers, creación, undo/redo, export y ayuda
       conservan su comportamiento.
-- [ ] Zoom in/out/fit mantiene límites, padding y ausencia de historial.
-- [ ] Include y Extend se distinguen sin color; la notación del diagrama y la
+- [x] Zoom in/out/fit mantiene límites, padding y ausencia de historial.
+- [x] Include y Extend se distinguen sin color; la notación del diagrama y la
       exportación no cambian.
-- [ ] Axe no reporta violaciones critical/serious en estados cubiertos y el
+- [x] Axe no reporta violaciones critical/serious en estados cubiertos y el
       recorrido keyboard-only sigue verde.
-- [ ] Baselines Windows revisados a los tres viewports desktop.
+- [x] Baselines Windows revisados a los tres viewports desktop.
 
 ## Tests
 
@@ -190,3 +190,16 @@ npm run check
 Marca, favicon, iconos y tooltip implementados conforme a `brand-system.md`;
 flujos existentes y a11y verificados en tests y navegador; baselines revisados;
 `npm run check` verde; sin cambios de dependencia, dominio ni notación UML.
+
+## Evidencia de cierre
+
+2026-09-09. Criterios `[x]`. Producto: isotipo 24 px + wordmark, favicon SVG,
+`Icon`/`Tooltip`/`ToolButton`, paleta con etiquetas visibles, controles de
+lienzo propios (clase `.react-flow__controls`), tokens de marca. Comandos:
+`npm run test -- src/editor/components/common src/editor/components/shell src/editor/canvas/DiagramCanvas.test.tsx`;
+`npm run test:e2e -- e2e/shell-layout.spec.ts e2e/accessibility.spec.ts e2e/tooltips.spec.ts --project=chromium`
+(17 pass); `npm run check` (258 tests + build). Baselines
+`shell-{1024x720,1440x900,1920x1080}-chromium-win32.png` actualizados (chrome
+de top bar, paleta y controles; notación UML del lienzo intacta). Navegador:
+`vite preview` en `:4173`, 1024×720 (Nuevo, Exportar, Ayuda, Actor, Acercar),
+drawers a 768×720, layout a DPR 2.

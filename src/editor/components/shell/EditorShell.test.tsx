@@ -60,6 +60,10 @@ describe("EditorShell", () => {
     expect(
       screen.getByText("Editor de diagramas de casos de uso"),
     ).toBeInTheDocument();
+    const mark = screen
+      .getByRole("banner")
+      .querySelector("svg[aria-hidden='true']");
+    expect(mark).not.toBeNull();
   });
 
   it("activa las herramientas de elemento y de relación", async () => {
@@ -76,25 +80,31 @@ describe("EditorShell", () => {
     expect(actor).not.toHaveAttribute("aria-disabled", "true");
     expect(useCase).not.toHaveAttribute("aria-disabled", "true");
     expect(boundary).toHaveAttribute("aria-disabled", "true");
-    expect(boundary).toHaveAttribute(
-      "title",
-      "Ya existe un límite del sistema. El documento admite uno solo.",
-    );
+    expect(boundary).not.toHaveAttribute("disabled");
     expect(association).not.toHaveAttribute("aria-disabled", "true");
     expect(include).not.toHaveAttribute("aria-disabled", "true");
     expect(extend).not.toHaveAttribute("aria-disabled", "true");
-    expect(include).toHaveAttribute(
-      "title",
+
+    await user.click(boundary);
+    expect(screen.getByTestId("editor-tooltip")).toHaveTextContent(
+      "Ya existe un límite del sistema. El documento admite uno solo.",
+    );
+    await user.keyboard("{Escape}");
+    await user.click(include);
+    expect(screen.getByTestId("editor-tooltip")).toHaveTextContent(
       "Origen: caso que incluye. Destino: caso incluido. Arrastra del origen al destino; el sentido no se invierte.",
     );
-    expect(extend).toHaveAttribute(
-      "title",
+    await user.keyboard("{Escape}");
+    await user.click(extend);
+    expect(screen.getByTestId("editor-tooltip")).toHaveTextContent(
       "Origen: caso que extiende. Destino: caso base. Arrastra del origen al destino; el sentido no se invierte.",
     );
+    await user.keyboard("{Escape}");
 
     await user.click(actor);
     expect(actor).toHaveAttribute("aria-pressed", "true");
 
+    await user.keyboard("{Escape}");
     await user.keyboard("{Escape}");
     expect(actor).toHaveAttribute("aria-pressed", "false");
 
@@ -102,6 +112,7 @@ describe("EditorShell", () => {
       const button = screen.getByRole("button", { name: tool.label });
       await user.click(button);
       expect(button).toHaveAttribute("aria-pressed", "true");
+      await user.keyboard("{Escape}");
       await user.keyboard("{Escape}");
       expect(button).toHaveAttribute("aria-pressed", "false");
     }
@@ -170,8 +181,10 @@ describe("EditorShell", () => {
 
     const undo = screen.getByRole("button", { name: "Deshacer" });
     const redo = screen.getByRole("button", { name: "Rehacer" });
-    expect(undo).toBeDisabled();
-    expect(redo).toBeDisabled();
+    expect(undo).toHaveAttribute("aria-disabled", "true");
+    expect(redo).toHaveAttribute("aria-disabled", "true");
+    expect(undo).not.toHaveAttribute("disabled");
+    expect(redo).not.toHaveAttribute("disabled");
 
     act(() => {
       expectOk(
@@ -180,8 +193,8 @@ describe("EditorShell", () => {
           .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
       );
     });
-    expect(undo).toBeEnabled();
-    expect(redo).toBeDisabled();
+    expect(undo).not.toHaveAttribute("aria-disabled");
+    expect(redo).toHaveAttribute("aria-disabled", "true");
 
     await user.click(undo);
     expect(
@@ -189,8 +202,8 @@ describe("EditorShell", () => {
         .getState()
         .document.elements.some((element) => element.kind === "actor"),
     ).toBe(false);
-    expect(undo).toBeDisabled();
-    expect(redo).toBeEnabled();
+    expect(undo).toHaveAttribute("aria-disabled", "true");
+    expect(redo).not.toHaveAttribute("aria-disabled");
 
     await user.click(redo);
     expect(
@@ -266,6 +279,7 @@ describe("EditorShell", () => {
     expect(toggle).toHaveAttribute("aria-expanded", "true");
 
     await user.keyboard("{Escape}");
+    await user.keyboard("{Escape}");
     expect(toggle).toHaveAttribute("aria-expanded", "false");
   });
 
@@ -332,7 +346,10 @@ describe("EditorShell", () => {
         ?.name,
     ).toBe("Sistema");
     expect(store.getState().history.past).toHaveLength(0);
-    expect(screen.getByRole("button", { name: "Deshacer" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Deshacer" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
   });
 
   it("devuelve el foco al control que abrió el diálogo", async () => {

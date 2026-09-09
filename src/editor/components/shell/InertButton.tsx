@@ -1,30 +1,21 @@
-import type { KeyboardEvent, MouseEvent } from "react";
+import { ToolButton } from "../common/ToolButton.tsx";
+import type { IconName } from "../common/icons.tsx";
 
 type InertButtonProps = {
   children: string;
   reason: string;
+  icon: IconName;
 };
 
-export function InertButton({ children, reason }: InertButtonProps) {
-  function preventActivation(
-    event: MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>,
-  ) {
-    if ("key" in event && event.key !== "Enter" && event.key !== " ") {
-      return;
-    }
-
-    event.preventDefault();
-  }
-
+export function InertButton({ children, reason, icon }: InertButtonProps) {
   return (
-    <button
-      type="button"
-      aria-disabled="true"
-      title={reason}
-      onClick={preventActivation}
-      onKeyDown={preventActivation}
-    >
-      {children}
-    </button>
+    <ToolButton
+      variant="row"
+      icon={icon}
+      label={children}
+      description={reason}
+      placement="right"
+      unavailable
+    />
   );
 }
