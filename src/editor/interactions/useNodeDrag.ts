@@ -1,10 +1,12 @@
 import { useCallback } from "react";
 import type {
+  NodeChange,
   OnNodeDrag,
   OnNodesChange,
   SelectionDragHandler,
 } from "@xyflow/react";
 import type { DiagramNode } from "../adapters/reactFlowMapper.ts";
+import type { EditorStoreApi } from "../store/editorStore.ts";
 import { useEditorStoreApi } from "../store/EditorStoreProvider.tsx";
 import { isBoundaryResizing } from "./boundaryResize.ts";
 import {
@@ -57,6 +59,7 @@ export function useNodeDrag() {
 
   const onNodesChange = useCallback<OnNodesChange<DiagramNode>>(
     (changes) => {
+      applyNodeSelectionChanges(store, changes);
       if (isBoundaryResizing(store)) {
         return;
       }
@@ -105,4 +108,47 @@ export function useNodeDrag() {
     onSelectionDragStop,
     onNodesChange,
   };
+}
+
+function applyNodeSelectionChanges(
+  store: EditorStoreApi,
+  changes: readonly NodeChange<DiagramNode>[],
+): void {
+  let mutated = false;
+  const elementIds = new Set(store.getState().selection.elementIds);
+
+  for (const change of changes) {
+    if (change.type !== "select") {
+      continue;
+    }
+    mutated = true;
+    if (change.selected) {
+      elementIds.add(change.id);
+    } else {
+      elementIds.delete(change.id);
+    }
+  }
+
+  if (!mutated) {
+    return;
+  }
+
+  const next = [...elementIds];
+  const current = store.getState().selection;
+  if (sameIds(current.elementIds, next)) {
+    return;
+  }
+
+  store.getState().setSelection({
+    elementIds: next,
+    relationshipIds: current.relationshipIds,
+  });
+}
+
+function sameIds(left: readonly string[], right: readonly string[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+  const rightSet = new Set(right);
+  return left.every((id) => rightSet.has(id));
 }

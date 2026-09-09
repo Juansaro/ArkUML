@@ -122,11 +122,11 @@ No persistido: selección, historial, herramienta, hover, mensajes.
 ```text
 docs/
   product/mvp-spec.md
-  architecture/{architecture,domain-model,rendering-and-export,testing-strategy}.md
+  architecture/{architecture,domain-model,rendering-and-export,testing-strategy,performance}.md
   decisions/ADR-001 … ADR-006
   development/{agent-workflow,task-template}.md
   tasks/TASK-001 … TASK-020
 .cursor/rules/{00-core,domain,testing}.mdc
 ```
 
-`performance.md` se crea en TASK-019 si hace falta registrar números. `accessibility.md` solo si TASK-017 no cabe en mvp-spec.
+`performance.md` registra los números de TASK-019. `accessibility.md` solo si TASK-017 no cabe en mvp-spec.

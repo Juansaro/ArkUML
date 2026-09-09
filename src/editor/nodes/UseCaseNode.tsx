@@ -23,7 +23,12 @@ function UseCaseNodeView({
       style={{ width, height }}
     >
       <div className={styles.ellipse} data-testid="use-case-ellipse">
-        <InlineNameEditor id={id} name={data.name} className={styles.name} />
+        <InlineNameEditor
+          id={id}
+          name={data.name}
+          className={styles.name}
+          editing={data.editing === true}
+        />
       </div>
       <NodeHandles />
     </div>

@@ -33,7 +33,12 @@ function ActorNodeView({
         <line x1="24" y1="42" x2="12" y2="66" />
         <line x1="24" y1="42" x2="36" y2="66" />
       </svg>
-      <InlineNameEditor id={id} name={data.name} className={styles.name} />
+      <InlineNameEditor
+        id={id}
+        name={data.name}
+        className={styles.name}
+        editing={data.editing === true}
+      />
       <NodeHandles />
     </div>
   );

@@ -1,22 +1,20 @@
 import { ElementNameField } from "../interactions/ElementNameField.tsx";
-import {
-  useEditorStore,
-  useEditorStoreApi,
-} from "../store/EditorStoreProvider.tsx";
+import { useEditorStoreApi } from "../store/EditorStoreProvider.tsx";
 
 type InlineNameEditorProps = {
   id: string;
   name: string;
   className: string | undefined;
+  editing: boolean;
 };
 
 export function InlineNameEditor({
   id,
   name,
   className,
+  editing,
 }: InlineNameEditorProps) {
   const store = useEditorStoreApi();
-  const editing = useEditorStore((state) => state.ui.editingElementId === id);
 
   if (!editing) {
     return (

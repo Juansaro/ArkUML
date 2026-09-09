@@ -48,6 +48,16 @@ export function selectSelectedElementIds(
   return state.selection.elementIds;
 }
 
+export function selectSelectedRelationshipIds(
+  state: EditorStore,
+): readonly string[] {
+  return state.selection.relationshipIds;
+}
+
+export function selectEditingElementId(state: EditorStore): string | undefined {
+  return state.ui.editingElementId;
+}
+
 export function selectTool(state: EditorStore): EditorTool {
   return state.tool;
 }

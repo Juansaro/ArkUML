@@ -8,4 +8,5 @@ node_modules
 package-lock.json
 *.tsbuildinfo
 docs
+e2e/fixtures/*.json
 .cursor

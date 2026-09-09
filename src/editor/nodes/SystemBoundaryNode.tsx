@@ -38,7 +38,12 @@ function SystemBoundaryNodeView({
         onResizeEnd={resize.onResizeEnd}
       />
       <div className={styles.rect} data-testid="system-boundary-rect">
-        <InlineNameEditor id={id} name={data.name} className={styles.name} />
+        <InlineNameEditor
+          id={id}
+          name={data.name}
+          className={styles.name}
+          editing={data.editing === true}
+        />
       </div>
       <NodeHandles />
     </div>

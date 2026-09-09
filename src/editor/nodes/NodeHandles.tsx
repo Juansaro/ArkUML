@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
 import styles from "./NodeHandles.module.css";
 
@@ -13,7 +14,7 @@ const HANDLE_POSITIONS: ReadonlyArray<{
 
 export const handleHostClassName = styles.host;
 
-export function NodeHandles() {
+function NodeHandlesView() {
   return (
     <>
       {HANDLE_POSITIONS.map((handle) => (
@@ -41,3 +42,5 @@ export function NodeHandles() {
     </>
   );
 }
+
+export const NodeHandles = memo(NodeHandlesView);

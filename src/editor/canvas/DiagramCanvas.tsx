@@ -14,7 +14,12 @@ import "@xyflow/react/dist/style.css";
 import { mapDocumentToReactFlow } from "../adapters/reactFlowMapper.ts";
 import { useElementRename } from "../interactions/useElementRename.ts";
 import { useNodeDrag } from "../interactions/useNodeDrag.ts";
-import { selectDocument, selectSelection } from "../store/selectors.ts";
+import {
+  selectDocument,
+  selectEditingElementId,
+  selectSelectedElementIds,
+  selectSelectedRelationshipIds,
+} from "../store/selectors.ts";
 import {
   useEditorStore,
   useEditorStoreApi,
@@ -40,7 +45,9 @@ type DiagramCanvasProps = {
 export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
   const store = useEditorStoreApi();
   const document = useEditorStore(selectDocument);
-  const selection = useEditorStore(selectSelection);
+  const elementIds = useEditorStore(selectSelectedElementIds);
+  const relationshipIds = useEditorStore(selectSelectedRelationshipIds);
+  const editingElementId = useEditorStore(selectEditingElementId);
   const {
     canvasRef,
     placing,
@@ -61,14 +68,25 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
   const [defaultViewport] = useState(() => store.getState().viewport);
   const ignoreSelectionAfterPaneClick = useRef(false);
   const { nodes, edges } = useMemo(
-    () => mapDocumentToReactFlow(document, selection),
-    [document, selection],
+    () =>
+      mapDocumentToReactFlow(
+        document,
+        { elementIds, relationshipIds },
+        editingElementId,
+      ),
+    [document, editingElementId, elementIds, relationshipIds],
   );
 
   const onPaneClick = useCallback(
     (event: Parameters<typeof createToolPaneClick>[0]) => {
       if (isCreateElementTool(store.getState().tool)) {
         createToolPaneClick(event);
+        return;
+      }
+      if (
+        event.target instanceof Element &&
+        event.target.closest(".react-flow__node") !== null
+      ) {
         return;
       }
       ignoreSelectionAfterPaneClick.current = true;
@@ -114,6 +132,13 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
       if (
         sameIds(current.elementIds, elementIds) &&
         sameIds(current.relationshipIds, relationshipIds)
+      ) {
+        return;
+      }
+      if (
+        elementIds.length === 0 &&
+        relationshipIds.length === 0 &&
+        (current.elementIds.length > 0 || current.relationshipIds.length > 0)
       ) {
         return;
       }

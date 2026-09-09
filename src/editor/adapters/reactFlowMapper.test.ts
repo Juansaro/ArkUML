@@ -7,7 +7,9 @@ import type { DiagramDocument, Geometry } from "../../domain/diagram/model.ts";
 import {
   createElement,
   createRelationship,
+  moveElements,
 } from "../../domain/diagram/operations.ts";
+import { createPerformanceDocument } from "../../test/performanceFixture.ts";
 import { mapDocumentToReactFlow } from "./reactFlowMapper.ts";
 
 function sequentialIds(start = 1): IdFactory {
@@ -246,5 +248,87 @@ describe("mapDocumentToReactFlow", () => {
       targetHandle: "right",
       selected: false,
     });
+  });
+
+  it("reutiliza nodos y edges no afectados al mover o seleccionar", () => {
+    const empty = createDocument();
+    const boundary = boundaryOf(empty);
+    const deps = { createId: sequentialIds(30), now: () => CREATED_AT };
+    const withActor = expectOk(
+      createElement(
+        empty,
+        { kind: "actor", name: "Usuario", geometry: ACTOR_GEOMETRY },
+        deps,
+      ),
+    );
+    const withUseCase = expectOk(
+      createElement(
+        withActor,
+        {
+          kind: "use-case",
+          name: "Login",
+          geometry: USE_CASE_GEOMETRY,
+          parentId: boundary.id,
+        },
+        deps,
+      ),
+    );
+    const actor = withUseCase.elements.find(
+      (element) => element.kind === "actor",
+    );
+    const login = withUseCase.elements.find(
+      (element) => element.kind === "use-case",
+    );
+    if (actor === undefined || login === undefined) {
+      throw new Error("Faltan actor o caso de uso");
+    }
+    const document = expectOk(
+      createRelationship(
+        withUseCase,
+        {
+          kind: "association",
+          sourceId: actor.id,
+          targetId: login.id,
+          sourceAnchor: "right",
+          targetAnchor: "left",
+        },
+        deps,
+      ),
+    );
+
+    const baseline = mapDocumentToReactFlow(document);
+    const selected = mapDocumentToReactFlow(document, {
+      elementIds: [actor.id],
+      relationshipIds: [],
+    });
+    const actorNode = baseline.nodes.find((node) => node.id === actor.id);
+    const loginNode = baseline.nodes.find((node) => node.id === login.id);
+    const selectedActor = selected.nodes.find((node) => node.id === actor.id);
+    const selectedLogin = selected.nodes.find((node) => node.id === login.id);
+
+    expect(selectedLogin).toBe(loginNode);
+    expect(selectedActor).not.toBe(actorNode);
+    expect(selectedActor?.selected).toBe(true);
+    expect(selectedActor?.ariaLabel).toBe("Actor Usuario, seleccionado");
+
+    const moved = expectOk(
+      moveElements(document, [{ id: actor.id, x: 12, y: 24 }], deps),
+    );
+    const afterMove = mapDocumentToReactFlow(moved);
+    expect(afterMove.nodes.find((node) => node.id === login.id)).toBe(
+      loginNode,
+    );
+    expect(afterMove.nodes.find((node) => node.id === actor.id)).not.toBe(
+      actorNode,
+    );
+    expect(afterMove.edges[0]).toBe(baseline.edges[0]);
+  });
+
+  it("proyecta el escenario 100/150 con índices O(n)", () => {
+    const document = createPerformanceDocument("target");
+    const projection = mapDocumentToReactFlow(document);
+    expect(projection.nodes).toHaveLength(100);
+    expect(projection.edges).toHaveLength(150);
+    expect(projection.nodes.some((node) => node.selected)).toBe(false);
   });
 });
