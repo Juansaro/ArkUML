@@ -69,3 +69,13 @@ TASK-001–024 son contratos históricos sin estado formal versionado. Sus
 checkboxes abiertos no permiten inferir por sí solos el estado del código. El
 protocolo de estado y cierre comienza en TASK-025; el índice post-024 es la
 fuente de estado para TASK-026+.
+
+## Post-024
+
+Gobierno y estado: [post-024/README.md](post-024/README.md). Roadmap
+(catálogo): [post-024/roadmap.md](post-024/roadmap.md).
+
+Wave 1 congelada (**Editor local sobre schema 1**). Próximo contrato
+ejecutable: [TASK-034](post-024/12-uml/TASK-034.md). Siguiente en la
+wave: [TASK-035](post-024/13-editor/TASK-035.md). No duplicar aquí los
+contratos.

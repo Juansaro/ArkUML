@@ -5,7 +5,7 @@ Inventario alineado con
 entrada **no** es una TASK. La spec decide destinos y prioridades; este
 archivo proyecta el estado operativo. TASK-032 publicó
 [`schema-evolution.md`](../../architecture/schema-evolution.md).
-TASK-033 es el único que puede promover entradas maduras a `TASK-034+`.
+TASK-033 congeló la Wave 1; solo esas filas tienen archivo TASK.
 
 ## Estados de catálogo
 
@@ -16,6 +16,7 @@ TASK-033 es el único que puede promover entradas maduras a `TASK-034+`.
 | Bloqueada | Espera un gate, ADR, fuente UML o decisión humana. |
 | Condicional | Solo se abre si hay evidencia medida (perf, cuota, raster). |
 | Fuera de alcance vigente | Exclusión deliberada hasta revisar el Post-MVP spec. |
+| Congelada | Promovida a TASK ejecutable. El contrato vive en ese archivo. |
 
 Promover una entrada a TASK exige: fuente canónica, decisiones cerradas,
 ADR identificado o nuevo, dependencias y criterio de aceptación. Si falta
@@ -25,11 +26,24 @@ export.
 Prioridades P0/P1/P2 son las de la spec. «—» = no aplica (exclusión,
 condicional o infra).
 
+## Wave 1 congelada (TASK-033, 2026-09-09)
+
+Nombre: **Editor local sobre schema 1**. Schema `1`. Sin ADR.
+
+| ID catálogo | TASK | FR |
+| --- | --- | --- |
+| W12-01 | [`12-uml/TASK-034.md`](12-uml/TASK-034.md) | FR-P01 |
+| W13-02 | [`13-editor/TASK-035.md`](13-editor/TASK-035.md) | FR-P02 |
+
+No hay carpetas `14-persistence/` … `17-ecosystem/` ni TASK para el resto
+del catálogo. W14-03 y demás `Autorizado en spec` esperan un freeze
+posterior.
+
 ## Fase 12 — Semántica UML
 
 | ID | Capacidad | Pri. | Fuente | Valor / riesgo | Decisiones | ADR | Depende | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| W12-01 | Detección de ciclos Include/Extend (warning no bloqueante) | P0 | `post-mvp-spec.md` FR-P01; `mvp-spec.md` avisos geométricos | Consistencia; no rechaza documentos válidos hoy | Cerrada: aviso, no bloqueo | Posible addendum de dominio | TASK-033 | Autorizado en spec |
+| W12-01 | Detección de ciclos Include/Extend (warning no bloqueante) | P0 | `post-mvp-spec.md` FR-P01; `mvp-spec.md` avisos geométricos | Consistencia; no rechaza documentos válidos hoy | Cerrada: aviso, no bloqueo | Addendum de códigos en `domain-model.md` (TASK-034); sin ADR | TASK-034 | Congelada |
 | W12-02 | Generalization | P1 | `mvp-spec.md`; `domain-model.md` (`kind` nuevo) | Relación nueva, no un flag | ¿Actores, casos o ambos? Matriz `canConnect`. Sin fuente UML acordada | Bump `schemaVersion` (`schema-evolution.md`) | TASK-033 | Bloqueada |
 | W12-03 | Extension points y condiciones de extend | P2 | `mvp-spec.md`; `TASK-014.md` | Semántica UML más rica | Forma persistida; copy de UI | Bump `schemaVersion` (`schema-evolution.md`) | W12-02 | Bloqueada |
 | W12-04 | Notas | P1 | `mvp-spec.md` | Comentario visual | ¿Elemento o overlay? Relación con export | Bump si se persisten (`schema-evolution.md`) | TASK-033 | Bloqueada |
@@ -42,7 +56,7 @@ condicional o infra).
 | ID | Capacidad | Pri. | Fuente | Valor / riesgo | Decisiones | ADR | Depende | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | W13-01 | Waypoints / routing en el documento | P1 | `mvp-spec.md`; `TASK-013.md` | Control de trazado | Geometría persistida vs proyección RF | Bump si se persisten (`schema-evolution.md`); posible addendum ADR-002 | TASK-033 | Bloqueada |
-| W13-02 | Alignment guides (solo chrome) | P0 | `post-mvp-spec.md` FR-P02 | Precisión de layout | Cerrada: no persistido, no historial, no export | — | TASK-033 | Autorizado en spec |
+| W13-02 | Alignment guides (solo chrome) | P0 | `post-mvp-spec.md` FR-P02 | Precisión de layout | Cerrada: no persistido, no historial, no export, sin snap | — | TASK-035 | Congelada |
 | W13-03 | Minimap | P1 | `post-mvp-spec.md` FR-P04; `TASK-009.md` | Navegación en diagramas grandes | Cerrada: chrome; exclusión de export | — | TASK-033 | Autorizado en spec |
 | W13-04 | Auto-layout | P2 | `mvp-spec.md` | Colocación automática | Algoritmo y dependencia (stop si hay paquete nuevo) | ADR-001/002 | TASK-033 | Bloqueada |
 
@@ -126,6 +140,6 @@ Siguen siendo stop conditions, no copy de implementación:
 ## Relación con el registro
 
 Los grupos O-01–O-10 de [risk-register.md](risk-register.md) están
-dispuestos en `post-mvp-spec.md`. TASK-033 solo puede crear archivos TASK
-para filas `Autorizado en spec` cuyas decisiones estén cerradas; el resto
-permanece catálogo.
+dispuestos en `post-mvp-spec.md`. TASK-033 congeló W12-01 y W13-02.
+El resto de filas `Autorizado en spec` permanece catálogo hasta un freeze
+posterior; no hay TASK «para ir avanzando».

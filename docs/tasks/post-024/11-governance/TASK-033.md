@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -74,12 +74,12 @@ fingido.
 
 ## Criterios de aceptación
 
-- [ ] Wave 1 nombrada y acotada.
-- [ ] Solo esa wave tiene carpeta y TASK-034+.
-- [ ] Cada TASK nueva pasa el template (estado Lista, CA, stops, evidencia
+- [x] Wave 1 nombrada y acotada.
+- [x] Solo esa wave tiene carpeta y TASK-034+.
+- [x] Cada TASK nueva pasa el template (estado Lista, CA, stops, evidencia
       vacía).
-- [ ] Ítems no maduros siguen en el roadmap, no como TASK.
-- [ ] Índice y `docs/tasks/README.md` apuntan al próximo contrato.
+- [x] Ítems no maduros siguen en el roadmap, no como TASK.
+- [x] Índice y `docs/tasks/README.md` apuntan al próximo contrato.
 
 ## Tests
 
@@ -103,4 +103,28 @@ Primera wave congelada; TASK-034+ existen solo donde el contrato es ejecutable.
 
 ## Evidencia de cierre
 
-Pendiente. Esta TASK **crea** archivos 034+; no los implementa.
+2026-09-09. Criterios `[x]`. Wave 1 **Editor local sobre schema 1**
+(recomendación TASK-031/032): W12-01 y W13-02. Schema `1`. Sin ADR.
+
+- [`12-uml/TASK-034.md`](../12-uml/TASK-034.md) — FR-P01, `Lista`.
+- [`13-editor/TASK-035.md`](../13-editor/TASK-035.md) — FR-P02, `Lista`.
+
+Sin carpetas 14–17. W14-03, W13-03, W15-03, W17-05 siguen `Autorizado en
+spec`. Ítems bloqueados/condicionales/exclusión sin archivo TASK.
+No se implementó producto.
+
+Comandos realmente corridos:
+
+```bash
+npm run format:check
+git diff --check
+```
+
+`git diff --check`: OK.
+`npm run format:check`: falla en los mismos 10 archivos de chrome/tooltips
+de TASK-024 que 028–032; esta TASK no los reformateó. Los markdown
+nuevos o tocados no aparecen en el warn de Prettier.
+
+Glob `docs/tasks/**/TASK-*.md`: 35 archivos, IDs 001–035 únicos, sin
+aliases. Enlaces relativos de los archivos tocados: 62, ninguno roto.
+Carpetas `14-persistence` … `17-ecosystem`: no existen.
