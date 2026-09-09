@@ -3,10 +3,16 @@
 Orden exacto. No saltar gates.
 
 ```text
-TASK-001 → TASK-002 → … → TASK-020 → TASK-021 → TASK-022 → TASK-023 → TASK-024
+TASK-001 → TASK-002 → … → TASK-023 → TASK-024 → TASK-025
+                                                      ↓
+                                      post-024 (DAG gobernado por gates)
 ```
 
-Cada archivo es el contrato para un chat de Grok 4.6. Workflow: [agent-workflow.md](../development/agent-workflow.md). Plantilla: [task-template.md](../development/task-template.md).
+Cada archivo es el contrato para un chat de Grok 4.6. Workflow:
+[agent-workflow.md](../development/agent-workflow.md). Plantilla:
+[task-template.md](../development/task-template.md). TASK-001–025 conservan
+ruta plana; TASK-026+ usan la ruta canónica del
+[árbol post-024](post-024/README.md), sin aliases.
 
 ## Fases y gates
 
@@ -21,6 +27,11 @@ Cada archivo es el contrato para un chat de Grok 4.6. Workflow: [agent-workflow.
 | 7 Hardening | Perf, CI, RC | 019–020 | presupuesto, CI, auditoría de alcance |
 | 8 Cierre RC | Hallazgos del checklist manual | 021–022 | checklist firmado + FR-07 en inspector |
 | 9 Identidad | Marca y ergonomía visual | 023–024 | contrato aprobado + iconos/tooltips accesibles |
+| Puente | Gobierno del contexto futuro | 025 | árbol anidado + estados + trazabilidad |
+
+Las fases 10+ y su orden por dependencias viven en
+[post-024/README.md](post-024/README.md). No se ejecuta una entrada del roadmap
+que aún no tenga archivo TASK y estado `Lista`.
 
 ## Índice
 
@@ -50,3 +61,11 @@ Cada archivo es el contrato para un chat de Grok 4.6. Workflow: [agent-workflow.
 | [TASK-022](TASK-022.md) | Razón visible al conectar desde el inspector | P1 | 014, 020 |
 | [TASK-023](TASK-023.md) | Contrato de identidad visual de ArkUML | P1 | 022 |
 | [TASK-024](TASK-024.md) | Iconografía y tooltips accesibles | P1 | 023 |
+| [TASK-025](TASK-025.md) | Habilitar el árbol oficial post-024 | P0 | 023 + contrato 024 |
+
+## Estado documental
+
+TASK-001–024 son contratos históricos sin estado formal versionado. Sus
+checkboxes abiertos no permiten inferir por sí solos el estado del código. El
+protocolo de estado y cierre comienza en TASK-025; el índice post-024 es la
+fuente de estado para TASK-026+.

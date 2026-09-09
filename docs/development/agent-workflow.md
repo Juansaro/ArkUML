@@ -8,9 +8,13 @@ Este documento es el procedimiento. Las reglas en `.cursor/rules/` son restricci
 | --- | --- | --- |
 | GLOBAL | `.cursor/rules/00-core.mdc` (`alwaysApply`) | Todos los chats |
 | CONTEXTUAL | `domain.mdc` / `testing.mdc` por glob; ADRs y docs de arquitectura | Cuando la TASK los cita o los archivos coinciden |
-| TASK-SPECIFIC | `docs/tasks/TASK-NNN.md` | **Un** archivo por chat |
+| TASK-SPECIFIC | `docs/tasks/**/TASK-NNN.md` | **Un** archivo por chat |
 
 No adjuntar `docs/` entero ni el historial de un chat anterior.
+
+TASK-001–025 conservan su ruta plana. Desde TASK-026, la ruta canónica vive
+bajo `docs/tasks/post-024/<fase>/`. Un ID corresponde a un solo archivo: no se
+crean stubs, aliases ni copias planas.
 
 ## Modelo
 
@@ -21,14 +25,23 @@ No adjuntar `docs/` entero ni el historial de un chat anterior.
 
 1. Leer `00-core` (ya inyectada) y la TASK adjunta.
 2. Leer únicamente los docs listados en la TASK.
-3. Inspeccionar Git y archivos existentes (`git status`, abrir rutas citadas).
-4. Escribir un plan breve (10 líneas): alcance, archivos, tests. Esperar no hace falta si la TASK no tiene decisiones abiertas.
-5. Implementar solo esa TASK.
-6. Ejecutar los comandos de verificación de la TASK. Corregir fallos introducidos.
-7. Revisar el diff: nada fuera de alcance, nada generado (`dist/`, reports).
-8. Verificar criterios de aceptación uno a uno.
-9. Handoff: archivos, comandos **realmente** ejecutados y su resultado, validación de navegador si aplica, riesgos, desviaciones.
-10. Cerrar el chat. El siguiente empieza en frío con la siguiente TASK.
+3. Confirmar en el índice correspondiente que la TASK está `Lista`. Cambiar la
+   TASK y el índice a `En curso`.
+4. Inspeccionar Git y archivos existentes (`git status`, abrir rutas citadas).
+5. Escribir un plan breve (10 líneas): alcance, archivos, tests. Esperar no hace falta si la TASK no tiene decisiones abiertas.
+6. Implementar solo esa TASK.
+7. Ejecutar los comandos de verificación de la TASK. Corregir fallos introducidos.
+8. Revisar el diff: nada fuera de alcance, nada generado (`dist/`, reports).
+9. Verificar criterios de aceptación uno a uno y marcarlos `[x]` solo con
+   evidencia.
+10. Si termina: cambiar TASK/índice a `Hecha` y completar «Evidencia de
+    cierre» con fecha, comandos y commit/PR/handoff si existe. Si se activa una
+    stop condition: usar `Bloqueada`, registrar razón y no fingir cierre.
+11. Handoff: archivos, comandos **realmente** ejecutados y su resultado, validación de navegador si aplica, riesgos, desviaciones.
+12. Cerrar el chat. El siguiente empieza en frío con la siguiente TASK.
+
+Los estados versionados se exigen desde TASK-025. No se infiere ni reescribe el
+estado histórico de TASK-001–024 a partir de sus checkboxes.
 
 ## Prohibido
 
@@ -74,7 +87,7 @@ Parar y preguntar si hace falta:
 Chat nuevo:
 
 ```text
-Implementa @docs/tasks/TASK-NNN.md.
+Implementa @ruta/canónica/TASK-NNN.md.
 Inspecciona archivos citados, resume un plan breve y respeta «Fuera del alcance».
 No cambies dependencias ni ADRs.
 Termina con los comandos de la TASK y un handoff.
