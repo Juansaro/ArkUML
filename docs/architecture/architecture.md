@@ -103,6 +103,8 @@ No persistido: selección, historial, herramienta, hover, mensajes.
 
 ## Evolución
 
+**Persistencia futura:** [schema-evolution.md](schema-evolution.md). Schema `1` cerrado. IndexedDB solo con C-QUOTA y ADR-004 reabierto. `src/domain` no importa storage.
+
 **Segundo tipo de diagrama UML:** añadir un `kind` de documento y módulos hermanos. Extraer un registry/plugin **solo** cuando dos implementaciones revelen el contrato real.
 
 **Backend futuro:** sustituir la implementación de `DiagramRepository`. Auth, sync y multi-usuario no entran en dominio.
@@ -122,7 +124,7 @@ No persistido: selección, historial, herramienta, hover, mensajes.
 ```text
 docs/
   product/{mvp-spec,brand-system,post-mvp-spec}.md
-  architecture/{architecture,domain-model,rendering-and-export,testing-strategy,performance}.md
+  architecture/{architecture,domain-model,schema-evolution,rendering-and-export,testing-strategy,performance}.md
   decisions/ADR-001 … ADR-006
   development/{agent-workflow,task-template}.md
   tasks/TASK-001 … TASK-025

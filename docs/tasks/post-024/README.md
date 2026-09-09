@@ -23,8 +23,9 @@ Una TASK por chat. La ruta completa del archivo es parte del prompt. El
 
 TASK-025 habilita rutas y protocolo. TASK-026–029 están `Hecha`. TASK-030
 cerró el gate de fase 10 (**ship**, 2026-09-09). TASK-031 publicó
-[`post-mvp-spec.md`](../../product/post-mvp-spec.md). Implementación
-Post-MVP: no, hasta TASK-033.
+[`post-mvp-spec.md`](../../product/post-mvp-spec.md). TASK-032 publicó
+[`schema-evolution.md`](../../architecture/schema-evolution.md).
+Implementación Post-MVP: no, hasta TASK-033.
 
 ## Estado
 
@@ -37,7 +38,7 @@ Post-MVP: no, hasta TASK-033.
 | 029 | [`10-release/TASK-029.md`](10-release/TASK-029.md) | Hecha | P1 | 025 | 2026-09-09: export 200/300 2x no cabe (1x 3280 ms); JSON ~95 KiB UTF-16; dominio 97.56 %/96.69 %; markers Safari aceptados |
 | 030 | [`10-release/TASK-030.md`](10-release/TASK-030.md) | Hecha | P0 | 026–029 | 2026-09-09: ship; RC honesto (026–029); Post-MVP catálogo; TASK-031 desbloqueada |
 | 031 | [`11-governance/TASK-031.md`](11-governance/TASK-031.md) | Hecha | P0 | 030 | 2026-09-09: `post-mvp-spec.md`; waves 12–17 con destino; O-01–O-10 dispuestos; mvp-spec enlaza Post-MVP |
-| 032 | [`11-governance/TASK-032.md`](11-governance/TASK-032.md) | Lista | P0 | 031 | Evolución schema/storage |
+| 032 | [`11-governance/TASK-032.md`](11-governance/TASK-032.md) | Hecha | P0 | 031 | 2026-09-09: `schema-evolution.md`; schema 1 cerrado; IndexedDB condicional; FR-P03 envelope; ningún ADR reabierto |
 | 033 | [`11-governance/TASK-033.md`](11-governance/TASK-033.md) | Lista | P0 | 031, 032 | Congela primera wave |
 
 ## Fases y gates
@@ -57,14 +58,14 @@ Gate (cumplido 2026-09-09):
 
 ### Fase 11 — Gobierno Post-MVP
 
-TASK-031 definió la spec futura; TASK-032 define cómo evolucionan
-documentos persistidos; TASK-033 selecciona una sola wave y recién
-entonces crea TASK-034+.
+TASK-031 definió la spec futura; TASK-032 publicó
+[`schema-evolution.md`](../../architecture/schema-evolution.md);
+TASK-033 selecciona una sola wave y recién entonces crea TASK-034+.
 
 Gate:
 
 - FR, non-goals y versión objetivo aprobados (TASK-031, 2026-09-09).
-- Compatibilidad y migración decididas antes de tocar schema (TASK-032).
+- Compatibilidad y migración publicadas (TASK-032, 2026-09-09).
 - Primera wave acotada con presupuesto y dependencias (TASK-033).
 
 ### Fases 12–17 — Catálogo, no ejecución
@@ -89,8 +90,9 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-TASK-031 está `Hecha` (contrato Post-MVP). Siguiente:
+TASK-032 está `Hecha` (política de schema/storage). Siguiente:
 
-- [TASK-032](11-governance/TASK-032.md) (evolución de schema/storage).
-  Multi-documento: no. IndexedDB: no elegido (condicional C-QUOTA). No
-  implementar Generalization, PDF ni temas.
+- [TASK-033](11-governance/TASK-033.md) (freeze de la primera wave).
+  Multi-documento: no. IndexedDB: no elegido (condicional C-QUOTA).
+  FR-P03: envelope cerrado, sin ADR-004. No implementar Generalization,
+  PDF ni temas.

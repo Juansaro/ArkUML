@@ -12,3 +12,15 @@
 No reabrir estas decisiones en una TASK de implementación.
 
 El spike de export (TASK-008) **ya se ejecutó** (2026-09-07): Chromium y Firefox rasterizan de forma estable; WebKit/Safari puede omitir `marker-end` de forma intermitente. Esa degradación está **aceptada**; no se reabrió ADR-006. Reabrir **ADR-006** (y solo entonces ADR-002) solo si un fallo nuevo de export lo exige.
+
+## Reaperturas futuras (no en este árbol)
+
+Ningún ADR nuevo aquí. La política está en
+[`schema-evolution.md`](../architecture/schema-evolution.md). Primera
+wave (schema `1`, chrome): ninguno.
+
+| ADR | Abrir **antes** de tocar código si… | No abrir si… |
+| --- | --- | --- |
+| ADR-004 | C-QUOTA → IndexedDB, o una revisión futura pide multi-documento | FR-P03 (archivo JSON del documento activo); sync multi-tab (sigue exclusión) |
+| ADR-003 | El historial deja de ser RAM-only o undo restaura viewport/selección | Warnings, guías, minimap o el JSON de usuario |
+| ADR-006 | C-EXPORT, fallo nuevo de raster, o W15-01/02 | Clipboard de imagen que reutiliza `exportDiagram` |

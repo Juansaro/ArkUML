@@ -102,7 +102,7 @@ Usar estos códigos; no strings ad hoc:
 
 Zod 4 valida `WorkspaceSnapshot` al cargar. `z.strictObject` (o equivalente Zod 4) rechaza claves desconocidas en el documento. Datos corruptos **no** se migran en silencio y **no** se sobrescriben hasta que el usuario confirme «comenzar limpio».
 
-`schemaVersion` (documento) y `storageVersion` (snapshot) son independientes. El MVP solo acepta `1` / `1`. Una versión futura usará `migrate` explícito.
+`schemaVersion` (documento) y `storageVersion` (snapshot) son independientes. El MVP solo acepta `1` / `1`. Una versión futura usará `migrate` explícito; la política está en [schema-evolution.md](schema-evolution.md).
 
 ## Serialización
 

@@ -4,7 +4,7 @@ Editor web de diagramas UML. El MVP cubre únicamente **diagramas de casos de us
 
 Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación. El código es **Open Source** bajo [Apache License 2.0](LICENSE).
 
-**Gate de salida (TASK-030, 2026-09-09): ship.** El RC es honesto y reproducible. Checklist firmado post-identidad (TASK-026). Licencia Apache-2.0 (TASK-027). Contratos reconciliados (TASK-028). Riesgos técnicos medidos o aceptados (TASK-029). La identidad (fase 9) no bloqueó el RC de TASK-020; TASK-024 está cerrada. El contrato Post-MVP está en [post-mvp-spec.md](docs/product/post-mvp-spec.md); la implementación no está autorizada (TASK-032/033 pendientes).
+**Gate de salida (TASK-030, 2026-09-09): ship.** El RC es honesto y reproducible. Checklist firmado post-identidad (TASK-026). Licencia Apache-2.0 (TASK-027). Contratos reconciliados (TASK-028). Riesgos técnicos medidos o aceptados (TASK-029). La identidad (fase 9) no bloqueó el RC de TASK-020; TASK-024 está cerrada. El contrato Post-MVP está en [post-mvp-spec.md](docs/product/post-mvp-spec.md); la política de schema/storage en [schema-evolution.md](docs/architecture/schema-evolution.md). La implementación Post-MVP no está autorizada (TASK-033 pendiente).
 
 ## Requisitos
 

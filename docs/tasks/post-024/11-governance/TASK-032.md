@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -81,11 +81,11 @@ de tocar `src/persistence`.
 
 ## Criterios de aceptación
 
-- [ ] Política de evolución escrita (versión, breaking, migraciones,
+- [x] Política de evolución escrita (versión, breaking, migraciones,
       rechazo).
-- [ ] Lista explícita: ADR a reabrir / no reabrir, con motivo.
-- [ ] Fase 14 del roadmap alineada (autorizada, condicional o aplazada).
-- [ ] Índice actualizado.
+- [x] Lista explícita: ADR a reabrir / no reabrir, con motivo.
+- [x] Fase 14 del roadmap alineada (autorizada, condicional o aplazada).
+- [x] Índice actualizado.
 
 ## Tests
 
@@ -109,4 +109,40 @@ Reglas de persistencia futura publicadas; código de storage intacto.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-09. Criterios `[x]`. Política publicada en
+`docs/architecture/schema-evolution.md`. Schema `1` intacto. Sin
+migraciones en código. `src/persistence` sin cambios. Ningún ADR
+reabierto.
+
+Decisiones:
+
+- Schema `1` cerrado: `strictObject`; un campo persistido nuevo es 2.0,
+  no minor 1.x.
+- IndexedDB no elegido; W14-01 condicional C-QUOTA. Reabrir ADR-004
+  **antes** de código si C-QUOTA dispara.
+- Multi-documento: exclusión; esta TASK no diseña lista/switch.
+- FR-P03: envelope `arkuml-usecase-json` / `formatVersion` 1, payload
+  schema `1`. No reabre ADR-004.
+- `migrate()`: política (orden, rechazo, confirmación); código solo con
+  el primer bump.
+- Primera wave (W12-01 + W13-02): ningún ADR. ADR-003 solo si el
+  historial deja RAM-only. ADR-006 fuera de alcance.
+
+Fase 14: W14-01 condicional; W14-02/05 exclusión; W14-03 y W14-04
+autorizados en spec (envelope y política; sin código de migrate).
+
+Desviación: `.gitignore` ignoraba `docs/` (commit 198da87, TASK-027).
+Eso impedía versionar `schema-evolution.md`. Se quitó esa línea; no se
+añadieron otros untracked.
+
+Comandos realmente corridos:
+
+```bash
+npm run format:check
+git diff --check
+```
+
+`git diff --check`: OK.
+`npm run format:check`: falla en los mismos 10 archivos de chrome/tooltips
+de TASK-024 que 028–031; esta TASK no los reformateó. Los markdown
+nuevos o tocados no aparecen en el warn de Prettier.

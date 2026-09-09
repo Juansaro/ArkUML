@@ -37,5 +37,3 @@ Desktop.ini
 
 # Excepción: baselines visuales de Playwright se versionan
 # e2e/**/__screenshots__/
-
-docs/

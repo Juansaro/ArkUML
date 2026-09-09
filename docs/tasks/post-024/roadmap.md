@@ -3,8 +3,9 @@
 Inventario alineado con
 [`docs/product/post-mvp-spec.md`](../../product/post-mvp-spec.md). Una
 entrada **no** es una TASK. La spec decide destinos y prioridades; este
-archivo proyecta el estado operativo. TASK-032 decide schema; TASK-033
-es el único que puede promover entradas maduras a `TASK-034+`.
+archivo proyecta el estado operativo. TASK-032 publicó
+[`schema-evolution.md`](../../architecture/schema-evolution.md).
+TASK-033 es el único que puede promover entradas maduras a `TASK-034+`.
 
 ## Estados de catálogo
 
@@ -29,18 +30,18 @@ condicional o infra).
 | ID | Capacidad | Pri. | Fuente | Valor / riesgo | Decisiones | ADR | Depende | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | W12-01 | Detección de ciclos Include/Extend (warning no bloqueante) | P0 | `post-mvp-spec.md` FR-P01; `mvp-spec.md` avisos geométricos | Consistencia; no rechaza documentos válidos hoy | Cerrada: aviso, no bloqueo | Posible addendum de dominio | TASK-033 | Autorizado en spec |
-| W12-02 | Generalization | P1 | `mvp-spec.md`; `domain-model.md` (`kind` nuevo) | Relación nueva, no un flag | ¿Actores, casos o ambos? Matriz `canConnect`. Sin fuente UML acordada | Schema (TASK-032) | TASK-033 | Bloqueada |
-| W12-03 | Extension points y condiciones de extend | P2 | `mvp-spec.md`; `TASK-014.md` | Semántica UML más rica | Forma persistida; copy de UI | Schema (TASK-032) | W12-02 | Bloqueada |
-| W12-04 | Notas | P1 | `mvp-spec.md` | Comentario visual | ¿Elemento o overlay? Relación con export | Schema (TASK-032) | TASK-033 | Bloqueada |
+| W12-02 | Generalization | P1 | `mvp-spec.md`; `domain-model.md` (`kind` nuevo) | Relación nueva, no un flag | ¿Actores, casos o ambos? Matriz `canConnect`. Sin fuente UML acordada | Bump `schemaVersion` (`schema-evolution.md`) | TASK-033 | Bloqueada |
+| W12-03 | Extension points y condiciones de extend | P2 | `mvp-spec.md`; `TASK-014.md` | Semántica UML más rica | Forma persistida; copy de UI | Bump `schemaVersion` (`schema-evolution.md`) | W12-02 | Bloqueada |
+| W12-04 | Notas | P1 | `mvp-spec.md` | Comentario visual | ¿Elemento o overlay? Relación con export | Bump si se persisten (`schema-evolution.md`) | TASK-033 | Bloqueada |
 | W12-05 | Paquetes | — | `mvp-spec.md`; `post-mvp-spec.md` | Agrupación vs boundary único | No se reabre aquí | — | — | Fuera de alcance vigente |
 | W12-06 | Multiplicidad | — | `mvp-spec.md`; `post-mvp-spec.md` | Anotación de extremos | Sin fuente UML acordada | — | — | Fuera de alcance vigente |
-| W12-07 | Actores no humanos especializados | P2 | `mvp-spec.md` | Variante visual/semántica | ¿Nuevo `kind` o estereotipo? | Schema (TASK-032) | TASK-033 | Bloqueada |
+| W12-07 | Actores no humanos especializados | P2 | `mvp-spec.md` | Variante visual/semántica | ¿Nuevo `kind` o estereotipo? | Bump si hay `kind` nuevo (`schema-evolution.md`) | TASK-033 | Bloqueada |
 
 ## Fase 13 — Potencia del editor
 
 | ID | Capacidad | Pri. | Fuente | Valor / riesgo | Decisiones | ADR | Depende | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| W13-01 | Waypoints / routing en el documento | P1 | `mvp-spec.md`; `TASK-013.md` | Control de trazado | Geometría persistida vs proyección RF | TASK-032; posible addendum ADR-002 | TASK-033 | Bloqueada |
+| W13-01 | Waypoints / routing en el documento | P1 | `mvp-spec.md`; `TASK-013.md` | Control de trazado | Geometría persistida vs proyección RF | Bump si se persisten (`schema-evolution.md`); posible addendum ADR-002 | TASK-033 | Bloqueada |
 | W13-02 | Alignment guides (solo chrome) | P0 | `post-mvp-spec.md` FR-P02 | Precisión de layout | Cerrada: no persistido, no historial, no export | — | TASK-033 | Autorizado en spec |
 | W13-03 | Minimap | P1 | `post-mvp-spec.md` FR-P04; `TASK-009.md` | Navegación en diagramas grandes | Cerrada: chrome; exclusión de export | — | TASK-033 | Autorizado en spec |
 | W13-04 | Auto-layout | P2 | `mvp-spec.md` | Colocación automática | Algoritmo y dependencia (stop si hay paquete nuevo) | ADR-001/002 | TASK-033 | Bloqueada |
@@ -49,10 +50,10 @@ condicional o infra).
 
 | ID | Capacidad | Pri. | Fuente | Valor / riesgo | Decisiones | ADR | Depende | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| W14-01 | IndexedDB `DiagramRepository` | — | `ADR-004`; `post-mvp-spec.md` | Cuota ~5 MiB; umbral ~1 MiB habitual | No elegido. Solo C-QUOTA | Reabrir ADR-004 | TASK-032 | Condicional |
-| W14-02 | Multi-documento | — | `mvp-spec.md`; `post-mvp-spec.md` | Varios diagramas locales | Excluido: un único workspace | ADR-004 | — | Fuera de alcance vigente |
-| W14-03 | Import/export JSON de usuario | P0 | `post-mvp-spec.md` FR-P03 | Intercambio de archivos | Envelope público; no mezclar con persistencia interna | ADR-004 (solo si cambia el adapter) | TASK-032 | Autorizado en spec |
-| W14-04 | `migrate()` real | — | `domain-model.md`; `post-mvp-spec.md` | Evolución sin pérdida | Política bump `schemaVersion`/`storageVersion` | TASK-032 | TASK-032 | Bloqueada |
+| W14-01 | IndexedDB `DiagramRepository` | — | `ADR-004`; `schema-evolution.md` | Cuota ~5 MiB; umbral ~1 MiB habitual | No elegido. Solo C-QUOTA. localStorage hasta evidencia | Reabrir ADR-004 **antes** de código | C-QUOTA | Condicional |
+| W14-02 | Multi-documento | — | `mvp-spec.md`; `post-mvp-spec.md` | Varios diagramas locales | Excluido: un único workspace | ADR-004 si una revisión futura lo levanta | — | Fuera de alcance vigente |
+| W14-03 | Import/export JSON de usuario | P0 | `post-mvp-spec.md` FR-P03; `schema-evolution.md` | Intercambio de archivos | Cerrada: envelope `arkuml-usecase-json` / `formatVersion` 1; payload schema 1; no es el snapshot interno | No reabrir ADR-004 | TASK-033 | Autorizado en spec |
+| W14-04 | `migrate()` real | — | `domain-model.md`; `schema-evolution.md` | Evolución sin pérdida | Política publicada (bump, orden, rechazo, confirmación). Sin código hasta el primer bump | — | Primer bump de schema en una wave | Autorizado en spec |
 | W14-05 | Sync multi-tab | — | `ADR-004`; `post-mvp-spec.md` | Hoy last-write-wins | Aceptado; no se reabre | ADR-004 | — | Fuera de alcance vigente |
 
 ## Fase 15 — Exportación
@@ -72,7 +73,7 @@ condicional o infra).
 | W16-02 | Recorrido teclado del grafo | P2 | igual que W16-01 | Conflicto con nudge de flechas | Mapa de teclas | — | W16-01 | Propuesta |
 | W16-03 | Touch / edición móvil | — | `mvp-spec.md`; `post-mvp-spec.md` | Nuevo modo de interacción | Desktop-first se conserva | — | — | Fuera de alcance vigente |
 | W16-04 | Temas / dark / inversa | — | `brand-system.md`; `post-mvp-spec.md` | Rompe identidad fija | No se enmienda ni se bifurca la marca | — | — | Fuera de alcance vigente |
-| W16-05 | Plantillas y mapa de estilos | — | `domain-model.md`; `post-mvp-spec.md` | Estilos versionados | Van con temas | TASK-032 | W16-04 | Fuera de alcance vigente |
+| W16-05 | Plantillas y mapa de estilos | — | `domain-model.md`; `post-mvp-spec.md` | Estilos versionados | Van con temas | Bump de schema si existieran; exclusión con temas | W16-04 | Fuera de alcance vigente |
 
 ## Fase 17 — Escala y ecosistema
 
@@ -96,7 +97,7 @@ condicional o infra).
 | ID | Disparador | Acción | Estado |
 | --- | --- | --- | --- |
 | C-PERF | Escenario 100/150 incumple p95 o restore en máquina de referencia | Abrir W17-08; si no basta, W17-09 con ADR-002 | Condicional |
-| C-QUOTA | JSON habitual se acerca a 1 MiB o localStorage falla por cuota | Adelantar W14-01; TASK-032 elige backend | Condicional |
+| C-QUOTA | JSON habitual se acerca a 1 MiB o localStorage falla por cuota | Reabrir ADR-004; entonces W14-01. Backend no elegido hasta ese gate | Condicional |
 | C-EXPORT | Raster 2x irrecuperable o pin html-to-image insostenible | Reabrir ADR-006 antes de W15-01/02 | Condicional |
 | C-PRIVACY | Se decide telemetría | Gate de privacidad antes de W17-10 | Fuera de alcance vigente |
 
@@ -106,14 +107,21 @@ Cerradas en TASK-031 (ver spec): recorte 1.x vs 2.0; ciclos = warning;
 multi-documento = no; segundo tipo de diagrama = exclusión; temas = no
 enmendar `brand-system.md`; IndexedDB no elegido (condicional).
 
+Cerradas en TASK-032
+([`schema-evolution.md`](../../architecture/schema-evolution.md)): bump
+vs chrome; rechazo de desconocidos; cuota; envelope
+`arkuml-usecase-json`; ADRs a reabrir. IndexedDB sigue condicional.
+`migrate()` no se implementa hasta un bump.
+
 Siguen siendo stop conditions, no copy de implementación:
 
 - Generalization: actores, casos o ambos (hace falta fuente UML).
-- Forma persistida de waypoints, estilos y extension points (TASK-032).
+- Forma persistida de waypoints, estilos y extension points: bump de
+  schema; sigue stop por decisión de producto/UML, no por falta de
+  política de migración.
 - PDF: SVG-print vs PNG embebido.
 - Notas: elemento vs overlay.
 - Actores no humanos: `kind` vs estereotipo.
-- Envelope público del JSON de usuario (TASK-032).
 
 ## Relación con el registro
 
