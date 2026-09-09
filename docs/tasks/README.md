@@ -3,7 +3,7 @@
 Orden exacto. No saltar gates.
 
 ```text
-TASK-001 → TASK-002 → … → TASK-020 → TASK-021 → TASK-022
+TASK-001 → TASK-002 → … → TASK-020 → TASK-021 → TASK-022 → TASK-023 → TASK-024
 ```
 
 Cada archivo es el contrato para un chat de Grok 4.6. Workflow: [agent-workflow.md](../development/agent-workflow.md). Plantilla: [task-template.md](../development/task-template.md).
@@ -20,6 +20,7 @@ Cada archivo es el contrato para un chat de Grok 4.6. Workflow: [agent-workflow.
 | 6 Validación | a11y, E2E estable | 017–018 | axe, keyboard, repeat=3 |
 | 7 Hardening | Perf, CI, RC | 019–020 | presupuesto, CI, auditoría de alcance |
 | 8 Cierre RC | Hallazgos del checklist manual | 021–022 | checklist firmado + FR-07 en inspector |
+| 9 Identidad | Marca y ergonomía visual | 023–024 | contrato aprobado + iconos/tooltips accesibles |
 
 ## Índice
 
@@ -47,3 +48,5 @@ Cada archivo es el contrato para un chat de Grok 4.6. Workflow: [agent-workflow.
 | [TASK-020](TASK-020.md) | CI, auditoría y release candidate | P0 | 019 |
 | [TASK-021](TASK-021.md) | Cerrar huecos del checklist RC | P1 | 020 |
 | [TASK-022](TASK-022.md) | Razón visible al conectar desde el inspector | P1 | 014, 020 |
+| [TASK-023](TASK-023.md) | Contrato de identidad visual de ArkUML | P1 | 022 |
+| [TASK-024](TASK-024.md) | Iconografía y tooltips accesibles | P1 | 023 |

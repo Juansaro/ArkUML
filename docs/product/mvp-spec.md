@@ -47,10 +47,13 @@ Los ítems «MVP recomendado» **sí se implementan** en este MVP. «Post-MVP» 
 | Atajos listados más abajo | Teclado de alta frecuencia | MVP recomendado |
 | Drawers 768–1023 px | Paleta e inspector colapsables | MVP recomendado |
 | Aviso `<768` px | Edición no soportada; datos intactos | MVP recomendado |
+| Identidad visual | Marca ArkUML fija, iconos SVG locales y tooltips accesibles. Contrato: `docs/product/brand-system.md` | Pulido post-RC (fase 9) |
 | Minimap, auto-layout, alignment guides, waypoints | — | Post-MVP |
-| Temas, estilos custom, plantillas | — | Post-MVP |
+| Temas, estilos personalizables, plantillas | — | Post-MVP |
 | Edición touch / mobile | — | Post-MVP |
 | Accesibilidad completa con lector de pantalla sobre el lienzo | Chrome UI AA; lienzo con limitaciones publicadas | Post-MVP (lienzo avanzado) |
+
+La identidad visual es un **sistema único de producto**, no un tema. No introduce selector de apariencia, personalización, webfonts ni kits de iconos. No cambia la notación UML del lienzo ni el raster exportado. «Temas, estilos personalizables, plantillas» permanece Post-MVP y no se cumple pintando una marca fija.
 
 ## Elementos UML
 
@@ -157,6 +160,7 @@ Los tiempos de NFR-03 y NFR-04 son **objetivos de diseño**. Solo se convierten 
 Incluido:
 
 - Nombres accesibles en controles del chrome.
+- Fase 9: tooltips complementarios en top bar, paleta y zoom según `brand-system.md` (`role="tooltip"`, hover y foco). El tooltip no es el nombre del control. Sustituye `title` en las superficies migradas; la paleta conserva etiquetas UML visibles.
 - Orden de tabulación lógico y foco visible. No se ocultan controles enfocados.
 - Región `aria-live` única para creación, borrado, errores de conexión y estado de guardado. Los avisos geométricos viven en el inspector, no en esa región.
 - Operaciones esenciales por teclado: paleta + inspector para colocar elementos; inspector para elegir extremos de relación sin arrastrar handles.
@@ -194,7 +198,7 @@ No implementar, ni siquiera «por si acaso»:
 - PDF, SVG persistido, import/export JSON de usuario, clipboard de imagen.
 - Backend, autenticación, usuarios, colaboración, sincronización, SaaS.
 - Multi-documento, IndexedDB, PWA, SEO/SSR.
-- Auto-layout, routing con waypoints, minimapa, temas, personalización visual.
+- Auto-layout, routing con waypoints, minimapa, temas, personalización visual (una identidad fija no autoriza temas).
 - Edición táctil / móvil nativa.
 - Husky, lint-staged, commitlint como requisito del MVP (Conventional Commits se documentan, no se imponen).
 
