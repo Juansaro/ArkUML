@@ -20,10 +20,10 @@ La personalidad es precisa, serena, abierta y técnica. La interfaz evita tanto
 la densidad corporativa de las suites multipropósito como una estética lúdica
 que reste credibilidad al modelado.
 
-«Open Source» describe la **intención de distribución**, no un hecho legal. El
-repositorio debe incorporar una licencia de proyecto aprobada antes de usar
-esa afirmación en producto, web o material promocional. Elegirla queda fuera
-de este contrato y de TASK-023/024.
+ArkUML es **Open Source** bajo Apache License 2.0 (SPDX `Apache-2.0`). El
+texto canónico está en [`LICENSE`](../../LICENSE). Copyright 2026 Juan
+Sarmiento. Esa afirmación es un hecho legal, no solo una intención de
+distribución.
 
 ## Marca
 

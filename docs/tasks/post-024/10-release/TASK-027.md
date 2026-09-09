@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -67,11 +67,11 @@ producto deja de insinuar Open Source.
 
 ## Criterios de aceptación
 
-- [ ] Existe una decisión humana registrada en la evidencia de cierre.
-- [ ] `LICENSE` (o equivalente) está versionada, **o** el copy Open Source
+- [x] Existe una decisión humana registrada en la evidencia de cierre.
+- [x] `LICENSE` (o equivalente) está versionada, **o** el copy Open Source
       quedó retirado de README/brand-system.
-- [ ] README enlaza la licencia de proyecto y mantiene deps + atribución RF.
-- [ ] Índice post-024 actualizado.
+- [x] README enlaza la licencia de proyecto y mantiene deps + atribución RF.
+- [x] Índice post-024 actualizado.
 
 ## Tests
 
@@ -95,4 +95,11 @@ Hecho legal o silencio legal, nunca una afirmación sin archivo.
 
 ## Evidencia de cierre
 
-Pendiente. Debe citar quién eligió qué licencia (o la orden de no afirmar).
+2026-09-09. Decisión humana: Juan Sarmiento eligió SPDX `Apache-2.0` (un solo
+licenciamiento; no dual-license). Titular y año: Copyright 2026 Juan
+Sarmiento. Texto canónico en `LICENSE` (Apache License 2.0, apéndice
+cumplimentado). README afirma Open Source, enlaza `LICENSE` y conserva deps
+MIT de runtime, atribución visible de React Flow y MPL-2.0 de axe (solo
+dev). `brand-system.md` deja de tratar «Open Source» como intención: es
+hecho legal bajo Apache-2.0. Índice post-024: TASK-027 `Hecha`. CLA,
+fundación y trademark no forman parte de esta TASK.

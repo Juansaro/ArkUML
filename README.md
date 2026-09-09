@@ -2,7 +2,7 @@
 
 Editor web de diagramas UML. El MVP cubre únicamente **diagramas de casos de uso**, con edición visual, undo/redo, persistencia local y exportación a PNG/JPG.
 
-Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación.
+Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación. El código es **Open Source** bajo [Apache License 2.0](LICENSE).
 
 ## Requisitos
 
@@ -84,6 +84,8 @@ Correr en Chrome o Edge actual, a `>=1024×720`, contra `npm run preview`. Repet
 **Firma 2026-09-09 (post-identidad, TASK-026):** OK. Chrome 152 (Windows 10, `npm run preview` `:4173`, 1024×720) recorrió arranque, UX de chrome, zoom/fit, diálogos, tooltips, drawers ~800 px, aviso `<768` px, teclado y recarga. Pan (botón medio), reparent y resize: Playwright Chromium (ratón; no MCP). PNG 1x transparente y JPG 1x blanco abiertos en el visor de Windows. Smokes Firefox 155 y WebKit 26.6 (Playwright); Safari nativo no existe en este host Windows — WebKit cubre NFR-01 `>=16.4` como en CI. Nada de producto falló. Detalle: `docs/tasks/post-024/10-release/TASK-026.md`.
 
 ## Licencias
+
+ArkUML se publica como Open Source bajo [Apache License 2.0](LICENSE) (SPDX `Apache-2.0`). Copyright 2026 Juan Sarmiento.
 
 Dependencias de runtime (van en `dist/`): MIT (`react`, `react-dom`, `@xyflow/react`, `zustand`, `zod`, `html-to-image`). La atribución de React Flow permanece visible.
 
