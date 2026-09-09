@@ -56,7 +56,7 @@ No configurar proveedor cloud.
 
 - [ ] CI pasa.
 - [ ] High/critical de audit resueltos o ADR de excepción.
-- [ ] P0 y P1 del backlog hechos; post-MVP no está medio implementado.
+- [ ] El RC de esta TASK cubre P0 001–020 y los P1 que el MVP exigía entonces (012, 017). No afirma que 021–024 ni el [árbol post-024](post-024/README.md) estén cerrados. Post-MVP no está medio implementado.
 - [ ] Base path de Vite correcto para hosting estático simple.
 
 ## Tests
@@ -78,4 +78,4 @@ npm audit --audit-level=high
 
 ## Definition of Done
 
-CI verde. Documentación final coherente. Handoff: limitaciones y siguientes pasos post-MVP (generalization, IndexedDB, otros diagramas) **sin implementarlos**.
+CI verde. Documentación del RC coherente con el alcance **de esta TASK**. El backlog P1 posterior (021–024) y el árbol post-024 viven fuera de este criterio; no se dan por hechos aquí. Handoff: limitaciones y siguientes pasos post-MVP (generalization, IndexedDB, otros diagramas) **sin implementarlos**.

@@ -24,7 +24,7 @@ Editor completo funcionalmente.
 
 ## Dentro del alcance
 
-- Fixture determinista 100/150 y, opcional, 200/300 para estrés.
+- Fixture determinista 100/150. Estrés 200/300: smoke de usabilidad (restore y drag sin crash); no exige export 2x ni p95 de spec.
 - Medir drag/pan/zoom, restore, autosave commit, export 2x.
 - Memoizar nodeTypes/edgeTypes/nodos/callbacks; selectores de selección separados.
 - Quitar listeners por nodo y estilos caros si el perfil los señala.
@@ -44,7 +44,7 @@ Editor completo funcionalmente.
 
 ## Cambios esperados
 
-Objetivos de spec: p95 frame <=33 ms en referencia; click <=100 ms; restore <=1 s; export 2x <=3 s; estrés 200/300 sin crash.
+Objetivos de spec: p95 frame <=33 ms en referencia; click <=100 ms; restore <=1 s; export 2x <=3 s en el escenario 100/150. Estrés 200/300: usable (sin crash); puede ser más lento. Export 2x de 200/300 no es criterio de esta TASK.
 
 Si no se cumplen: documentar desviación y mitigación; no cambiar de motor sin ADR.
 
@@ -56,7 +56,7 @@ Optimizaciones justificadas por perfil, no por moda.
 
 - [ ] Resultados versionados con hardware/navegador.
 - [ ] Suite funcional sigue verde.
-- [ ] Estrés 200/300 usable (puede ser más lento).
+- [ ] Estrés 200/300 usable (restore y drag sin crash; puede ser más lento). Export 2x de 200/300 queda fuera (TASK-029).
 
 ## Tests
 

@@ -9,4 +9,6 @@
 | [ADR-005](ADR-005-testing.md) | Vitest + Testing Library + Playwright |
 | [ADR-006](ADR-006-export.md) | `html-to-image@1.11.11` → `toBlob` |
 
-No reabrir estas decisiones en una TASK de implementación. Si el spike de export (TASK-008) falla, el procedimiento es reabrir **ADR-006** (y solo entonces ADR-002).
+No reabrir estas decisiones en una TASK de implementación.
+
+El spike de export (TASK-008) **ya se ejecutó** (2026-09-07): Chromium y Firefox rasterizan de forma estable; WebKit/Safari puede omitir `marker-end` de forma intermitente. Esa degradación está **aceptada**; no se reabrió ADR-006. Reabrir **ADR-006** (y solo entonces ADR-002) solo si un fallo nuevo de export lo exige.

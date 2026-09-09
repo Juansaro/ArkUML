@@ -52,9 +52,9 @@ estado histórico de TASK-001–024 a partir de sus checkboxes.
 
 ## Subagentes
 
-No hay subagentes de proyecto en `.cursor/agents/` en esta fase.
+No hay subagentes de proyecto en `.cursor/agents/`.
 
-Cuando exista código, un verificador **readonly** es opcional en TASK de alto riesgo (008 spike, 016 export, 018 E2E, 020 release):
+Un verificador **readonly** es opcional en TASK de alto riesgo (export, E2E, release, gates post-024):
 
 - Propósito: re-leer criterios de aceptación y diff, sin editar.
 - Contexto: la TASK, el diff, logs de test.
@@ -80,7 +80,7 @@ Parar y preguntar si hace falta:
 - Nueva dependencia o cambiar un pin (TS, html-to-image, Prettier).
 - Alterar el modelo persistido o un ADR.
 - Tocar archivos fuera de «Archivos/módulos afectados».
-- El spike de export falla en un navegador soportado.
+- El spike de export falla de forma **nueva** en un navegador soportado (TASK-008 ya corrió; degradación WebKit de `marker-end` aceptada).
 
 ## Prompts
 

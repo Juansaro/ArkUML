@@ -80,15 +80,15 @@ identidad fija no equivale a temas personalizables.
 
 ## Criterios de aceptación
 
-- [ ] `brand-system.md` define estrategia, marca, color, tipografía,
+- [x] `brand-system.md` define estrategia, marca, color, tipografía,
       iconografía, composición, tooltip y límites.
-- [ ] Cada control de top bar, paleta y zoom tiene símbolo y descripción
+- [x] Cada control de top bar, paleta y zoom tiene símbolo y descripción
       acordados.
-- [ ] Include y Extend se distinguen sin depender solo del color.
-- [ ] Hover, foco, Escape, persistencia y disabled están definidos conforme al
+- [x] Include y Extend se distinguen sin depender solo del color.
+- [x] Hover, foco, Escape, persistencia y disabled están definidos conforme al
       alcance WCAG 2.2 AA del chrome.
-- [ ] TASK-024 no contiene decisiones visuales abiertas ni requiere paquetes.
-- [ ] El backlog y la clasificación UX reflejan la fase 9 sin ampliar la
+- [x] TASK-024 no contiene decisiones visuales abiertas ni requiere paquetes.
+- [x] El backlog y la clasificación UX reflejan la fase 9 sin ampliar la
       funcionalidad UML.
 
 ## Tests
@@ -116,3 +116,12 @@ git diff --check
 
 Contrato canónico y dos TASKs enlazados desde el backlog, MVP coherente con una
 identidad fija y revisión documental sin decisiones pendientes.
+
+## Evidencia de cierre
+
+Registrada en TASK-028 (2026-09-09). Artefacto canónico versionado:
+`docs/product/brand-system.md` (estrategia, isotipo, tokens, matriz de iconos,
+tooltip, límites). `mvp-spec.md` clasifica la identidad como fase 9 y aclara
+que no equivale a temas. `docs/tasks/TASK-024.md` existe como contrato de
+implementación (criterios `[x]` y evidencia propia). Licencia de proyecto:
+fuera de esta TASK; cerrada en TASK-027.

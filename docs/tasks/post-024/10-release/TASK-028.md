@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -101,15 +101,15 @@ tiene una sola verdad. Architecture describe el repo con código.
 
 ## Criterios de aceptación
 
-- [ ] TASK-020 ya no exige «todos los P1 del backlog hechos».
-- [ ] Architecture y workflow no afirman una fase sin código ni un techo
+- [x] TASK-020 ya no exige «todos los P1 del backlog hechos».
+- [x] Architecture y workflow no afirman una fase sin código ni un techo
       TASK-022.
-- [ ] Una sola política Playwright (dev **o** preview) en ADR y README/CI.
-- [ ] Warnings geométricos: spec y domain-model coinciden.
-- [ ] Favicon compatible con `base: "./"`.
-- [ ] Fase 9: bloquea ship o no, escrito en un contrato canónico.
-- [ ] Evidencia 022/023/024 versionada o explícitamente pendiente.
-- [ ] Índice y risk-register actualizados.
+- [x] Una sola política Playwright (dev **o** preview) en ADR y README/CI.
+- [x] Warnings geométricos: spec y domain-model coinciden.
+- [x] Favicon compatible con `base: "./"`.
+- [x] Fase 9: bloquea ship o no, escrito en un contrato canónico.
+- [x] Evidencia 022/023/024 versionada o explícitamente pendiente.
+- [x] Índice y risk-register actualizados.
 
 ## Tests
 
@@ -135,4 +135,21 @@ bloqueadas con dueño.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-09. Criterios `[x]`. Decisiones: (1) Playwright CI/release = `vite
+preview` de `dist/`; local = `dev` (ADR-005 enmendado, runner intacto);
+(2) mvp-spec adopta warning «hijo fuera del padre» (coincide con
+`collectWarnings`); (3) fase 9 no bloqueó el RC de TASK-020 y sí exige 024
+para TASK-030 (024 ya hecha); (4) spike TASK-008 en pasado, degradación
+WebKit aceptada, ADR-006 no reabierto. Evidencia 022/023/024: CAs `[x]` y
+párrafo de cierre en cada TASK. Favicon `./favicon.svg` en contrato e
+`index.html`.
+
+Comandos: `npx prettier --check` sobre los archivos de esta TASK: OK.
+`git diff --check`: OK (avisos CRLF de Git en Windows, sin whitespace error).
+`npm run format:check` del repo: falla en 10 archivos de TASK-024
+(`e2e/tooltips.spec.ts` y `src/editor/components/common/*`) ya presentes en
+HEAD; esta TASK no los tocó.
+
+Grep: no quedan «esta fase no crea», «P0 y P1 del backlog hechos», «Cuando
+exista código», «Documentación completa» ni `href="/favicon.svg"` fuera del
+hallazgo histórico del risk-register y de esta TASK.

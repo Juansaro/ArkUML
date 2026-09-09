@@ -43,7 +43,7 @@ Los ítems «MVP recomendado» **sí se implementan** en este MVP. «Post-MVP» 
 | Paleta izquierda | Actor, Caso de uso, Boundary, Association, Include, Extend. Click-tool → click-canvas | MVP |
 | Canvas | Grid 16, selección, marquee, handles contextuales, zoom/pan/fit | MVP |
 | Inspector derecho | Nombre, tipo, endpoints, errores; alternativa de relación por teclado | MVP recomendado |
-| Status bar | Zoom y Guardando / Guardado / Error. Sin toast de éxito de autosave | MVP recomendado |
+| Status bar | Zoom y Guardando / Guardado / Error. Workspace vacío: «—» hasta el primer autosave o restore. Sin toast de éxito de autosave | MVP recomendado |
 | Atajos listados más abajo | Teclado de alta frecuencia | MVP recomendado |
 | Drawers 768–1023 px | Paleta e inspector colapsables | MVP recomendado |
 | Aviso `<768` px | Edición no soportada; datos intactos | MVP recomendado |
@@ -54,6 +54,8 @@ Los ítems «MVP recomendado» **sí se implementan** en este MVP. «Post-MVP» 
 | Accesibilidad completa con lector de pantalla sobre el lienzo | Chrome UI AA; lienzo con limitaciones publicadas | Post-MVP (lienzo avanzado) |
 
 La identidad visual es un **sistema único de producto**, no un tema. No introduce selector de apariencia, personalización, webfonts ni kits de iconos. No cambia la notación UML del lienzo ni el raster exportado. «Temas, estilos personalizables, plantillas» permanece Post-MVP y no se cumple pintando una marca fija.
+
+**Fase 9 y ship:** la identidad (TASK-023/024) es pulido **posterior** al RC de TASK-020: no bloqueó declarar ese RC. El ship de la remediación (TASK-030) **sí exige** TASK-024 cerrada, porque el checklist de TASK-026 se firmó contra el producto con marca. Con 024 hecha no queda trabajo de fase 9 que bloquee TASK-030.
 
 ## Elementos UML
 
@@ -113,7 +115,8 @@ El handle de salida es el origen persistido. En el inspector, Include usa «Orig
 - UseCase **puede** tener `parentId` de un boundary.
 - Boundary no tiene padre.
 - Actor cuyo centro cae dentro del boundary: warning no bloqueante.
-- UseCase cuyo centro queda fuera del boundary y no tiene padre: warning no bloqueante.
+- UseCase sin padre cuyo centro queda fuera del boundary: warning no bloqueante.
+- UseCase con padre cuyo centro queda fuera del rectángulo de ese padre: warning no bloqueante. El aviso no impide el commit ni cambia el modelo persistido.
 - Eliminar boundary: los casos de uso hijos pasan a coordenadas absolutas equivalentes y pierden `parentId`.
 - Eliminar elemento: se eliminan todas las relaciones incidentes.
 - Duplicar: solo Actor y UseCase; offset `(24, 24)`; sin relaciones; boundary no se duplica.

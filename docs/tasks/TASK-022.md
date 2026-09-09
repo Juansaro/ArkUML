@@ -51,9 +51,9 @@ Elegir Asociación + origen «Caso de uso» anuncia o muestra la razón de tipos
 
 ## Criterios de aceptación
 
-- [ ] Intento inválido desde el inspector: razón visible, sin mutación.
-- [ ] Intento válido (Actor→Caso, Include/Extend entre casos distintos) sigue igual.
-- [ ] Una sola live region; avisos geométricos siguen en el inspector, no en esa región.
+- [x] Intento inválido desde el inspector: razón visible, sin mutación.
+- [x] Intento válido (Actor→Caso, Include/Extend entre casos distintos) sigue igual.
+- [x] Una sola live region; avisos geométricos siguen en el inspector, no en esa región.
 
 ## Tests
 
@@ -73,3 +73,7 @@ npm run check
 ## Definition of Done
 
 FR-07 cubierto por teclado/inspector con la misma razón que el drag. Diff limitado a inspector/tool/tests.
+
+## Evidencia de cierre
+
+Registrada en TASK-028 (2026-09-09). El código versionado cumple FR-07 en el inspector: `ConnectForm` muestra `connectionRejectionMessage` (`data-testid="connect-error"`) y no envía si el par es inválido; `Inspector.test.tsx` cubre asociación caso–caso (razón, Conectar disabled, cero relaciones) e include reflexivo vs válido. `relationshipTool.test.ts` cubre `connectionRejectionMessage`. No se infiere de conversaciones: el árbol `src/` y los tests son la evidencia.

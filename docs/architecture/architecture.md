@@ -18,9 +18,9 @@ Infrastructure (DiagramRepository, exportDiagram)
 
 `DiagramDocument` es la fuente de verdad. React Flow es una **proyección** para interacción. `toObject()` de React Flow no se persiste ni se trata como modelo.
 
-## Módulos previstos
+## Módulos
 
-Cuando exista código, vivirá así. Esta fase no crea `src/`.
+El código de aplicación vive en `src/` y `e2e/`:
 
 ```text
 src/
@@ -117,16 +117,19 @@ No persistido: selección, historial, herramienta, hover, mensajes.
 - Middleware `persist` de Zustand (el adapter propio valida con Zod).
 - Arquitectura hexagonal completa, casos de uso como clases, o directorios `core/infra/ui` vacíos.
 
-## Documentos canónicos (esta fase)
+## Documentos canónicos
 
 ```text
 docs/
-  product/mvp-spec.md
+  product/{mvp-spec,brand-system}.md
   architecture/{architecture,domain-model,rendering-and-export,testing-strategy,performance}.md
   decisions/ADR-001 … ADR-006
   development/{agent-workflow,task-template}.md
-  tasks/TASK-001 … TASK-022
+  tasks/TASK-001 … TASK-025
+  tasks/post-024/          índice, registro, roadmap y TASK-026+
 .cursor/rules/{00-core,domain,testing}.mdc
+src/
+e2e/
 ```
 
-`performance.md` registra los números de TASK-019. `accessibility.md` solo si TASK-017 no cabe en mvp-spec.
+`performance.md` registra los números de TASK-019. La a11y del chrome cabe en mvp-spec; no hay `accessibility.md` aparte.

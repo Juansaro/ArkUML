@@ -2,7 +2,7 @@
 
 Editor web de diagramas UML. El MVP cubre únicamente **diagramas de casos de uso**, con edición visual, undo/redo, persistencia local y exportación a PNG/JPG.
 
-Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación. El código es **Open Source** bajo [Apache License 2.0](LICENSE).
+Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación. El código es **Open Source** bajo [Apache License 2.0](LICENSE). El checklist RC está firmado (TASK-026). La identidad (fase 9) no bloqueó ese RC; el ship de remediación (TASK-030) exige TASK-024 cerrada — ya lo está. Pendiente de TASK-030: evidencia de rendimiento (TASK-029) y el gate de salida.
 
 ## Requisitos
 
@@ -22,7 +22,7 @@ npm run preview
 
 `vite preview` escucha en `http://localhost:4173` por defecto. Cualquier servidor de archivos estáticos que sirva el contenido de `dist/` (por ejemplo el `index.html` en la raíz del sitio) también vale. No abras `dist/index.html` como `file://`: los módulos ES requieren HTTP.
 
-CI usa el mismo bundle: `npm run build` y después Playwright contra `vite preview`.
+CI usa el mismo bundle: `npm run build` y después Playwright contra `vite preview` (`webServer` en `:5173`). En local, Playwright reutiliza `npm run dev` en ese puerto. La política está en [ADR-005](docs/decisions/ADR-005-testing.md).
 
 ## Exportación
 
@@ -95,7 +95,7 @@ Herramientas de test: `@axe-core/playwright` y `axe-core` son **MPL-2.0** (solo 
 
 | Área                          | Estado                                              |
 | ----------------------------- | --------------------------------------------------- |
-| Documentación y ADRs          | Completa (MVP de casos de uso)                      |
+| Documentación y ADRs          | MVP de casos de uso + árbol post-024 (TASK-028)     |
 | Código de aplicación          | Release candidate estático                          |
 | Calidad / tests               | `npm run check` + Playwright (CI en GitHub Actions) |
 | Dependencias / `package.json` | Lockfile versionado; `npm audit --audit-level=high` |
@@ -140,5 +140,7 @@ Siguientes pasos explícitamente **fuera** de este RC: generalization, IndexedDB
 Un chat, una tarea. Adjuntar la tarea activa y los documentos que ella misma cita.
 
 ```text
-TASK-001 → TASK-002 → … → TASK-020 → TASK-021 → TASK-022 → TASK-023 → TASK-024
+TASK-001 → … → TASK-025 → docs/tasks/post-024/ (026+)
 ```
+
+El índice de estado de TASK-026+ es [post-024/README.md](docs/tasks/post-024/README.md).

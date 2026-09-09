@@ -78,10 +78,11 @@ Todas devuelven un documento nuevo o un error de dominio con `code` estable y `m
 | `canConnect` / `createRelationship` | Matriz de [mvp-spec.md](../product/mvp-spec.md). |
 | `deleteRelationships` | Por id. |
 
-Validaciones no bloqueantes (no impiden el commit; la UI las muestra):
+Validaciones no bloqueantes (no impiden el commit ni mutan el documento; la UI las muestra). Misma regla que [mvp-spec.md](../product/mvp-spec.md):
 
 - Actor cuyo centro está dentro del rectángulo del boundary.
-- UseCase sin padre cuyo centro está fuera del boundary, o con padre cuyo centro está fuera del padre.
+- UseCase sin padre cuyo centro está fuera del boundary.
+- UseCase con padre cuyo centro está fuera del rectángulo de ese padre.
 
 ## Errores de dominio (códigos)
 

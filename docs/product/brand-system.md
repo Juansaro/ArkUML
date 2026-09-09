@@ -77,8 +77,9 @@ producto, o dibujar el pico en A en el icono de paleta del boundary.
 
 ### Favicon
 
-Archivo `public/favicon.svg`. Tinta Blueprint sobre fondo blanco. En
-`index.html`: `<link rel="icon" href="/favicon.svg" type="image/svg+xml" />`.
+Archivo `public/favicon.svg`. Tinta Blueprint sobre fondo blanco. El `href` es
+relativo para respetar `base: "./"`: en `index.html`,
+`<link rel="icon" href="./favicon.svg" type="image/svg+xml" />`.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
