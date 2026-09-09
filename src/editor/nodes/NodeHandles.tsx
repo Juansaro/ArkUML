@@ -23,6 +23,8 @@ export function NodeHandles() {
           type="target"
           position={handle.position}
           className={styles.handle}
+          aria-hidden="true"
+          tabIndex={-1}
         />
       ))}
       {HANDLE_POSITIONS.map((handle) => (
@@ -32,6 +34,8 @@ export function NodeHandles() {
           type="source"
           position={handle.position}
           className={styles.handle}
+          aria-hidden="true"
+          tabIndex={-1}
         />
       ))}
     </>

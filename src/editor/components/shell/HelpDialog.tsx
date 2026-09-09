@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import { EDITOR_SHORTCUT_HELP } from "../../shortcuts/shortcutMap.ts";
+import { useFocusTrap } from "../useFocusTrap.ts";
 import styles from "./HelpDialog.module.css";
 
 type HelpDialogProps = {
@@ -7,15 +9,14 @@ type HelpDialogProps = {
 };
 
 export function HelpDialog({ titleId, onClose }: HelpDialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, onClose);
+
   return (
     <div className={styles.overlay}>
-      <button
-        type="button"
-        className={styles.backdrop}
-        aria-label="Cerrar ayuda"
-        onClick={onClose}
-      />
+      <div className={styles.backdrop} onClick={onClose} />
       <div
+        ref={dialogRef}
         className={styles.dialog}
         role="dialog"
         aria-modal="true"

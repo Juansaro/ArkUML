@@ -213,6 +213,7 @@ describe("mapDocumentToReactFlow", () => {
 
     const actorNode = nodes.find((node) => node.id === actor.id);
     expect(actorNode?.selected).toBe(true);
+    expect(actorNode?.ariaLabel).toBe("Actor Usuario, seleccionado");
     expect(nodes.filter((node) => node.selected)).toHaveLength(1);
 
     expect(edges).toHaveLength(3);
@@ -231,7 +232,7 @@ describe("mapDocumentToReactFlow", () => {
       className: "diagram-edge diagram-edge-association",
       data: { kind: "association" },
       selected: true,
-      ariaLabel: `Asociación entre ${actor.name} y ${login.name}`,
+      ariaLabel: `Asociación entre ${actor.name} y ${login.name}, seleccionada`,
     });
     expect(edges[1]).toMatchObject({
       type: "include",

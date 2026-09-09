@@ -27,19 +27,31 @@ test("drawers de paleta e inspector entre 768 y 1023 px", async ({ page }) => {
   await page.setViewportSize({ width: 800, height: 720 });
   await page.goto("/");
 
-  const palette = page.getByRole("navigation", { name: "Paleta" });
-  const inspector = page.getByRole("complementary", { name: "Inspector" });
+  const palette = page.getByRole("navigation", {
+    name: "Paleta",
+    includeHidden: true,
+  });
+  const inspector = page.getByRole("complementary", {
+    name: "Inspector",
+    includeHidden: true,
+  });
 
   await expect(page.getByRole("button", { name: "Paleta" })).toBeVisible();
   await expect(palette).not.toBeInViewport();
   await expect(inspector).not.toBeInViewport();
 
   await page.getByRole("button", { name: "Paleta" }).click();
-  await expect(palette).toBeInViewport();
+  await expect(
+    page.getByRole("navigation", { name: "Paleta" }),
+  ).toBeInViewport();
 
   await page.getByRole("button", { name: "Inspector" }).click();
-  await expect(inspector).toBeInViewport();
-  await expect(palette).not.toBeInViewport();
+  await expect(
+    page.getByRole("complementary", { name: "Inspector" }),
+  ).toBeInViewport();
+  await expect(
+    page.getByRole("navigation", { name: "Paleta", includeHidden: true }),
+  ).not.toBeInViewport();
 });
 
 test("aviso bajo 768 px sin desmontar el shell", async ({ page }) => {

@@ -130,7 +130,15 @@
     transform: translateX(100%);
   }
 
+  .palette:not(.drawerOpen),
+  .inspector:not(.drawerOpen) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
   .drawerOpen {
+    visibility: visible;
+    pointer-events: auto;
     transform: translateX(0);
   }
 

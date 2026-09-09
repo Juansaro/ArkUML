@@ -13,8 +13,10 @@ import {
   isRelationshipTool,
   isValidRelationshipConnection,
   previewConnection,
+  connectableEndpointOptions,
   relationshipInputFromConnection,
   relationshipKindFromTool,
+  validRelationshipTargets,
 } from "./relationshipTool.ts";
 
 function sequentialIds(start = 1): IdFactory {
@@ -477,5 +479,47 @@ describe("relationshipTool include/extend", () => {
     });
     expectOk(extendSamePair);
     expect(store.getState().document.relationships).toHaveLength(3);
+  });
+});
+
+describe("connectableEndpointOptions", () => {
+  it("lista actores y casos para asociación, y solo casos para include", () => {
+    const store = createStore();
+    expectOk(
+      store.getState().createActor({
+        name: "Usuario",
+        geometry: ACTOR_GEOMETRY,
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    const document = store.getState().document;
+    const association = connectableEndpointOptions(document, "association");
+    const include = connectableEndpointOptions(document, "include");
+
+    expect(association.map((option) => option.label)).toEqual([
+      "Actor Usuario",
+      "Caso de uso Login",
+    ]);
+    expect(include.map((option) => option.label)).toEqual([
+      "Caso de uso Login",
+    ]);
+
+    const actor = association[0];
+    if (actor === undefined) {
+      throw new Error("Falta el actor");
+    }
+    expect(
+      validRelationshipTargets(
+        document,
+        "association",
+        actor.id,
+        association,
+      ).map((option) => option.label),
+    ).toEqual(["Caso de uso Login"]);
   });
 });

@@ -419,7 +419,7 @@ describe("selectors", () => {
     expect(shallow(first, selectViewport(store.getState()))).toBe(false);
   });
 
-  it("anuncia avisos cuando no hay otro mensaje", () => {
+  it("anuncia solo mensajes de acción, no avisos persistentes", () => {
     const store = createStore();
     expect(selectLiveAnnouncement(store.getState())).toBe("");
 
@@ -429,9 +429,7 @@ describe("selectors", () => {
         geometry: { x: 40, y: 40, width: 48, height: 96 },
       }),
     );
-    expect(selectLiveAnnouncement(store.getState())).toMatch(
-      /Usuario:.*actor/i,
-    );
+    expect(selectLiveAnnouncement(store.getState())).toBe("");
 
     store.getState().setMessage("Se creó Usuario.");
     expect(selectLiveAnnouncement(store.getState())).toBe("Se creó Usuario.");

@@ -157,11 +157,19 @@ Los tiempos de NFR-03 y NFR-04 son **objetivos de diseño**. Solo se convierten 
 Incluido:
 
 - Nombres accesibles en controles del chrome.
-- Orden de tabulación lógico y foco visible.
-- Región `aria-live` única para creación, borrado, errores de conexión y estado de guardado.
-- Operaciones esenciales por teclado, con inspector como alternativa para elegir extremos de relación.
+- Orden de tabulación lógico y foco visible. No se ocultan controles enfocados.
+- Región `aria-live` única para creación, borrado, errores de conexión y estado de guardado. Los avisos geométricos viven en el inspector, no en esa región.
+- Operaciones esenciales por teclado: paleta + inspector para colocar elementos; inspector para elegir extremos de relación sin arrastrar handles.
+- Focus trap y retorno de foco en diálogos; drawers 768–1023 px operables (inert / fuera de tabulación al cerrar).
 - Contraste de notación que no dependa solo del color (sólida vs discontinua, presencia de flecha y estereotipo).
 - Scan axe del shell y estados principales; cero violaciones critical/serious en lo cubierto.
+
+Limitaciones publicadas del lienzo:
+
+- El grafo de React Flow no se recorre como un documento equivalente para lector de pantalla. Los handles son ratón-first (`aria-hidden`) y `disableKeyboardA11y` evita el conflicto con flechas (nudge de 1 px / 16 px).
+- Axe cubre el chrome (shell, inspector, diálogos, drawers) y excluye el interior de `.react-flow`.
+- Por debajo de 768 px se muestra un aviso; la edición no está soportada y el documento no se borra.
+- No se declara conformidad WCAG total ni un editor paralelo para screen reader.
 
 Fuera del MVP:
 

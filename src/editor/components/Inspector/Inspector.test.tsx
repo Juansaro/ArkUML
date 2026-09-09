@@ -380,4 +380,55 @@ describe("Inspector", () => {
     expect(screen.getByTestId("connection-help")).toBeInTheDocument();
     expect(screen.queryByLabelText("Nombre")).not.toBeInTheDocument();
   });
+
+  it("coloca un actor desde el inspector y enfoca el nombre", async () => {
+    const user = userEvent.setup();
+    const store = createStore();
+    store.getState().setTool("actor");
+    renderInspector(store);
+
+    await user.click(
+      screen.getByRole("button", { name: "Colocar en el lienzo" }),
+    );
+
+    const actor = actorOf(store);
+    expect(actor.name).toBe("Actor");
+    expect(store.getState().tool).toBe("select");
+    expect(await screen.findByLabelText("Nombre")).toHaveFocus();
+  });
+
+  it("conecta actor y caso de uso eligiendo extremos en el inspector", async () => {
+    const user = userEvent.setup();
+    const store = createStore();
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    const actor = actorOf(store);
+    const useCase = store
+      .getState()
+      .document.elements.find((element) => element.kind === "use-case");
+    if (useCase === undefined) {
+      throw new Error("Falta el caso de uso");
+    }
+    store.getState().setTool("association");
+    renderInspector(store);
+
+    await user.selectOptions(screen.getByLabelText("Origen"), actor.id);
+    await user.selectOptions(screen.getByLabelText("Destino"), useCase.id);
+    await user.click(screen.getByRole("button", { name: "Conectar" }));
+
+    expect(store.getState().document.relationships).toHaveLength(1);
+    expect(store.getState().ui.message).toBe("Se creó la asociación.");
+    expect(screen.getByTestId("inspector-type")).toHaveTextContent(
+      "Asociación",
+    );
+  });
 });

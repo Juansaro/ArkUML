@@ -1,3 +1,4 @@
+import type { Ref } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { selectCanRedo, selectCanUndo } from "../../store/selectors.ts";
 import {
@@ -17,6 +18,8 @@ type TopBarProps = {
   onToggleHelp: () => void;
   onNewDiagram: () => void;
   onExport: () => void;
+  paletteButtonRef?: Ref<HTMLButtonElement>;
+  inspectorButtonRef?: Ref<HTMLButtonElement>;
 };
 
 export function TopBar({
@@ -30,6 +33,8 @@ export function TopBar({
   onToggleHelp,
   onNewDiagram,
   onExport,
+  paletteButtonRef,
+  inspectorButtonRef,
 }: TopBarProps) {
   const store = useEditorStoreApi();
   const { canUndo, canRedo } = useEditorStore(
@@ -48,6 +53,7 @@ export function TopBar({
       <p className={styles.help}>Editor de diagramas de casos de uso</p>
       <div className={styles.drawerToggles}>
         <button
+          ref={paletteButtonRef}
           type="button"
           aria-expanded={paletteOpen}
           aria-controls="editor-palette"
@@ -56,6 +62,7 @@ export function TopBar({
           Paleta
         </button>
         <button
+          ref={inspectorButtonRef}
           type="button"
           aria-expanded={inspectorOpen}
           aria-controls="editor-inspector"

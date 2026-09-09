@@ -13,9 +13,11 @@ import {
   createdElementAnnouncement,
   DEFAULT_ELEMENT_NAMES,
   DEFAULT_ELEMENT_SIZES,
+  defaultPlacementPosition,
   geometryAt,
   isCreateElementTool,
   nextDefaultName,
+  placeActiveCreateTool,
   placeElement,
 } from "./createElementTool.ts";
 
@@ -216,10 +218,72 @@ describe("placeElement", () => {
   });
 });
 
+describe("defaultPlacementPosition", () => {
+  it("coloca el actor a la izquierda del boundary y el caso dentro", () => {
+    const store = createStore();
+    const document = store.getState().document;
+    expect(defaultPlacementPosition(document, "actor")).toEqual({
+      x: -120,
+      y: 40,
+    });
+    expect(defaultPlacementPosition(document, "use-case")).toEqual({
+      x: 80,
+      y: 80,
+    });
+  });
+
+  it("desplaza copias 24 px y coloca el caso en absoluto sin boundary", () => {
+    const store = createStore();
+    expectOk(placeElement(store, "actor", { x: -120, y: 40 }));
+    expect(
+      defaultPlacementPosition(store.getState().document, "actor"),
+    ).toEqual({ x: -120, y: 64 });
+
+    const empty = documentWithoutBoundary();
+    expect(defaultPlacementPosition(empty, "use-case")).toEqual({
+      x: 80,
+      y: 80,
+    });
+    expect(defaultPlacementPosition(empty, "system-boundary")).toEqual({
+      x: 0,
+      y: 0,
+    });
+  });
+});
+
 describe("isCreateElementTool", () => {
   it("reconoce solo las herramientas de elemento", () => {
     expect(isCreateElementTool("actor")).toBe(true);
     expect(isCreateElementTool("select")).toBe(false);
     expect(isCreateElementTool("association")).toBe(false);
+  });
+});
+
+describe("placeActiveCreateTool", () => {
+  it("no coloca si la herramienta no es de creación", () => {
+    const store = createStore();
+    expect(placeActiveCreateTool(store)).toBeUndefined();
+  });
+
+  it("coloca con la herramienta activa y anuncia", () => {
+    const store = createStore();
+    store.getState().setTool("actor");
+    const placed = placeActiveCreateTool(store);
+    expect(placed).toBeDefined();
+    if (placed === undefined) {
+      throw new Error("Expected placement");
+    }
+    expectOk(placed);
+
+    const actor = store
+      .getState()
+      .document.elements.find((element) => element.kind === "actor");
+    expect(actor).toMatchObject({
+      name: DEFAULT_ELEMENT_NAMES.actor,
+      geometry: { x: -120, y: 40, ...DEFAULT_ELEMENT_SIZES.actor },
+    });
+    expect(store.getState().ui.message).toBe(
+      createdElementAnnouncement(DEFAULT_ELEMENT_NAMES.actor),
+    );
   });
 });

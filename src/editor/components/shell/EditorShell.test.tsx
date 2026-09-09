@@ -334,4 +334,23 @@ describe("EditorShell", () => {
     expect(store.getState().history.past).toHaveLength(0);
     expect(screen.getByRole("button", { name: "Deshacer" })).toBeDisabled();
   });
+
+  it("devuelve el foco al control que abrió el diálogo", async () => {
+    const user = userEvent.setup();
+    render(<EditorShell />);
+
+    const help = screen.getByRole("button", { name: "Ayuda" });
+    await user.click(help);
+    expect(screen.getByRole("dialog", { name: "Ayuda" })).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    expect(help).toHaveFocus();
+
+    const exportButton = screen.getByRole("button", { name: "Exportar" });
+    await user.click(exportButton);
+    expect(
+      screen.getByRole("dialog", { name: "Exportar" }),
+    ).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    expect(exportButton).toHaveFocus();
+  });
 });

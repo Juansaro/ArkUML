@@ -3,6 +3,7 @@ import { workspaceNeedsNewDiagramConfirmation } from "../../../app/bootstrap.ts"
 import { useOptionalWorkspaceSession } from "../../../app/WorkspaceSessionProvider.tsx";
 import { DEFAULT_VIEWPORT } from "../../../domain/diagram/defaults.ts";
 import { createDiagramDocument } from "../../../domain/diagram/factories.ts";
+import { useCompactLayout } from "../../a11y/useCompactLayout.ts";
 import { DiagramCanvas } from "../../canvas/DiagramCanvas.tsx";
 import { useEditorShortcuts } from "../../shortcuts/useEditorShortcuts.ts";
 import {
@@ -65,7 +66,14 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [canvasNonce, setCanvasNonce] = useState(0);
+  const compact = useCompactLayout();
+  const paletteRef = useRef<HTMLElement>(null);
+  const inspectorPanelRef = useRef<HTMLElement>(null);
+  const paletteButtonRef = useRef<HTMLButtonElement>(null);
+  const inspectorButtonRef = useRef<HTMLButtonElement>(null);
   const drawerOpen = paletteOpen || inspectorOpen;
+  const paletteHidden = compact && !paletteOpen;
+  const inspectorHidden = compact && !inspectorOpen;
   const fitViewRef = useRef<() => void>(() => {
     /* registered by the canvas */
   });
@@ -86,30 +94,75 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
       if (event.key !== "Escape") {
         return;
       }
+      if (!paletteOpen && !inspectorOpen) {
+        return;
+      }
 
+      const returnTo = paletteOpen
+        ? paletteButtonRef.current
+        : inspectorButtonRef.current;
       setPaletteOpen(false);
       setInspectorOpen(false);
+      if (compact) {
+        returnTo?.focus();
+      }
     }
 
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, []);
+  }, [compact, inspectorOpen, paletteOpen]);
+
+  useEffect(() => {
+    if (!compact || !paletteOpen) {
+      return;
+    }
+    const first = firstFocusable(paletteRef.current);
+    first?.focus();
+  }, [compact, paletteOpen]);
+
+  useEffect(() => {
+    if (!compact || !inspectorOpen) {
+      return;
+    }
+    const first = firstFocusable(inspectorPanelRef.current);
+    first?.focus();
+  }, [compact, inspectorOpen]);
 
   function togglePalette() {
-    setPaletteOpen((open) => !open);
+    if (paletteOpen) {
+      setPaletteOpen(false);
+      if (compact) {
+        paletteButtonRef.current?.focus();
+      }
+      return;
+    }
     setInspectorOpen(false);
+    setPaletteOpen(true);
   }
 
   function toggleInspector() {
-    setInspectorOpen((open) => !open);
+    if (inspectorOpen) {
+      setInspectorOpen(false);
+      if (compact) {
+        inspectorButtonRef.current?.focus();
+      }
+      return;
+    }
     setPaletteOpen(false);
+    setInspectorOpen(true);
   }
 
   function closeDrawers() {
+    const returnTo = paletteOpen
+      ? paletteButtonRef.current
+      : inspectorButtonRef.current;
     setPaletteOpen(false);
     setInspectorOpen(false);
+    if (compact) {
+      returnTo?.focus();
+    }
   }
 
   function toggleHelp() {
@@ -172,6 +225,8 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
           onToggleHelp={toggleHelp}
           onNewDiagram={requestNewDiagram}
           onExport={toggleExport}
+          paletteButtonRef={paletteButtonRef}
+          inspectorButtonRef={inspectorButtonRef}
         />
       </header>
       <div className={styles.narrowNotice} role="alert">
@@ -180,8 +235,11 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
       </div>
       <nav
         id="editor-palette"
+        ref={paletteRef}
         className={`${styles.panel} ${styles.palette} ${paletteOpen ? styles.drawerOpen : ""}`}
         aria-labelledby={paletteHeadingId}
+        aria-hidden={paletteHidden || undefined}
+        inert={paletteHidden || undefined}
       >
         <Palette headingId={paletteHeadingId} />
       </nav>
@@ -193,8 +251,11 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
       </main>
       <aside
         id="editor-inspector"
+        ref={inspectorPanelRef}
         className={`${styles.panel} ${styles.inspector} ${inspectorOpen ? styles.drawerOpen : ""}`}
         aria-labelledby={inspectorHeadingId}
+        aria-hidden={inspectorHidden || undefined}
+        inert={inspectorHidden || undefined}
       >
         <Inspector headingId={inspectorHeadingId} />
       </aside>
@@ -244,6 +305,19 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
         </button>
       ) : null}
     </div>
+  );
+}
+
+function firstFocusable(
+  container: HTMLElement | null,
+): HTMLElement | undefined {
+  if (container === null) {
+    return undefined;
+  }
+  return (
+    container.querySelector<HTMLElement>(
+      'button:not([disabled]):not([aria-disabled="true"]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ) ?? undefined
   );
 }
 

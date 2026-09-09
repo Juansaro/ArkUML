@@ -5,6 +5,11 @@ import type {
   Relationship,
   RelationshipKind,
 } from "../../domain/diagram/model.ts";
+import {
+  elementAccessibleName,
+  relationshipAccessibleName,
+  relationshipTypeLabel,
+} from "../a11y/labels.ts";
 import type { SelectionState } from "../store/editorStore.ts";
 
 export type DiagramNodeData = {
@@ -50,7 +55,11 @@ export function mapDocumentToReactFlow(
       className: `diagram-edge diagram-edge-${relationship.kind}`,
       data: { kind: relationship.kind },
       selected: selectedRelationships.has(relationship.id),
-      ariaLabel: relationshipAriaLabel(document, relationship),
+      ariaLabel: relationshipAriaLabel(
+        document,
+        relationship,
+        selectedRelationships.has(relationship.id),
+      ),
     })),
   };
 }
@@ -92,7 +101,7 @@ function mapElement(element: DiagramElement, selected: boolean): DiagramNode {
     width: element.geometry.width,
     height: element.geometry.height,
     selected,
-    ariaLabel: elementAriaLabel(element),
+    ariaLabel: elementAccessibleName(element, selected),
   };
 
   if (element.kind === "system-boundary") {
@@ -119,6 +128,7 @@ function mapElement(element: DiagramElement, selected: boolean): DiagramNode {
 function relationshipAriaLabel(
   document: DiagramDocument,
   relationship: Relationship,
+  selected: boolean,
 ): string {
   const source = document.elements.find(
     (element) => element.id === relationship.sourceId,
@@ -126,29 +136,13 @@ function relationshipAriaLabel(
   const target = document.elements.find(
     (element) => element.id === relationship.targetId,
   );
-  const kindLabel = relationshipKindLabel(relationship.kind);
   if (source === undefined || target === undefined) {
-    return kindLabel;
+    return relationshipTypeLabel(relationship.kind);
   }
-  return `${kindLabel} entre ${source.name} y ${target.name}`;
-}
-
-function relationshipKindLabel(kind: RelationshipKind): string {
-  if (kind === "association") {
-    return "Asociación";
-  }
-  if (kind === "include") {
-    return "Include";
-  }
-  return "Extend";
-}
-
-function elementAriaLabel(element: DiagramElement): string {
-  if (element.kind === "actor") {
-    return `Actor ${element.name}`;
-  }
-  if (element.kind === "use-case") {
-    return `Caso de uso ${element.name}`;
-  }
-  return `Límite del sistema ${element.name}`;
+  return relationshipAccessibleName(
+    relationship.kind,
+    source.name,
+    target.name,
+    selected,
+  );
 }

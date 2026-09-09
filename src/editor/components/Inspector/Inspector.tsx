@@ -5,11 +5,20 @@ import {
   selectInspectorView,
   selectTool,
 } from "../../store/selectors.ts";
-import { useEditorStore } from "../../store/EditorStoreProvider.tsx";
 import {
+  useEditorStore,
+  useEditorStoreApi,
+} from "../../store/EditorStoreProvider.tsx";
+import {
+  isCreateElementTool,
+  placeActiveCreateTool,
+} from "../../tools/createElementTool.ts";
+import {
+  isRelationshipTool,
   relationshipConnectionHelp,
   relationshipEndpointFieldLabels,
 } from "../../tools/relationshipTool.ts";
+import { ConnectForm } from "./ConnectForm.tsx";
 import styles from "./Inspector.module.css";
 
 type InspectorProps = {
@@ -21,13 +30,33 @@ export function Inspector({ headingId }: InspectorProps) {
   const tool = useEditorStore(selectTool);
   const warnings = useEditorStore(selectDiagramWarnings);
   const connectionHelp = relationshipConnectionHelp(tool);
+  const createTool = isCreateElementTool(tool) ? tool : undefined;
+  const relationshipTool = isRelationshipTool(tool) ? tool : undefined;
 
   return (
     <div className={styles.body} data-testid="inspector">
-      <h2 id={headingId} className={styles.heading}>
+      <h2 id={headingId} className={styles.heading} tabIndex={-1}>
         Inspector
       </h2>
-      <InspectorBody view={view} connectionHelp={connectionHelp} />
+      {createTool !== undefined ? <PlaceElementControl /> : null}
+      {relationshipTool !== undefined && view.status !== "relationship" ? (
+        <>
+          {connectionHelp !== undefined ? (
+            <ConnectionHelp text={connectionHelp} />
+          ) : null}
+          <ConnectForm key={relationshipTool} kind={relationshipTool} />
+        </>
+      ) : null}
+      {view.status === "empty" &&
+      createTool === undefined &&
+      relationshipTool === undefined ? (
+        <p className={styles.empty}>
+          Selecciona un elemento o una relación para ver su nombre, tipo y
+          extremos.
+        </p>
+      ) : (
+        <InspectorBody view={view} connectionHelp={connectionHelp} />
+      )}
       {warnings.length > 0 ? (
         <ul
           className={styles.warnings}
@@ -58,15 +87,7 @@ function InspectorBody({
   connectionHelp: string | undefined;
 }) {
   if (view.status === "empty") {
-    if (connectionHelp !== undefined) {
-      return <ConnectionHelp text={connectionHelp} />;
-    }
-    return (
-      <p className={styles.empty}>
-        Selecciona un elemento o una relación para ver su nombre, tipo y
-        extremos.
-      </p>
-    );
+    return null;
   }
 
   if (view.status === "multiple") {
@@ -101,9 +122,6 @@ function InspectorBody({
 
   return (
     <div className={styles.fields}>
-      {connectionHelp !== undefined ? (
-        <ConnectionHelp text={connectionHelp} />
-      ) : null}
       <TypeField label={view.typeLabel} />
       <label className={styles.field}>
         <span className={styles.label}>Nombre</span>
@@ -116,6 +134,28 @@ function InspectorBody({
         />
       </label>
     </div>
+  );
+}
+
+function PlaceElementControl() {
+  const store = useEditorStoreApi();
+
+  return (
+    <button
+      type="button"
+      data-testid="place-element"
+      onClick={() => {
+        placeActiveCreateTool(store);
+        window.setTimeout(() => {
+          const input = document.querySelector<HTMLInputElement>(
+            '[data-testid="inspector"] [data-testid="element-name-input"]',
+          );
+          input?.focus();
+        }, 0);
+      }}
+    >
+      Colocar en el lienzo
+    </button>
   );
 }
 

@@ -1,11 +1,13 @@
 import type {
   Anchor,
   DiagramDocument,
+  DiagramElement,
   RelationshipKind,
   Result,
 } from "../../domain/diagram/model.ts";
 import { canConnect } from "../../domain/diagram/rules.ts";
 import type { CreateRelationshipInput } from "../../domain/diagram/operations.ts";
+import { elementAccessibleName } from "../a11y/labels.ts";
 import type { EditorStoreApi, EditorTool } from "../store/editorStore.ts";
 
 export const RELATIONSHIP_TOOLS = ["association", "include", "extend"] as const;
@@ -63,6 +65,9 @@ export function createdRelationshipAnnouncement(
 export function relationshipConnectionHelp(
   tool: EditorTool,
 ): string | undefined {
+  if (tool === "association") {
+    return "Elige un actor y un caso de uso. También puedes arrastrar entre handles.";
+  }
   if (tool === "include") {
     return "Origen: caso que incluye. Destino: caso incluido. Arrastra del origen al destino; el sentido no se invierte.";
   }
@@ -83,6 +88,52 @@ export function relationshipEndpointFieldLabels(kind: RelationshipKind): {
     return { source: "Origen (extiende)", target: "Destino (caso base)" };
   }
   return { source: "Origen", target: "Destino" };
+}
+
+export type RelationshipEndpointOption = {
+  id: string;
+  label: string;
+};
+
+export function connectableEndpointOptions(
+  document: DiagramDocument,
+  kind: RelationshipTool,
+): readonly RelationshipEndpointOption[] {
+  return document.elements.flatMap((element) => {
+    if (!isConnectableEndpoint(kind, element)) {
+      return [];
+    }
+    return [{ id: element.id, label: elementAccessibleName(element) }];
+  });
+}
+
+export function validRelationshipTargets(
+  document: DiagramDocument,
+  kind: RelationshipTool,
+  sourceId: string,
+  candidates: readonly RelationshipEndpointOption[],
+): readonly RelationshipEndpointOption[] {
+  return candidates.filter(
+    (candidate) =>
+      previewConnection(document, {
+        kind,
+        sourceId,
+        targetId: candidate.id,
+      }).ok,
+  );
+}
+
+function isConnectableEndpoint(
+  kind: RelationshipTool,
+  element: DiagramElement,
+): boolean {
+  if (element.kind === "system-boundary") {
+    return false;
+  }
+  if (kind === "association") {
+    return element.kind === "actor" || element.kind === "use-case";
+  }
+  return element.kind === "use-case";
 }
 
 export function previewConnection(

@@ -86,6 +86,53 @@ export function createdElementAnnouncement(name: string): string {
   return `Se creó ${name}.`;
 }
 
+export function defaultPlacementPosition(
+  document: DiagramDocument,
+  kind: CreateElementTool,
+): { x: number; y: number } {
+  const offset =
+    document.elements.filter((element) => element.kind === kind).length * 24;
+  const boundary = document.elements.find(
+    (element) => element.kind === "system-boundary",
+  );
+
+  if (kind === "actor") {
+    const originX = boundary?.geometry.x ?? 0;
+    const originY = boundary?.geometry.y ?? 0;
+    return {
+      x: originX - DEFAULT_ELEMENT_SIZES.actor.width - 48,
+      y: originY + 40 + offset,
+    };
+  }
+
+  if (kind === "system-boundary") {
+    return { x: offset, y: offset };
+  }
+
+  if (boundary === undefined) {
+    return { x: 80 + offset, y: 80 + offset };
+  }
+
+  return {
+    x: boundary.geometry.x + 80 + offset,
+    y: boundary.geometry.y + 80 + offset,
+  };
+}
+
+export function placeActiveCreateTool(
+  store: EditorStoreApi,
+): Result<DiagramDocument> | undefined {
+  const tool = store.getState().tool;
+  if (!isCreateElementTool(tool)) {
+    return undefined;
+  }
+  return placeElement(
+    store,
+    tool,
+    defaultPlacementPosition(store.getState().document, tool),
+  );
+}
+
 export function boundaryContainingPoint(
   document: DiagramDocument,
   point: { x: number; y: number },

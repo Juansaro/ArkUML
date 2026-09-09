@@ -15,6 +15,7 @@
   border-radius: 0;
   padding: 0;
   background-color: var(--color-overlay);
+  cursor: pointer;
 }
 
 .backdrop:hover {

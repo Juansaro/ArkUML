@@ -38,6 +38,12 @@ p {
   outline: none;
 }
 
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
 button {
   font: inherit;
   color: inherit;

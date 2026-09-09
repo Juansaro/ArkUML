@@ -5,6 +5,11 @@ import type {
   Viewport,
 } from "../../domain/diagram/model.ts";
 import {
+  elementAccessibleName,
+  elementTypeLabel,
+  relationshipTypeLabel,
+} from "../a11y/labels.ts";
+import {
   collectWarnings,
   type DiagramWarning,
 } from "../../domain/diagram/validation.ts";
@@ -75,7 +80,6 @@ export type VisibleDiagramWarning = DiagramWarning & {
 
 type WarningsCacheEntry = {
   warnings: readonly VisibleDiagramWarning[];
-  announcement: string;
 };
 
 const EMPTY_WARNINGS: readonly VisibleDiagramWarning[] = [];
@@ -92,13 +96,7 @@ export function selectDiagramWarnings(
 }
 
 export function selectLiveAnnouncement(state: EditorStore): string {
-  if (state.ui.message !== undefined) {
-    return state.ui.message;
-  }
-  if (state.history.transactionBaseline !== undefined) {
-    return "";
-  }
-  return warningsFor(state.document).announcement;
+  return state.ui.message ?? "";
 }
 
 function warningsFor(document: DiagramDocument): WarningsCacheEntry {
@@ -112,7 +110,6 @@ function warningsFor(document: DiagramDocument): WarningsCacheEntry {
   }));
   const entry: WarningsCacheEntry = {
     warnings: warnings.length === 0 ? EMPTY_WARNINGS : warnings,
-    announcement: warnings.map((warning) => warning.label).join(" "),
   };
   warningsCache.set(document, entry);
   return entry;
@@ -226,25 +223,5 @@ function endpointLabel(document: DiagramDocument, elementId: string): string {
   if (element === undefined) {
     return "—";
   }
-  return `${elementTypeLabel(element.kind)} ${element.name}`;
-}
-
-function elementTypeLabel(kind: DiagramElement["kind"]): string {
-  if (kind === "actor") {
-    return "Actor";
-  }
-  if (kind === "use-case") {
-    return "Caso de uso";
-  }
-  return "Límite del sistema";
-}
-
-function relationshipTypeLabel(kind: RelationshipKind): string {
-  if (kind === "association") {
-    return "Asociación";
-  }
-  if (kind === "include") {
-    return "Include";
-  }
-  return "Extend";
+  return elementAccessibleName(element);
 }
