@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -77,12 +77,12 @@ siguen siendo ciertas.
 
 ## Criterios de aceptación
 
-- [ ] Checklist RC recorrido y firmado (fecha, browsers, resultado).
-- [ ] Pan, reparent y resize comprobados en preview.
-- [ ] PNG 1x transparente y JPG 1x opaco blanco abiertos en visor.
-- [ ] Smoke Firefox y Safari `>=16.4` sin pérdida al recargar.
-- [ ] Huecos de TASK-021 cubiertos o desviación explícita.
-- [ ] Índice post-024 actualizado.
+- [x] Checklist RC recorrido y firmado (fecha, browsers, resultado).
+- [x] Pan, reparent y resize comprobados en preview.
+- [x] PNG 1x transparente y JPG 1x opaco blanco abiertos en visor.
+- [x] Smoke Firefox y Safari `>=16.4` sin pérdida al recargar.
+- [x] Huecos de TASK-021 cubiertos o desviación explícita.
+- [x] Índice post-024 actualizado.
 
 ## Tests
 
@@ -109,6 +109,43 @@ Checklist firmado post-identidad; limitaciones honestas; índice actualizado.
 
 ## Evidencia de cierre
 
-Pendiente. Re-signoff no ejecutado. Bloqueo de 2026-09-09 levantado el mismo
-día: TASK-024 tiene criterios `[x]` y evidencia de comandos, baselines y
-navegador. Reabrir este contrato desde `Lista`.
+2026-09-09. Criterios `[x]`. Host: Windows 10. Preview:
+`http://127.0.0.1:4173/` tras `npm run build`.
+
+Browsers:
+
+- Chrome 152, 1024×720: checklist de chrome (arranque «—», paleta+inspector,
+  association/include/extend, include reflexivo con razón y sin mutar, zoom
+  120 % / fit 58 %, Nuevo cancelar/confirmar, Ctrl+Z/Y/D/S/0, Delete, drawers
+  800 px, aviso 500 px, tooltips y Escape de Ayuda). Recarga conservó actor,
+  casos, include/extend y viewport.
+- Playwright Chromium 153: pan (botón medio), reparent entrar/salir,
+  resize ≥320×240, exportación, a11y, shell, tooltips, persistencia
+  (incluido storage bloqueado). No `--headed`; los gestos son `page.mouse`,
+  no MCP. Chrome DevTools MCP no clicó nodos.
+- Playwright Firefox 155: `@smoke` + PNG 1x `@export-spike` (5 pass).
+- Playwright WebKit 26.6: mismo smoke (5 pass). Desviación: no hay Safari.app
+  en Windows; WebKit es el stand-in NFR-01 `>=16.4` (igual que CI).
+
+Export visor: `rc-026-1x.png` esquinas `a=0`; `rc-026-1x.jpg` esquinas
+`255,255,255,255`; PNG 2x 1408×928; zoom visible 100 % tras descargar.
+Archivos abiertos con el visor predeterminado de Windows. No versionados.
+
+Huecos TASK-021: cubiertos con la desviación Safari nativo arriba. Limitaciones
+de canvas, markers Safari y `<768` px siguen publicadas.
+
+Locator de chrome: `e2e/create-elements.spec.ts` pasó de `title` a tooltip y
+a Escape×2 para cancelar herramienta (contrato TASK-024).
+
+Comandos: `npm run build`; `npm run preview -- --host 127.0.0.1 --port 4173
+--strictPort`; `npx playwright test --project=chromium --grep
+"reparent|exportación|pan|a11y|shell"` (20 pass); `npx playwright test
+e2e/tooltips.spec.ts --project=chromium` (6 pass);
+`npx playwright test --project=firefox --project=webkit` (10 pass);
+`npx playwright test e2e/create-elements.spec.ts --project=chromium` (pass);
+`npx playwright test e2e/persistence.spec.ts --project=chromium` (4 pass);
+`npx playwright test e2e/shortcuts-toolbar.spec.ts e2e/selection-rename.spec.ts
+--project=chromium` (6 pass, flechas/duplicar/borrar).
+E2E local usa `npm run dev` (playwright.config) salvo
+`CI=true` contra preview `:5173` para pan/reparent/resize/PNG/JPG 1x (5 pass).
+El pase humano fue contra `dist/` en `:4173`. Nada de producto falló.

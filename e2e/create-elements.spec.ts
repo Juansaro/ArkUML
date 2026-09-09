@@ -11,7 +11,10 @@ test("crea cada elemento UML y cancela la herramienta con Escape", async ({
 
   const boundaryTool = page.getByRole("button", { name: "Límite del sistema" });
   await expect(boundaryTool).toHaveAttribute("aria-disabled", "true");
-  await expect(boundaryTool).toHaveAttribute("title", /admite uno solo/i);
+  await boundaryTool.focus();
+  await expect(page.getByTestId("editor-tooltip")).toHaveText(
+    /admite uno solo/i,
+  );
 
   await page.getByRole("button", { name: "Actor" }).click();
   await expect(page.getByRole("button", { name: "Actor" })).toHaveAttribute(
@@ -39,6 +42,7 @@ test("crea cada elemento UML y cancela la herramienta con Escape", async ({
   );
 
   await page.getByRole("button", { name: "Actor" }).click();
+  await page.keyboard.press("Escape");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Actor" })).toHaveAttribute(
     "aria-pressed",

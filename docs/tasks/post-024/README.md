@@ -28,7 +28,7 @@ TASK-024 tenga evidencia de cierre. TASK-031+ espera además el gate TASK-030.
 | ID | Ruta | Estado | Prioridad | Depende | Evidencia / bloqueo |
 | --- | --- | --- | --- | --- | --- |
 | 025 | [`../TASK-025.md`](../TASK-025.md) | Hecha | P0 | 023 + contrato 024 | 2026-09-09: árbol, registro, roadmap y 026–033 |
-| 026 | [`10-release/TASK-026.md`](10-release/TASK-026.md) | Lista | P0 | 024, 025 | 2026-09-09: desbloqueada — TASK-024 con evidencia de cierre (iconos/tooltips/favicon/baselines). Re-signoff pendiente |
+| 026 | [`10-release/TASK-026.md`](10-release/TASK-026.md) | Hecha | P0 | 024, 025 | 2026-09-09: checklist RC firmado post-identidad (Chrome 152 preview; Playwright Chromium/Firefox/WebKit). Safari nativo: desviación Windows → WebKit |
 | 027 | [`10-release/TASK-027.md`](10-release/TASK-027.md) | Lista | P0 | 025 | La elección humana ocurre dentro del gate |
 | 028 | [`10-release/TASK-028.md`](10-release/TASK-028.md) | Lista | P0 | 025 | Reconciliación documental |
 | 029 | [`10-release/TASK-029.md`](10-release/TASK-029.md) | Lista | P1 | 025 | Evidencia técnica pendiente |
@@ -85,12 +85,11 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-Próximo contrato ejecutable: [TASK-026](10-release/TASK-026.md) (re-signoff RC
-post-identidad). En paralelo:
+TASK-026 está `Hecha`. En paralelo:
 
 - [TASK-027](10-release/TASK-027.md) (decisión humana de licencia);
 - [TASK-028](10-release/TASK-028.md) (reconciliación documental);
 - [TASK-029](10-release/TASK-029.md) (evidencia técnica).
 
-TASK-024 tiene evidencia de cierre (2026-09-09). TASK-031+ espera el gate
+[TASK-030](10-release/TASK-030.md) espera 026–029. TASK-031+ espera el gate
 TASK-030.
