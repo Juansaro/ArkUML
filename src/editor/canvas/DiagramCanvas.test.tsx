@@ -39,6 +39,7 @@ describe("DiagramCanvas", () => {
     expect(screen.getByTestId("diagram-canvas")).toBeInTheDocument();
     expect(screen.getByText("Sistema")).toBeInTheDocument();
     expect(screen.getByTestId("system-boundary-rect")).toBeInTheDocument();
+    expect(screen.queryByTestId("alignment-guides")).not.toBeInTheDocument();
   });
 
   it("restaura el viewport del store en el primer pintado", () => {

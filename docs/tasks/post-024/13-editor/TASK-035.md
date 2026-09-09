@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -90,14 +90,14 @@ sigue siendo un gesto. El PNG/JPG no muestra las líneas.
 
 ## Criterios de aceptación
 
-- [ ] Drag que alinea un borde o el centro (dentro de 4 px) muestra al
+- [x] Drag que alinea un borde o el centro (dentro de 4 px) muestra al
       menos una guía; al `dragend` no queda ninguna.
-- [ ] Mover 8 px fuera del umbral no muestra guía en esa coordenada.
-- [ ] El overlay es `aria-hidden` y `data-testid="alignment-guides"`.
-- [ ] `excludeExportChrome` ignora ese nodo; test de export cubre el id.
-- [ ] Un gesto de drag sigue siendo **una** entrada de historial.
-- [ ] Round-trip de workspace: ninguna clave nueva; `schemaVersion` `1`.
-- [ ] Resize de boundary y nudge de flechas no activan guías.
+- [x] Mover 8 px fuera del umbral no muestra guía en esa coordenada.
+- [x] El overlay es `aria-hidden` y `data-testid="alignment-guides"`.
+- [x] `excludeExportChrome` ignora ese nodo; test de export cubre el id.
+- [x] Un gesto de drag sigue siendo **una** entrada de historial.
+- [x] Round-trip de workspace: ninguna clave nueva; `schemaVersion` `1`.
+- [x] Resize de boundary y nudge de flechas no activan guías.
 
 ## Tests
 
@@ -129,4 +129,27 @@ FR-P02 observable en el editor; schema `1` e historial intactos; criterios
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-09. Criterios `[x]`. FR-P02 observable: guías de alineación
+durante el drag de puntero, chrome no persistido. Schema `1` /
+`storageVersion` `1` intactos. Sin snap. Sin claves nuevas en el
+workspace. El overlay `data-testid="alignment-guides"` es `aria-hidden`
+y entra en `excludeExportChrome`. Resize y nudge no pintan guías. Un
+gesto de drag sigue siendo una entrada de historial.
+
+Comandos realmente corridos:
+
+```bash
+npm run test -- src/editor/interactions/alignmentGuides.test.ts src/export/exportDiagram.test.ts src/editor/canvas/DiagramCanvas.test.tsx
+npx playwright test e2e/alignment-guides.spec.ts --project=chromium
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
+
+Unidad: 20/20 en los tres archivos; suite 275/275. E2E Chromium: 3/3
+(`alignment-guides.spec.ts`). Lint, typecheck y `vite build` OK.
+
+`npm run check` falla en `format:check` por los mismos archivos de
+chrome/tooltips de TASK-024 (028–034). Esta TASK no los reformateó. Los
+archivos tocados pasan Prettier.

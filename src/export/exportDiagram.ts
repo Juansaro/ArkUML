@@ -21,6 +21,7 @@ const CHROME_CLASS_FRAGMENTS = [
   "react-flow__selection",
   "react-flow__nodesselection",
   "react-flow__resize-control",
+  "alignment-guides",
 ] as const;
 
 const CHROME_TEST_IDS = new Set([
@@ -28,6 +29,7 @@ const CHROME_TEST_IDS = new Set([
   "inspector-warnings",
   "inspector-warning",
   "editor-live",
+  "alignment-guides",
 ]);
 
 export type ExportDiagramInput = {

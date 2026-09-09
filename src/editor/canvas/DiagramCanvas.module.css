@@ -52,8 +52,23 @@
 .root[data-exporting="true"] :global(.react-flow__attribution),
 .root[data-exporting="true"] :global(.react-flow__minimap),
 .root[data-exporting="true"] :global(.react-flow__selection),
-.root[data-exporting="true"] :global(.react-flow__nodesselection) {
+.root[data-exporting="true"] :global(.react-flow__nodesselection),
+.root[data-exporting="true"] :global(.alignment-guides),
+.root[data-exporting="true"] :global([data-testid="alignment-guides"]) {
   visibility: hidden;
+}
+
+.alignmentGuides {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.alignmentGuides line {
+  stroke: var(--color-brand);
+  stroke-width: 1;
 }
 
 .viewportControls {

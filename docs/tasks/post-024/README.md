@@ -26,7 +26,8 @@ cerró el gate de fase 10 (**ship**, 2026-09-09). TASK-031 publicó
 [`post-mvp-spec.md`](../../product/post-mvp-spec.md). TASK-032 publicó
 [`schema-evolution.md`](../../architecture/schema-evolution.md).
 TASK-033 congeló la Wave 1 (**Editor local sobre schema 1**). TASK-034
-está `Hecha`. Próximo contrato ejecutable: TASK-035.
+y TASK-035 están `Hecha`. No hay siguiente contrato ejecutable hasta un
+freeze posterior.
 
 ## Estado
 
@@ -42,7 +43,7 @@ está `Hecha`. Próximo contrato ejecutable: TASK-035.
 | 032 | [`11-governance/TASK-032.md`](11-governance/TASK-032.md) | Hecha | P0 | 031 | 2026-09-09: `schema-evolution.md`; schema 1 cerrado; IndexedDB condicional; FR-P03 envelope; ningún ADR reabierto |
 | 033 | [`11-governance/TASK-033.md`](11-governance/TASK-033.md) | Hecha | P0 | 031, 032 | 2026-09-09: Wave 1 **Editor local sobre schema 1** (W12-01, W13-02); TASK-034 y TASK-035 |
 | 034 | [`12-uml/TASK-034.md`](12-uml/TASK-034.md) | Hecha | P0 | 033 | 2026-09-09: FR-P01; `INCLUDE_CYCLE`/`EXTEND_CYCLE`; schema 1 |
-| 035 | [`13-editor/TASK-035.md`](13-editor/TASK-035.md) | Lista | P0 | 033 | FR-P02: guías de alineación (chrome) |
+| 035 | [`13-editor/TASK-035.md`](13-editor/TASK-035.md) | Hecha | P0 | 033 | 2026-09-09: FR-P02; guías de alineación (chrome); schema 1 |
 
 ## Fases y gates
 
@@ -93,9 +94,8 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-TASK-034 está `Hecha`. Siguiente contrato ejecutable:
-
-- [TASK-035](13-editor/TASK-035.md) (FR-P02, guías de alineación).
-  Multi-documento: no. IndexedDB: no elegido (condicional C-QUOTA).
-  No implementar Generalization, JSON de usuario, PDF ni temas en estos
-  chats.
+Wave 1 (**Editor local sobre schema 1**) está cerrada: TASK-034 y
+TASK-035 `Hecha`. No hay siguiente contrato ejecutable. W14-03 y el
+resto del catálogo esperan un freeze posterior. Multi-documento: no.
+IndexedDB: no elegido (condicional C-QUOTA). No implementar
+Generalization, JSON de usuario, PDF ni temas en estos chats.

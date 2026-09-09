@@ -5,6 +5,7 @@ import {
   ConnectionLineType,
   ReactFlow,
   SelectionMode,
+  ViewportPortal,
   useReactFlow,
   useViewport,
   type OnMoveEnd,
@@ -13,6 +14,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { mapDocumentToReactFlow } from "../adapters/reactFlowMapper.ts";
 import { ToolButton } from "../components/common/ToolButton.tsx";
+import type { AlignmentGuides } from "../interactions/alignmentGuides.ts";
 import { useElementRename } from "../interactions/useElementRename.ts";
 import { useNodeDrag } from "../interactions/useNodeDrag.ts";
 import {
@@ -31,6 +33,8 @@ import { isCreateElementTool } from "../tools/createElementTool.ts";
 import { edgeTypes } from "./edgeTypes.ts";
 import { nodeTypes } from "./nodeTypes.ts";
 import styles from "./DiagramCanvas.module.css";
+
+const GUIDE_SPAN = 10_000;
 
 export const CANVAS_MIN_ZOOM = 0.5;
 export const CANVAS_MAX_ZOOM = 2;
@@ -214,12 +218,37 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
           color="var(--color-grid)"
           bgColor="var(--color-canvas)"
         />
+        <AlignmentGuidesOverlay guides={nodeDrag.guides} />
         <CanvasViewportControls />
         {onFitViewReady !== undefined ? (
           <FitViewRegistration onReady={onFitViewReady} />
         ) : null}
       </ReactFlow>
     </div>
+  );
+}
+
+function AlignmentGuidesOverlay({ guides }: { guides: AlignmentGuides }) {
+  if (guides.vertical.length === 0 && guides.horizontal.length === 0) {
+    return null;
+  }
+
+  return (
+    <ViewportPortal>
+      <svg
+        className={`${styles.alignmentGuides} alignment-guides`}
+        data-testid="alignment-guides"
+        aria-hidden="true"
+        overflow="visible"
+      >
+        {guides.vertical.map((x) => (
+          <line key={`v:${x}`} x1={x} y1={-GUIDE_SPAN} x2={x} y2={GUIDE_SPAN} />
+        ))}
+        {guides.horizontal.map((y) => (
+          <line key={`h:${y}`} x1={-GUIDE_SPAN} y1={y} x2={GUIDE_SPAN} y2={y} />
+        ))}
+      </svg>
+    </ViewportPortal>
   );
 }
 

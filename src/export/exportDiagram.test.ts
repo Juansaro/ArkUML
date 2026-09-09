@@ -46,6 +46,12 @@ describe("excludeExportChrome", () => {
     expect(
       excludeExportChrome(node({ "data-testid": "inspector-warning" })),
     ).toBe(false);
+    expect(
+      excludeExportChrome(node({ "data-testid": "alignment-guides" })),
+    ).toBe(false);
+    expect(excludeExportChrome(node({ class: "alignment-guides" }))).toBe(
+      false,
+    );
     expect(excludeExportChrome(node({ role: "alert" }))).toBe(false);
     expect(excludeExportChrome(node({ class: "react-flow__edge-path" }))).toBe(
       true,
