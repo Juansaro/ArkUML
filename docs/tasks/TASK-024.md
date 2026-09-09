@@ -101,9 +101,12 @@ accesibles y flujos keyboard-only actuales están cubiertos por RTL/Playwright.
 - Copiar de `brand-system.md` los `d` SVG, dasharray, tokens, tamaños, copy de
   la matriz y la tabla de estados. No reinterpretar glifos ni redactar textos
   nuevos.
+- Mapear ids de `Icon` a `EditorTool` existentes: `useCase` → `use-case`,
+  `systemBoundary` → `system-boundary`. No renombrar herramientas ni ids de
+  icono.
 - Tokens a añadir o reasignar, y ningún otro: `--color-brand`, `--color-focus`
   como `var(--color-brand)`, `--color-brand-deep`, `--color-control-border`,
-  `--z-tooltip`.
+  `--z-tooltip`. `--color-shadow` ya existe; no recrearlo.
 - Los SVG usan `currentColor`, son decorativos y tienen `aria-hidden="true"`.
   El nombre vive en texto visible o `aria-label` del botón. Favicon: SVG del
   contrato en `public/favicon.svg` y `<link rel="icon">` en `index.html`.
@@ -118,7 +121,8 @@ accesibles y flujos keyboard-only actuales están cubiertos por RTL/Playwright.
 - Los botones sin acción disponible usan `aria-disabled="true"` y guardas de
   click/Enter/Space para que el motivo siga accesible por foco. Reutilizar
   `BOUNDARY_EXISTS_REASON`; no duplicar esa copy. Deshacer/Rehacer y zoom en
-  tope dejan de usar `disabled` nativo.
+  tope dejan de usar `disabled` nativo. `ToolButton` anula `opacity: 0.7` de
+  `globals.css` en disabled; la tinta `--color-muted` basta.
 - La paleta conserva labels visibles: el tooltip complementa, no sustituye, la
   semántica UML. «Cerrar paneles», tagline y diálogos no se iconifican.
 - El `h1` «ArkUML» permanece visible junto al isotipo 24 px Blueprint.

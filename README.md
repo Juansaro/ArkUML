@@ -136,5 +136,5 @@ Siguientes pasos explícitamente **fuera** de este RC: generalization, IndexedDB
 Un chat, una tarea. Adjuntar la tarea activa y los documentos que ella misma cita.
 
 ```text
-TASK-001 → TASK-002 → … → TASK-020 → TASK-021 → TASK-022
+TASK-001 → TASK-002 → … → TASK-020 → TASK-021 → TASK-022 → TASK-023 → TASK-024
 ```

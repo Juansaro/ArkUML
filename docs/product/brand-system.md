@@ -118,6 +118,7 @@ Tokens **existentes** que se conservan con el mismo valor:
 | `--color-notice-bg` | `#fef3c7` | Fondo de aviso (ámbar) |
 | `--color-notice-fg` | `#78350f` | Texto de aviso |
 | `--color-notice-border` | `#d97706` | Borde de aviso (ámbar; no es el único indicador) |
+| `--color-shadow` | `rgb(24 24 27 / 0.18)` | Sombra de tooltip y controles de lienzo |
 
 Tokens **nuevos o reasignados** en TASK-024:
 
@@ -321,6 +322,11 @@ Include y Extend no se distinguen solo por color ni solo por la flecha: la
 letra permanece visible. Estos iconos no sustituyen línea, flecha ni
 estereotipo del diagrama.
 
+Los ids de `Icon` van en camelCase. En paleta se conectan a los `EditorTool`
+existentes sin renombrar ni el icono ni la herramienta: `useCase` →
+`use-case`, `systemBoundary` → `system-boundary`. El resto coincide (`actor`,
+`association`, `include`, `extend`).
+
 ## Matriz de controles
 
 El **nombre accesible** es el que ya usan los tests (`getByRole`). El tooltip
@@ -354,7 +360,11 @@ Esos controles conservan etiqueta visible y no reciben la primitiva Tooltip.
 
 ## Composición por superficie
 
-- **Top bar:** isotipo + `h1` «ArkUML» + título del documento + tagline. Las
+- **Top bar:** grupo de marca (isotipo 24 px + `h1` «ArkUML», `display: flex`,
+  `align-items: center`, gap `--space-2`) + título del documento + tagline.
+  `.identity` conserva `flex: 1 1 12rem`, `min-width: 0`, gap `--space-3`
+  entre el grupo de marca y el título, ellipsis en el título, y pasa a
+  `align-items: center` (el isotipo de 24 px no se alinea por baseline). Las
   acciones y toggles son icon-only 32×32 px (`box-sizing: border-box`, padding
   6 px, icono 20 px). Conservan `aria-haspopup` / `aria-expanded` /
   `aria-controls` actuales en Exportar, Ayuda y drawers.
@@ -380,7 +390,7 @@ Estados de `ToolButton` (tokens, sin color como único indicador):
 | Hover (disponible) | `--color-control-border` | `--color-bg` | `--color-fg` | cursor pointer |
 | `aria-pressed="true"` | `--color-brand` | `--color-bg` | `--color-fg` | además de `aria-pressed` |
 | Foco visible | anillo global `:focus-visible` | — | — | no ocultar el control |
-| `aria-disabled="true"` | `--color-control-border` | `--color-surface` | `--color-muted` | sin `opacity`; cursor `not-allowed`; no `disabled` nativo en controles que deban explicar el motivo |
+| `aria-disabled="true"` | `--color-control-border` | `--color-surface` | `--color-muted` | sin `opacity` (anula `opacity: 0.7` de `button[aria-disabled]` / `:disabled` en `globals.css`); cursor `not-allowed`; no `disabled` nativo en controles que deban explicar el motivo |
 
 Deshacer, Rehacer, boundary existente y zoom en tope usan `aria-disabled` más
 bloqueo de click/Enter/Space (mismo patrón que `InertButton`). No mutan.
@@ -426,8 +436,8 @@ Colocación:
 Apariencia:
 
 - Fondo `--color-brand-deep`, texto `#ffffff`, talla `--font-size-sm`,
-  `line-height` 1.5, `max-width: 18rem`, `padding: 6px 8px`, radio
-  `--radius-sm` (4 px), `box-shadow: 0 1px 3px var(--color-shadow)`,
+  `line-height: var(--line-height)`, `max-width: 18rem`, `padding: 6px 8px`,
+  radio `--radius-sm` (4 px), `box-shadow: 0 1px 3px var(--color-shadow)`,
   `z-index: var(--z-tooltip)`.
 - `TooltipProvider` se monta una vez en `EditorShell`.
 
