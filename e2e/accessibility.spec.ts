@@ -13,7 +13,7 @@ async function expectNoAxeBlockers(page: Page): Promise<void> {
   expect(blockers, JSON.stringify(blockers, null, 2)).toEqual([]);
 }
 
-test.describe("accesibilidad @a11y", () => {
+test.describe("accesibilidad", { tag: "@a11y" }, () => {
   test("axe del shell inicial sin violaciones critical/serious", async ({
     page,
   }) => {

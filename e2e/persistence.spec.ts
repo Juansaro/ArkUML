@@ -2,78 +2,110 @@ import { expect, test } from "@playwright/test";
 
 const STORAGE_KEY = "arkuml:workspace:v1";
 
-test("reload conserva el contenido y el viewport", async ({ page }) => {
-  await page.goto("/");
+test(
+  "reload conserva el contenido y el viewport",
+  { tag: "@smoke" },
+  async ({ page }) => {
+    await page.goto("/");
 
-  const canvas = page.getByTestId("diagram-canvas");
-  await expect(canvas).toBeVisible();
-  await expect(canvas.getByText("Sistema")).toBeVisible();
+    const canvas = page.getByTestId("diagram-canvas");
+    await expect(canvas).toBeVisible();
+    await expect(canvas.getByText("Sistema")).toBeVisible();
 
-  await page.getByRole("button", { name: "Actor" }).click();
-  await canvas.click({ position: { x: 80, y: 480 } });
-  await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Actor" }).click();
+    await canvas.click({ position: { x: 80, y: 480 } });
+    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
 
-  const viewport = page.locator(".react-flow__viewport");
-  const beforePan = await viewport.getAttribute("style");
-  const box = await canvas.boundingBox();
-  if (box === null) {
-    throw new Error("No se pudo medir el lienzo");
-  }
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down({ button: "middle" });
-  await page.mouse.move(
-    box.x + box.width / 2 + 90,
-    box.y + box.height / 2 + 50,
-  );
-  await page.mouse.up({ button: "middle" });
-  await expect
-    .poll(async () => viewport.getAttribute("style"))
-    .not.toBe(beforePan);
+    const viewport = page.locator(".react-flow__viewport");
+    const beforePan = await viewport.getAttribute("style");
+    const box = await canvas.boundingBox();
+    if (box === null) {
+      throw new Error("No se pudo medir el lienzo");
+    }
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down({ button: "middle" });
+    await page.mouse.move(
+      box.x + box.width / 2 + 90,
+      box.y + box.height / 2 + 50,
+      { steps: 12 },
+    );
+    await page.mouse.up({ button: "middle" });
+    await expect
+      .poll(async () => viewport.getAttribute("style"))
+      .not.toBe(beforePan);
 
-  await page.keyboard.press("ControlOrMeta+s");
-  await expect(page.getByTestId("save-status")).toHaveAttribute(
-    "data-state",
-    "saved",
-  );
-  await expect(page.getByTestId("editor-live")).toHaveText(
-    "Diagrama guardado.",
-  );
-  const savedViewport = await viewport.getAttribute("style");
+    await expect
+      .poll(async () => {
+        await page.keyboard.press("ControlOrMeta+s");
+        const raw = await page.evaluate(
+          (key) => localStorage.getItem(key),
+          STORAGE_KEY,
+        );
+        if (raw === null) {
+          return 0;
+        }
+        const parsed: unknown = JSON.parse(raw);
+        if (
+          typeof parsed !== "object" ||
+          parsed === null ||
+          !("view" in parsed)
+        ) {
+          return 0;
+        }
+        const view = parsed.view;
+        if (typeof view !== "object" || view === null || !("x" in view)) {
+          return 0;
+        }
+        return typeof view.x === "number" ? view.x : 0;
+      })
+      .not.toBe(0);
 
-  await page.reload();
-  await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
-  await expect(canvas.getByText("Sistema")).toBeVisible();
-  await expect(page.locator(".react-flow__viewport")).toHaveAttribute(
-    "style",
-    savedViewport ?? "",
-  );
-});
+    await expect(page.getByTestId("save-status")).toHaveAttribute(
+      "data-state",
+      "saved",
+    );
+    await expect(page.getByTestId("editor-live")).toHaveText(
+      "Diagrama guardado.",
+    );
+    const savedViewport = await viewport.getAttribute("style");
 
-test("nuevo cancelado conserva; confirmado resetea a Sistema", async ({
-  page,
-}) => {
-  await page.goto("/");
-  const canvas = page.getByTestId("diagram-canvas");
+    await page.reload();
+    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+    await expect(canvas.getByText("Sistema")).toBeVisible();
+    await expect(page.locator(".react-flow__viewport")).toHaveAttribute(
+      "style",
+      savedViewport ?? "",
+    );
+  },
+);
 
-  await page.getByRole("button", { name: "Actor" }).click();
-  await canvas.click({ position: { x: 80, y: 480 } });
-  await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+test(
+  "nuevo cancelado conserva; confirmado resetea a Sistema",
+  { tag: "@smoke" },
+  async ({ page }) => {
+    await page.goto("/");
+    const canvas = page.getByTestId("diagram-canvas");
 
-  await page.getByRole("button", { name: "Nuevo" }).click();
-  const dialog = page.getByRole("dialog", { name: "Nuevo diagrama" });
-  await expect(dialog).toBeVisible();
-  await dialog.getByRole("button", { name: "Cancelar" }).click();
-  await expect(dialog).toHaveCount(0);
-  await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Actor" }).click();
+    await canvas.click({ position: { x: 80, y: 480 } });
+    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: "Nuevo" }).click();
-  await expect(dialog).toBeVisible();
-  await dialog.getByRole("button", { name: "Crear diagrama nuevo" }).click();
-  await expect(dialog).toHaveCount(0);
-  await expect(canvas.getByText("Actor", { exact: true })).toHaveCount(0);
-  await expect(canvas.getByText("Sistema")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Deshacer" })).toBeDisabled();
-});
+    await page.getByRole("button", { name: "Nuevo" }).click();
+    const dialog = page.getByRole("dialog", { name: "Nuevo diagrama" });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Cancelar" }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "Nuevo" }).click();
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Crear diagrama nuevo" }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(canvas.getByText("Actor", { exact: true })).toHaveCount(0);
+    await expect(canvas.getByText("Sistema")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Deshacer" })).toBeDisabled();
+  },
+);
 
 test("corrupción simulada no pisa hasta confirmar", async ({ page }) => {
   await page.addInitScript((key) => {
