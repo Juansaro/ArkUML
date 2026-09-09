@@ -63,16 +63,17 @@ Alcance canónico: [mvp-spec.md](docs/product/mvp-spec.md). Números de rendimie
 - Un solo documento en `localStorage`. Sin cuentas, sync ni multi-archivo.
 - Un `SystemBoundary` como máximo. Sin generalization, notas, extension points ni otros tipos UML.
 - Pantalla objetivo `>=1024×720`. Entre 768 y 1023 px, paleta e inspector van en drawers. Por debajo de 768 px hay aviso; la edición no está soportada y el documento no se borra.
-- Chrome de la aplicación orientado a WCAG 2.2 AA. El lienzo de React Flow no se recorre como documento equivalente para lector de pantalla; los handles son ratón-first. Axe cubre el chrome y excluye `.react-flow`.
+- Chrome de la aplicación orientado a WCAG 2.2 AA. El lienzo de React Flow no se recorre como documento equivalente para lector de pantalla; los handles son ratón-first. Axe cubre el chrome y excluye `.react-flow`. Chrome DevTools MCP no sustituye Playwright ni el ratón real para pan, reparent o resize: los nodos no son clicables vía árbol a11y.
+- El status de un workspace vacío arranca en «—»; «Guardado» aparece tras autosave o restore.
 - Safari/WebKit: las flechas de include/extend pueden faltar en el PNG/JPG de forma intermitente.
 - Baselines visuales versionados en Windows (Segoe UI). No compararlos con capturas Linux.
 - Sin virtualización del lienzo. El escenario 100/150 cumple presupuesto en la máquina de referencia; un perfil que lo incumpla se documenta antes de cambiar de motor.
 
 ## Checklist manual (RC)
 
-Correr en Chrome o Edge actual, y repetir smokes en Firefox y Safari `>=16.4`.
+Correr en Chrome o Edge actual, a `>=1024×720`, contra `npm run preview`. Repetir smokes (arranque, crear un actor, export PNG, recarga) en Firefox actual y Safari `>=16.4`. Pan (Space+drag o botón medio), reparent y resize del boundary requieren ratón real o Playwright `--headed`.
 
-1. **Arranque:** abrir limpio; título, paleta, lienzo con boundary «Sistema», inspector y status «Guardado».
+1. **Arranque:** abrir limpio; título, paleta, lienzo con boundary «Sistema», inspector y status «—». «Guardado» aparece tras autosave o restore.
 2. **UX:** crear actor y caso de uso; association válida; include y extend; intento inválido muestra razón y no muta; mover, reparentar, redimensionar boundary, duplicar, borrar, undo/redo.
 3. **Viewport:** zoom, pan, fit; recargar conserva documento y vista; «Nuevo diagrama» cancelar/confirmar.
 4. **Export:** PNG 1x transparente y JPG 1x fondo blanco; PNG 2x; abrir los archivos en un visor; el zoom visible no cambia.
@@ -135,5 +136,5 @@ Siguientes pasos explícitamente **fuera** de este RC: generalization, IndexedDB
 Un chat, una tarea. Adjuntar la tarea activa y los documentos que ella misma cita.
 
 ```text
-TASK-001 → TASK-002 → … → TASK-020
+TASK-001 → TASK-002 → … → TASK-020 → TASK-021 → TASK-022
 ```

@@ -125,7 +125,7 @@ docs/
   architecture/{architecture,domain-model,rendering-and-export,testing-strategy,performance}.md
   decisions/ADR-001 … ADR-006
   development/{agent-workflow,task-template}.md
-  tasks/TASK-001 … TASK-020
+  tasks/TASK-001 … TASK-022
 .cursor/rules/{00-core,domain,testing}.mdc
 ```
 
