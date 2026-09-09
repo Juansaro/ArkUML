@@ -121,7 +121,7 @@ No persistido: selección, historial, herramienta, hover, mensajes.
 
 ```text
 docs/
-  product/{mvp-spec,brand-system}.md
+  product/{mvp-spec,brand-system,post-mvp-spec}.md
   architecture/{architecture,domain-model,rendering-and-export,testing-strategy,performance}.md
   decisions/ADR-001 … ADR-006
   development/{agent-workflow,task-template}.md

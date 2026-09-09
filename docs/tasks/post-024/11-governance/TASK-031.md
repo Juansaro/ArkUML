@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -77,11 +77,11 @@ Hay un documento canónico Post-MVP. El roadmap deja de ser la spec.
 
 ## Criterios de aceptación
 
-- [ ] Existe spec Post-MVP con FR, non-goals, prioridades y versionado.
-- [ ] Cada wave 12–17 tiene un destino: in-scope, más tarde, o exclusión.
-- [ ] O-01–O-10 dispuestos (permanecen o entran).
-- [ ] mvp-spec enlaza el Post-MVP sin diluir el MVP.
-- [ ] Índice actualizado.
+- [x] Existe spec Post-MVP con FR, non-goals, prioridades y versionado.
+- [x] Cada wave 12–17 tiene un destino: in-scope, más tarde, o exclusión.
+- [x] O-01–O-10 dispuestos (permanecen o entran).
+- [x] mvp-spec enlaza el Post-MVP sin diluir el MVP.
+- [x] Índice actualizado.
 
 ## Tests
 
@@ -106,4 +106,30 @@ Contrato Post-MVP publicado; implementación aún no autorizada.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-09. Criterios `[x]`. Contrato Post-MVP publicado en
+`docs/product/post-mvp-spec.md`. Implementación no autorizada. ADRs no
+reabiertos. Schema `1` intacto. Sin TASK-034+.
+
+Decisiones de producto (sin inventar UML ni elegir backend):
+
+- 1.x = compatible con schema `1`; 2.0 = ruptura / `schemaVersion > 1`.
+- Multi-documento: no (exclusión vigente).
+- IndexedDB: no elegido; condicional C-QUOTA (TASK-032).
+- Ciclos Include/Extend: warning no bloqueante (FR-P01); no se afirma
+  ilegalidad UML.
+- Generalization, notas, multiplicidad, extension points: sin FR
+  (bloqueados o exclusión).
+- Temas, touch, SaaS, segundo tipo de diagrama: exclusión vigente.
+- Primera wave recomendada a TASK-033: W12-01 + W13-02 (schema 1).
+
+Comandos realmente corridos:
+
+```bash
+npm run format:check
+git diff --check
+```
+
+`git diff --check`: OK (aviso LF→CRLF de Git en `README.md`, no error).
+`npm run format:check`: falla en los mismos 10 archivos de chrome/tooltips
+de TASK-024 que 028/029/030; esta TASK no los reformateó. Los markdown
+nuevos o tocados no aparecen en el warn de Prettier.

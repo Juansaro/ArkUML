@@ -28,11 +28,11 @@ grupos fuera de alcance.
 | R-06 | Media | Sin virtualización; X6/Konva solo tras incumplimiento medido | `docs/architecture/performance.md`; `docs/decisions/ADR-002-diagram-engine.md:28-45` | Contingencia fase 17 |
 | R-07 | Media | Baselines ligados a Windows; cobertura desigual por browser | `docs/architecture/testing-strategy.md:46-47`; `README.md:69` | Aceptado: baselines Windows; Safari nativo en este host → WebKit (TASK-026) |
 | R-08 | Media | `interactionWidth` 24 px puede tapar nodos en automatización | `docs/architecture/performance.md`; `docs/tasks/TASK-021.md:23-30` | Aceptado TASK-029: Playwright puede hit-testear el path; el ratón real sobre el actor selecciona |
-| R-09 | Media | Ciclos Include/Extend no se validan | `docs/product/mvp-spec.md:98`; `docs/tasks/TASK-022.md:32-35` | Propuesta fase 12 |
+| R-09 | Media | Ciclos Include/Extend no se validan | `docs/product/mvp-spec.md:98`; `docs/tasks/TASK-022.md:32-35` | Dispuesto TASK-031: FR-P01 warning no bloqueante; no rechaza documentos válidos hoy |
 | R-10 | Alta | No hay licencia de proyecto aprobada | `docs/product/brand-system.md:23-26,447` | Hecha TASK-027 (Apache-2.0) |
 | R-11 | Alta | Pins, modelo, ADR y scope activan stop conditions | `docs/development/agent-workflow.md:63-70`; `docs/tasks/TASK-024.md:179-186` | Protocolo TASK-025 |
 | R-12 | Media | Edición bajo 768 px y touch no soportados | `docs/product/mvp-spec.md:48-53,175` | Limitación TASK-026; propuesta fase 16 |
-| R-13 | Baja | Undo no restaura viewport/selección; historial máximo 100 | `docs/decisions/ADR-003-state-management.md:37-38` | Aceptado; reconsiderable por TASK-031 |
+| R-13 | Baja | Undo no restaura viewport/selección; historial máximo 100 | `docs/decisions/ADR-003-state-management.md:37-38` | Aceptado; TASK-031 no reabre ADR-003. Undo-sin-viewport y tope 100 se conservan en 1.x |
 | R-14 | Baja | Tipografía exportada depende de fuentes locales | `docs/decisions/ADR-006-export.md:40` | Aceptado; fase 15 si cambia |
 | R-15 | Media | Umbrales CI de rendimiento no son SLO | `docs/architecture/performance.md` | Hecha TASK-029: escrito; umbrales CI ≠ NFR-03/04 |
 
@@ -58,7 +58,7 @@ grupos fuera de alcance.
 | ID | Sev. | Hallazgo | Fuente | Disposición |
 | --- | --- | --- | --- | --- |
 | A-01 | Alta | TASK-020 afirma P0/P1 hechos; existen P1 021–024 | `docs/tasks/TASK-020.md:59`; `docs/tasks/README.md:49-52` | Dispuesto TASK-028: criterio 020 reescrito; 021–024 y post-024 no se dan por hechos ahí |
-| A-02 | Alta | README declara RC; gate 8/checklist no está firmado | `README.md:95`; `docs/tasks/README.md:22`; `TASK-021.md:5` | Checklist firmado TASK-026; README declara RC. 029 hecha; gate de ship: TASK-030 |
+| A-02 | Alta | README declara RC; gate 8/checklist no está firmado | `README.md:95`; `docs/tasks/README.md:22`; `TASK-021.md:5` | Hecha TASK-030 (2026-09-09): ship. Checklist 026, licencia 027, docs 028, medidas 029. Post-MVP no empezado |
 | A-03 | Media | ADR-005 usa dev server; README/CI usan `vite preview` | `docs/decisions/ADR-005-testing.md:24`; `README.md:25`; `TASK-021.md:22-27` | Dispuesto TASK-028: ADR-005 enmendado (CI=`preview`/`dist`; local=`dev`). Runner intacto |
 | A-04 | Alta | Architecture/workflow hablan de fase sin código y llegan a TASK-022 | `docs/architecture/architecture.md:23,120-128`; `agent-workflow.md:42-49` | Dispuesto TASK-028: `src/` descrito; lista hasta 025 + post-024; workflow sin «cuando exista código» |
 | A-05 | Media | `domain-model` define warning más estricto que `mvp-spec` | `docs/architecture/domain-model.md:81-84`; `docs/product/mvp-spec.md:115-116` | Dispuesto TASK-028: mvp-spec adopta «hijo fuera del padre»; coincide con domain-model y `collectWarnings` |
@@ -72,24 +72,30 @@ grupos fuera de alcance.
 
 ## Fuera de alcance vigente
 
-| ID | Grupo | Fuente | Tratamiento en roadmap |
+Dispuestos en TASK-031 (2026-09-09). Tabla canónica:
+[`post-mvp-spec.md`](../../product/post-mvp-spec.md). «Entra» no autoriza
+código.
+
+| ID | Grupo | Fuente | Tratamiento |
 | --- | --- | --- | --- |
-| O-01 | Generalization, ciclos, extension points, notas, paquetes, multiplicidad, actores especializados y otros diagramas | `docs/product/mvp-spec.md:66-70,192-205` | Fases 12 y 17 |
-| O-02 | Minimap, auto-layout, alignment guides, waypoints y routing | `docs/product/mvp-spec.md:50,192-205` | Fase 13 |
-| O-03 | Multi-documento, IndexedDB, sync y workspace remoto | `docs/product/mvp-spec.md:192-205`; `ADR-004-persistence.md:37` | Fases 14 y 17 |
-| O-04 | PDF, SVG persistido, clipboard e import/export JSON | `docs/product/mvp-spec.md:192-205` | Fases 14 y 15 |
-| O-05 | Dark mode, temas, webfonts y animación de marca | `docs/product/brand-system.md:444-450`; `TASK-024.md:49-58` | Fase 16 |
-| O-06 | Editor paralelo/semántico para lector de pantalla | `docs/product/mvp-spec.md:171-181` | Fase 16 |
-| O-07 | Touch y edición móvil | `docs/product/mvp-spec.md:48-53,192-205` | Fase 16 |
-| O-08 | Backend, auth, colaboración, hosting, analytics, SaaS y PWA | `docs/product/mvp-spec.md:192-205` | Fase 17, tras gates de producto/privacidad |
-| O-09 | Husky, lint-staged, commitlint, Jest, Cypress, Tailwind, shadcn, Router y TS7 | `docs/decisions/ADR-001-frontend-stack.md:41-49`; `ADR-005-testing.md:35-41` | Fase 17 o exclusión permanente |
-| O-10 | X6/Konva, Canvas/WebGL, DI, event bus, Redux y arquitectura ceremonial | `docs/architecture/architecture.md:108-118`; `ADR-002-diagram-engine.md:28-45` | Contingencia medida, no trabajo programado |
+| O-01 | Generalization, ciclos, extension points, notas, paquetes, multiplicidad, actores especializados y otros diagramas | `docs/product/mvp-spec.md:66-70,192-205` | Se parte: ciclos in-scope (warning); Generalization/notas/extension points/actores más tarde y bloqueados; paquetes, multiplicidad y segundo diagrama permanecen exclusión |
+| O-02 | Minimap, auto-layout, alignment guides, waypoints y routing | `docs/product/mvp-spec.md:50,192-205` | Entra: guides P0 y minimap P1 in-scope; waypoints y auto-layout más tarde / bloqueados |
+| O-03 | Multi-documento, IndexedDB, sync y workspace remoto | `docs/product/mvp-spec.md:192-205`; `ADR-004-persistence.md:37` | Se parte: IndexedDB condicional (C-QUOTA, no elegido); multi-documento, sync y remoto permanecen exclusión |
+| O-04 | PDF, SVG persistido, clipboard e import/export JSON | `docs/product/mvp-spec.md:192-205` | Se parte: JSON de usuario y clipboard in-scope; SVG/PDF más tarde / bloqueados |
+| O-05 | Dark mode, temas, webfonts y animación de marca | `docs/product/brand-system.md:444-450`; `TASK-024.md:49-58` | Permanece exclusión (W16-04, W16-05) |
+| O-06 | Editor paralelo/semántico para lector de pantalla | `docs/product/mvp-spec.md:171-181` | Entra como más tarde / bloqueado (W16-01, W16-02) |
+| O-07 | Touch y edición móvil | `docs/product/mvp-spec.md:48-53,192-205` | Permanece exclusión (W16-03) |
+| O-08 | Backend, auth, colaboración, hosting, analytics, SaaS y PWA | `docs/product/mvp-spec.md:192-205` | Se parte: SaaS/PWA/analytics/remoto permanecen exclusión; runbook estático in-scope (W17-05) |
+| O-09 | Husky, lint-staged, commitlint, Jest, Cypress, Tailwind, shadcn, Router y TS7 | `docs/decisions/ADR-001-frontend-stack.md:41-49`; `ADR-005-testing.md:35-41` | Se parte: Husky/stack permanecen exclusión; TS7 más tarde / bloqueado (W17-06) |
+| O-10 | X6/Konva, Canvas/WebGL, DI, event bus, Redux y arquitectura ceremonial | `docs/architecture/architecture.md:108-118`; `ADR-002-diagram-engine.md:28-45` | Permanece exclusión programada; W17-08/09 solo contingencia medida |
 
 ## Cobertura
 
 Cada ID tiene exactamente una disposición primaria. A-01–A-12 están
-dispuestas (TASK-025 o TASK-028). P-06, P-07 y P-08 y los riesgos de
+dispuestas (TASK-025, TASK-028 o TASK-030). P-06, P-07 y P-08 y los riesgos de
 medición (R-01, R-02, R-03, R-05, R-08, R-15) están dispuestos en TASK-029.
-TASK-030 no puede cerrar si R/P/A de severidad alta sigue sin decisión,
-evidencia o aceptación explícita. TASK-031 puede promover O-01–O-10, pero
-hasta entonces siguen fuera del alcance vigente.
+Ningún R/P/A de severidad alta quedó sin decisión, evidencia o aceptación
+explícita (gate TASK-030, 2026-09-09: **ship**). TASK-031 (2026-09-09)
+dispuso O-01–O-10 en `docs/product/post-mvp-spec.md`: unas líneas entran
+al catálogo (in-scope, más tarde o condicional) y otras permanecen
+exclusión vigente. Eso no autoriza implementación.

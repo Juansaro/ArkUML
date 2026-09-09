@@ -55,7 +55,7 @@ Los ítems «MVP recomendado» **sí se implementan** en este MVP. «Post-MVP» 
 
 La identidad visual es un **sistema único de producto**, no un tema. No introduce selector de apariencia, personalización, webfonts ni kits de iconos. No cambia la notación UML del lienzo ni el raster exportado. «Temas, estilos personalizables, plantillas» permanece Post-MVP y no se cumple pintando una marca fija.
 
-**Fase 9 y ship:** la identidad (TASK-023/024) es pulido **posterior** al RC de TASK-020: no bloqueó declarar ese RC. El ship de la remediación (TASK-030) **sí exige** TASK-024 cerrada, porque el checklist de TASK-026 se firmó contra el producto con marca. Con 024 hecha no queda trabajo de fase 9 que bloquee TASK-030.
+**Fase 9 y ship:** la identidad (TASK-023/024) es pulido **posterior** al RC de TASK-020: no bloqueó declarar ese RC. El ship de la remediación (TASK-030) **sí exige** TASK-024 cerrada, porque el checklist de TASK-026 se firmó contra el producto con marca. Con 024 hecha no queda trabajo de fase 9 que bloquee TASK-030. **TASK-030 (2026-09-09): ship.** El RC se declara honesto y reproducible (checklist, Apache-2.0, limitaciones publicadas). El contrato de lo que puede seguir está en [post-mvp-spec.md](post-mvp-spec.md); este archivo sigue ganando para el producto actual. La implementación Post-MVP no está autorizada. No hay Generalization, IndexedDB, PDF ni temas a medias.
 
 ## Elementos UML
 
@@ -206,3 +206,10 @@ No implementar, ni siquiera «por si acaso»:
 - Husky, lint-staged, commitlint como requisito del MVP (Conventional Commits se documentan, no se imponen).
 
 Preparar interfaces (`DiagramRepository`, `kind` discriminado) **no autoriza** implementar esas capacidades.
+
+## Después del MVP
+
+Prioridades, FR futuros, non-goals y versionado:
+[post-mvp-spec.md](post-mvp-spec.md). No copia ni sustituye este
+documento. Un ítem allí no autoriza código hasta que TASK-033 congele
+una wave.

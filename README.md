@@ -2,7 +2,9 @@
 
 Editor web de diagramas UML. El MVP cubre únicamente **diagramas de casos de uso**, con edición visual, undo/redo, persistencia local y exportación a PNG/JPG.
 
-Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación. El código es **Open Source** bajo [Apache License 2.0](LICENSE). El checklist RC está firmado (TASK-026). La identidad (fase 9) no bloqueó ese RC; el ship de remediación (TASK-030) exige TASK-024 cerrada — ya lo está. Pendiente de TASK-030: el gate de salida. TASK-029 (evidencia de rendimiento) está hecha.
+Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación. El código es **Open Source** bajo [Apache License 2.0](LICENSE).
+
+**Gate de salida (TASK-030, 2026-09-09): ship.** El RC es honesto y reproducible. Checklist firmado post-identidad (TASK-026). Licencia Apache-2.0 (TASK-027). Contratos reconciliados (TASK-028). Riesgos técnicos medidos o aceptados (TASK-029). La identidad (fase 9) no bloqueó el RC de TASK-020; TASK-024 está cerrada. El contrato Post-MVP está en [post-mvp-spec.md](docs/product/post-mvp-spec.md); la implementación no está autorizada (TASK-032/033 pendientes).
 
 ## Requisitos
 
@@ -97,7 +99,7 @@ Herramientas de test: `@axe-core/playwright` y `axe-core` son **MPL-2.0** (solo 
 | Área                          | Estado                                              |
 | ----------------------------- | --------------------------------------------------- |
 | Documentación y ADRs          | MVP de casos de uso + árbol post-024 (TASK-028)     |
-| Código de aplicación          | Release candidate estático                          |
+| Código de aplicación          | RC estático; gate TASK-030: ship                    |
 | Calidad / tests               | `npm run check` + Playwright (CI en GitHub Actions) |
 | Dependencias / `package.json` | Lockfile versionado; `npm audit --audit-level=high` |
 

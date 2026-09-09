@@ -11,17 +11,20 @@
   evidencia al cerrar.
 - `Bloqueada`: una dependencia o decisión explícita impide empezar/continuar.
 - `Hecha`: criterios `[x]` y «Evidencia de cierre» versionada.
-- `Propuesta`, `Condicional` y `Fuera de alcance vigente` solo aparecen en
-  [roadmap.md](roadmap.md); no son TASKs ejecutables.
+- `Propuesta`, `Autorizado en spec`, `Condicional` y
+  `Fuera de alcance vigente` solo aparecen en [roadmap.md](roadmap.md);
+  no son TASKs ejecutables. `Autorizado en spec` significa que
+  `post-mvp-spec.md` lo incluye; TASK-033 aún debe congelar la wave.
 
 Una TASK por chat. La ruta completa del archivo es parte del prompt. El
 `mvp-spec.md` y los ADRs prevalecen sobre este índice.
 
 ## Gate de entrada
 
-TASK-025 habilita rutas y protocolo. TASK-026–030 son contratos listos, pero
-las tareas que validan el producto post-identidad no empiezan hasta que
-TASK-024 tenga evidencia de cierre. TASK-031+ espera además el gate TASK-030.
+TASK-025 habilita rutas y protocolo. TASK-026–029 están `Hecha`. TASK-030
+cerró el gate de fase 10 (**ship**, 2026-09-09). TASK-031 publicó
+[`post-mvp-spec.md`](../../product/post-mvp-spec.md). Implementación
+Post-MVP: no, hasta TASK-033.
 
 ## Estado
 
@@ -32,8 +35,8 @@ TASK-024 tenga evidencia de cierre. TASK-031+ espera además el gate TASK-030.
 | 027 | [`10-release/TASK-027.md`](10-release/TASK-027.md) | Hecha | P0 | 025 | 2026-09-09: Juan Sarmiento eligió Apache-2.0; `LICENSE` versionada |
 | 028 | [`10-release/TASK-028.md`](10-release/TASK-028.md) | Hecha | P0 | 025 | 2026-09-09: A-01–A-12 dispuestas; ADR-005 CI=preview; fase 9 no bloqueó RC 020 |
 | 029 | [`10-release/TASK-029.md`](10-release/TASK-029.md) | Hecha | P1 | 025 | 2026-09-09: export 200/300 2x no cabe (1x 3280 ms); JSON ~95 KiB UTF-16; dominio 97.56 %/96.69 %; markers Safari aceptados |
-| 030 | [`10-release/TASK-030.md`](10-release/TASK-030.md) | Lista | P0 | 026–029 | Gate de salida fase 10 |
-| 031 | [`11-governance/TASK-031.md`](11-governance/TASK-031.md) | Lista | P0 | 030 | Spec Post-MVP |
+| 030 | [`10-release/TASK-030.md`](10-release/TASK-030.md) | Hecha | P0 | 026–029 | 2026-09-09: ship; RC honesto (026–029); Post-MVP catálogo; TASK-031 desbloqueada |
+| 031 | [`11-governance/TASK-031.md`](11-governance/TASK-031.md) | Hecha | P0 | 030 | 2026-09-09: `post-mvp-spec.md`; waves 12–17 con destino; O-01–O-10 dispuestos; mvp-spec enlaza Post-MVP |
 | 032 | [`11-governance/TASK-032.md`](11-governance/TASK-032.md) | Lista | P0 | 031 | Evolución schema/storage |
 | 033 | [`11-governance/TASK-033.md`](11-governance/TASK-033.md) | Lista | P0 | 031, 032 | Congela primera wave |
 
@@ -41,35 +44,35 @@ TASK-024 tenga evidencia de cierre. TASK-031+ espera además el gate TASK-030.
 
 ### Fase 10 — Remediación del release
 
-TASK-026–029 pueden avanzar en paralelo cuando sus dependencias lo permitan.
-TASK-030 exige las cuatro y decide si el release es honesto y reproducible.
-No introduce nuevos elementos UML.
+TASK-026–029 están `Hecha`. TASK-030 cerró el gate: el RC es honesto y
+reproducible. No introduce nuevos elementos UML. El Post-MVP no está a medias.
 
-Gate:
+Gate (cumplido 2026-09-09):
 
 - TASK-024 verificada después de identidad.
-- Checklist y navegadores firmados.
-- Licencia decidida o afirmación Open Source retirada.
-- Contradicciones documentales resueltas.
-- Riesgos medidos o aceptados explícitamente.
+- Checklist y navegadores firmados (TASK-026).
+- Licencia Apache-2.0 (TASK-027).
+- Contradicciones documentales resueltas (TASK-028).
+- Riesgos medidos o aceptados explícitamente (TASK-029).
 
 ### Fase 11 — Gobierno Post-MVP
 
-TASK-031 define la spec futura; TASK-032 define cómo evolucionan documentos
-persistidos; TASK-033 selecciona una sola wave y recién entonces crea
-TASK-034+.
+TASK-031 definió la spec futura; TASK-032 define cómo evolucionan
+documentos persistidos; TASK-033 selecciona una sola wave y recién
+entonces crea TASK-034+.
 
 Gate:
 
-- FR, non-goals y versión objetivo aprobados.
-- Compatibilidad y migración decididas antes de tocar schema.
-- Primera wave acotada con presupuesto y dependencias.
+- FR, non-goals y versión objetivo aprobados (TASK-031, 2026-09-09).
+- Compatibilidad y migración decididas antes de tocar schema (TASK-032).
+- Primera wave acotada con presupuesto y dependencias (TASK-033).
 
 ### Fases 12–17 — Catálogo, no ejecución
 
-El inventario completo vive en [roadmap.md](roadmap.md). Las carpetas de estas
-fases no se crean hasta TASK-033 o un gate posterior. Esto evita que un nombre
-de archivo parezca autorización para implementar Post-MVP.
+El inventario completo vive en [roadmap.md](roadmap.md), alineado con
+[`post-mvp-spec.md`](../../product/post-mvp-spec.md). Las carpetas de
+estas fases no se crean hasta TASK-033 o un gate posterior. Esto evita
+que un nombre de archivo parezca autorización para implementar Post-MVP.
 
 ## Registro de auditoría
 
@@ -78,15 +81,16 @@ de archivo parezca autorización para implementar Post-MVP.
 - una TASK ejecutable;
 - una decisión humana;
 - una contingencia condicionada por evidencia; o
-- una exclusión vigente que TASK-031 puede reconsiderar.
+- una exclusión vigente o una entrada de catálogo (in-scope / más tarde /
+  condicional) según [post-mvp-spec.md](../../product/post-mvp-spec.md).
 
 Los 94 criterios históricos sin firma se registran como problema de proceso,
 no como 94 features pendientes.
 
 ## Próximo paso
 
-TASK-026–029 están `Hecha`. Siguiente:
+TASK-031 está `Hecha` (contrato Post-MVP). Siguiente:
 
-- [TASK-030](10-release/TASK-030.md) (gate de salida fase 10).
-
-TASK-031+ espera el gate TASK-030.
+- [TASK-032](11-governance/TASK-032.md) (evolución de schema/storage).
+  Multi-documento: no. IndexedDB: no elegido (condicional C-QUOTA). No
+  implementar Generalization, PDF ni temas.

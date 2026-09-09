@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -74,12 +74,12 @@ licencia (o sin claim Open Source), y el Post-MVP no está a medias».
 
 ## Criterios de aceptación
 
-- [ ] 026–029 `Hecha` o `Bloqueada` documentada (nunca silenciosa).
-- [ ] Hallazgos alta severidad del registro tienen disposición.
-- [ ] README describe RC, limitaciones y licencia/silencio de forma
+- [x] 026–029 `Hecha` o `Bloqueada` documentada (nunca silenciosa).
+- [x] Hallazgos alta severidad del registro tienen disposición.
+- [x] README describe RC, limitaciones y licencia/silencio de forma
       consistente.
-- [ ] TASK-031 queda `Lista` solo si este gate es `Hecha`.
-- [ ] Índice actualizado.
+- [x] TASK-031 queda `Lista` solo si este gate es `Hecha`.
+- [x] Índice actualizado.
 
 ## Tests
 
@@ -103,4 +103,46 @@ Fase 10 cerrada; gobernanza Post-MVP habilitada o explícitamente aplazada.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-09. Criterios `[x]`. **Ship.** El RC es honesto y reproducible. El
+Post-MVP no está empezado (roadmap en catálogo; TASK-031 `Lista` y
+desbloqueada, no ejecutada).
+
+Dependencias:
+
+- TASK-026 `Hecha`: checklist RC post-identidad; Chrome 152 preview;
+  Playwright Chromium/Firefox/WebKit; Safari nativo → WebKit en Windows.
+- TASK-027 `Hecha`: Apache-2.0; `LICENSE` versionada; copy Open Source
+  alineado.
+- TASK-028 `Hecha`: A-01–A-12 dispuestas; ADR-005 CI=`preview`; fase 9 no
+  bloqueó el RC de 020 y sí exigía 024 para este gate (024 hecha).
+- TASK-029 `Hecha`: 100/150 cumple NFR-03/04; 200/300 2x no cabe (1x
+  3280 ms); JSON ~95 KiB UTF-16; dominio 97.56 %/96.69 %; markers Safari
+  aceptados.
+
+Alta severidad con disposición (ninguna silenciosa): R-01, R-02, R-03,
+R-04, R-05, R-10, R-11; P-01, P-02, P-03, P-05, P-09, P-10, P-12; A-01,
+A-02, A-04, A-09. A-02 cierra aquí: ship.
+
+CI (política ADR-005): `check` + `npm audit --audit-level=high` en Ubuntu;
+E2E en `windows-latest` con `CI=true` → `vite preview` `:5173`; Firefox y
+WebKit `@smoke|@export-spike`. Runner intacto.
+
+Comandos realmente corridos:
+
+```bash
+npm run check
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+npm audit --audit-level=high
+```
+
+`npm run check` falla en `format:check` por 10 archivos de chrome/tooltips
+de TASK-024 (mismos que 028/029). Esta TASK no los reformateó. Lint,
+typecheck, 258 tests y `vite build` OK. `npm audit --audit-level=high`:
+0 vulnerabilidades. E2E no se re-corrió: 026 y 029 ya firmaron; la política
+en `playwright.config.ts` coincide con CI.
+
+Sin `post-mvp-spec.md`, sin TASK-034+, sin producto nuevo. ADRs no
+reabiertos.
