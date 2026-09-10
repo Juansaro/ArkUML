@@ -1,8 +1,23 @@
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from "react";
 import { workspaceNeedsNewDiagramConfirmation } from "../../../app/bootstrap.ts";
 import { useOptionalWorkspaceSession } from "../../../app/WorkspaceSessionProvider.tsx";
 import { DEFAULT_VIEWPORT } from "../../../domain/diagram/defaults.ts";
+import {
+  documentFileFilename,
+  INVALID_DOCUMENT_FILE_MESSAGE,
+  parseDocumentFileText,
+  serializeDocumentFile,
+  type ArkUmlDocumentFile,
+} from "../../../domain/diagram/documentFile.ts";
 import { createDiagramDocument } from "../../../domain/diagram/factories.ts";
+import { downloadBlob } from "../../../export/download.ts";
 import { useCompactLayout } from "../../a11y/useCompactLayout.ts";
 import { DiagramCanvas } from "../../canvas/DiagramCanvas.tsx";
 import { useEditorShortcuts } from "../../shortcuts/useEditorShortcuts.ts";
@@ -22,6 +37,7 @@ import {
 import { TooltipProvider } from "../common/Tooltip.tsx";
 import { ExportDialog } from "../ExportDialog.tsx";
 import { Inspector } from "../Inspector/Inspector.tsx";
+import { InvalidDocumentFileDialog } from "../InvalidDocumentFileDialog.tsx";
 import { NewDiagramDialog } from "../NewDiagramDialog.tsx";
 import { RecoveryDialog } from "../RecoveryDialog.tsx";
 import { HelpDialog } from "./HelpDialog.tsx";
@@ -57,6 +73,8 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   const helpOpen = dialogMode === "help";
   const exportOpen = dialogMode === "export";
   const newDiagramOpen = dialogMode === "new-diagram";
+  const openFileOpen = dialogMode === "open-file";
+  const invalidFileOpen = dialogMode === "invalid-document-file";
   const recoveryOpen = dialogMode === "recovery";
   const title = documentTitle ?? storeTitle;
   const zoom = zoomPercent ?? Math.round(viewport.zoom * 100);
@@ -67,6 +85,8 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [canvasNonce, setCanvasNonce] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingFileRef = useRef<ArkUmlDocumentFile | undefined>(undefined);
   const compact = useCompactLayout();
   const paletteRef = useRef<HTMLElement>(null);
   const inspectorPanelRef = useRef<HTMLElement>(null);
@@ -209,7 +229,77 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   }
 
   function cancelDialog() {
+    pendingFileRef.current = undefined;
     store.getState().setDialogMode("none");
+  }
+
+  function applyDocumentFile(file: ArkUmlDocumentFile) {
+    pendingFileRef.current = undefined;
+    store.getState().hydrateWorkspace(file.document, file.view);
+    store.getState().setTool("select");
+    store.getState().setDialogMode("none");
+    setCanvasNonce((value) => value + 1);
+  }
+
+  function requestOpenFile() {
+    fileInputRef.current?.click();
+  }
+
+  function saveDocumentFile() {
+    const state = store.getState();
+    const json = serializeDocumentFile(state.document, state.viewport);
+    downloadBlob(
+      new Blob([json], { type: "application/json" }),
+      documentFileFilename(state.document.metadata.title),
+    );
+  }
+
+  async function handleDocumentFileChosen(
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    input.value = "";
+    if (file === undefined) {
+      return;
+    }
+
+    let text: string;
+    try {
+      text = await file.text();
+    } catch {
+      store.getState().setMessage(INVALID_DOCUMENT_FILE_MESSAGE);
+      store.getState().setDialogMode("invalid-document-file");
+      return;
+    }
+
+    const parsed = parseDocumentFileText(text);
+    if (!parsed.ok) {
+      store.getState().setMessage(INVALID_DOCUMENT_FILE_MESSAGE);
+      store.getState().setDialogMode("invalid-document-file");
+      return;
+    }
+
+    const needsConfirmation = workspaceNeedsNewDiagramConfirmation(
+      store.getState(),
+      session?.coordinator.isOverwriteBlocked() === true,
+    );
+    if (needsConfirmation) {
+      pendingFileRef.current = parsed.value;
+      store.getState().setDialogMode("open-file");
+      return;
+    }
+
+    applyDocumentFile(parsed.value);
+  }
+
+  function confirmOpenFile() {
+    const pending = pendingFileRef.current;
+    if (pending === undefined) {
+      store.getState().setDialogMode("none");
+      return;
+    }
+    applyDocumentFile(pending);
   }
 
   return (
@@ -226,6 +316,8 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
             onToggleInspector={toggleInspector}
             onToggleHelp={toggleHelp}
             onNewDiagram={requestNewDiagram}
+            onOpenFile={requestOpenFile}
+            onSaveJson={saveDocumentFile}
             onExport={toggleExport}
             paletteButtonRef={paletteButtonRef}
             inspectorButtonRef={inspectorButtonRef}
@@ -288,6 +380,18 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
             }}
           />
         ) : null}
+        {openFileOpen ? (
+          <NewDiagramDialog
+            title="Abrir archivo"
+            confirmLabel="Abrir archivo"
+            testId="open-file-dialog"
+            onCancel={cancelDialog}
+            onConfirm={confirmOpenFile}
+          />
+        ) : null}
+        {invalidFileOpen ? (
+          <InvalidDocumentFileDialog onClose={cancelDialog} />
+        ) : null}
         {recoveryOpen ? (
           <RecoveryDialog
             message={recoveryMessage ?? "El documento guardado no es válido."}
@@ -306,6 +410,18 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
             Cerrar paneles
           </button>
         ) : null}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json,application/json"
+          className={styles.fileInput}
+          tabIndex={-1}
+          aria-hidden="true"
+          data-testid="document-file-input"
+          onChange={(event) => {
+            void handleDocumentFileChosen(event);
+          }}
+        />
       </div>
     </TooltipProvider>
   );

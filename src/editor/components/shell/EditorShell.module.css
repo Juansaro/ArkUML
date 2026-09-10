@@ -81,6 +81,10 @@
   border: 0;
 }
 
+.fileInput {
+  display: none;
+}
+
 .statusbar {
   grid-area: statusbar;
   display: flex;

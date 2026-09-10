@@ -23,4 +23,13 @@ describe("Icon", () => {
     expect(document.querySelector("svg")?.innerHTML).toContain("M17 8v8");
     expect(document.querySelector("svg")?.innerHTML).toContain("M17 8h3.5");
   });
+
+  it("distingue Abrir y Guardar JSON por el sentido de la flecha", () => {
+    const { rerender } = render(<Icon name="openFile" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M12 18v-6");
+    expect(document.querySelector("svg")?.innerHTML).toContain("M9 15l3-3 3 3");
+    rerender(<Icon name="saveJson" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M12 10v6");
+    expect(document.querySelector("svg")?.innerHTML).toContain("M9 13l3 3 3-3");
+  });
 });

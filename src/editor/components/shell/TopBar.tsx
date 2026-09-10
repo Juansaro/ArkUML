@@ -19,6 +19,8 @@ type TopBarProps = {
   onToggleInspector: () => void;
   onToggleHelp: () => void;
   onNewDiagram: () => void;
+  onOpenFile: () => void;
+  onSaveJson: () => void;
   onExport: () => void;
   paletteButtonRef?: Ref<HTMLButtonElement>;
   inspectorButtonRef?: Ref<HTMLButtonElement>;
@@ -34,6 +36,8 @@ export function TopBar({
   onToggleInspector,
   onToggleHelp,
   onNewDiagram,
+  onOpenFile,
+  onSaveJson,
   onExport,
   paletteButtonRef,
   inspectorButtonRef,
@@ -87,6 +91,20 @@ export function TopBar({
           description="Crear un diagrama nuevo."
           placement="bottom"
           onClick={onNewDiagram}
+        />
+        <ToolButton
+          icon="openFile"
+          label="Abrir"
+          description="Abrir un archivo ArkUML."
+          placement="bottom"
+          onClick={onOpenFile}
+        />
+        <ToolButton
+          icon="saveJson"
+          label="Guardar JSON"
+          description="Descargar el diagrama como JSON."
+          placement="bottom"
+          onClick={onSaveJson}
         />
         <ToolButton
           icon="undo"

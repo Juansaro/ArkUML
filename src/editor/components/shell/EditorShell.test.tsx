@@ -4,10 +4,18 @@ import { act } from "react";
 import { describe, expect, it } from "vitest";
 import { DEFAULT_DOCUMENT_TITLE } from "../../../domain/diagram/defaults.ts";
 import {
+  INVALID_DOCUMENT_FILE_MESSAGE,
+  serializeDocumentFile,
+} from "../../../domain/diagram/documentFile.ts";
+import {
   createDiagramDocument,
   type IdFactory,
 } from "../../../domain/diagram/factories.ts";
-import type { Geometry, Result } from "../../../domain/diagram/model.ts";
+import type {
+  Geometry,
+  Result,
+  Viewport,
+} from "../../../domain/diagram/model.ts";
 import { deleteElements } from "../../../domain/diagram/operations.ts";
 import { createEditorStore } from "../../store/editorStore.ts";
 import { EditorStoreProvider } from "../../store/EditorStoreProvider.tsx";
@@ -369,5 +377,135 @@ describe("EditorShell", () => {
     ).toBeInTheDocument();
     await user.keyboard("{Escape}");
     expect(exportButton).toHaveFocus();
+  });
+
+  it("expone Abrir y Guardar JSON icon-only con el input de archivo", () => {
+    render(<EditorShell />);
+
+    expect(screen.getByRole("button", { name: "Abrir" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Guardar JSON" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("document-file-input")).toHaveAttribute(
+      "accept",
+      ".json,application/json",
+    );
+  });
+
+  it("Abrir archivo cancelado no muta; confirmado sustituye documento, viewport e historial", async () => {
+    const user = userEvent.setup();
+    const createId = sequentialIds();
+    const deps = {
+      createId,
+      now: () => new Date("2026-09-07T12:00:00.000Z"),
+    };
+    const store = createEditorStore({
+      document: createDiagramDocument(deps),
+      deps: { ...deps, now: () => new Date("2026-09-08T08:00:00.000Z") },
+    });
+    const imported = createDiagramDocument({
+      createId: sequentialIds(80),
+      now: () => new Date("2026-09-09T10:00:00.000Z"),
+    });
+    const importedView: Viewport = { x: 48, y: -24, zoom: 1.25 };
+    const json = serializeDocumentFile(
+      {
+        ...imported,
+        metadata: { ...imported.metadata, title: "Importado" },
+      },
+      importedView,
+    );
+
+    render(
+      <EditorStoreProvider store={store}>
+        <EditorShell />
+      </EditorStoreProvider>,
+    );
+
+    act(() => {
+      expectOk(
+        store
+          .getState()
+          .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+      );
+    });
+    const before = store.getState().document;
+
+    await user.upload(
+      screen.getByTestId("document-file-input"),
+      new File([json], "Importado.arkuml.json", { type: "application/json" }),
+    );
+
+    const dialog = await screen.findByRole("dialog", { name: "Abrir archivo" });
+    expect(dialog).toHaveTextContent(
+      "Se perderá el diagrama actual. Esta acción no se puede deshacer.",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(
+      screen.queryByRole("dialog", { name: "Abrir archivo" }),
+    ).not.toBeInTheDocument();
+    expect(store.getState().document).toBe(before);
+
+    await user.upload(
+      screen.getByTestId("document-file-input"),
+      new File([json], "Importado.arkuml.json", { type: "application/json" }),
+    );
+    await screen.findByRole("dialog", { name: "Abrir archivo" });
+    await user.click(screen.getByRole("button", { name: "Abrir archivo" }));
+
+    expect(
+      screen.queryByRole("dialog", { name: "Abrir archivo" }),
+    ).not.toBeInTheDocument();
+    expect(store.getState().document.metadata.title).toBe("Importado");
+    expect(store.getState().viewport).toEqual(importedView);
+    expect(store.getState().history.past).toHaveLength(0);
+    expect(store.getState().history.future).toHaveLength(0);
+    expect(screen.getByRole("button", { name: "Deshacer" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+  });
+
+  it("rechaza JSON inválido con el mensaje visible y sin mutar el documento", async () => {
+    const user = userEvent.setup();
+    const createId = sequentialIds();
+    const deps = {
+      createId,
+      now: () => new Date("2026-09-07T12:00:00.000Z"),
+    };
+    const store = createEditorStore({
+      document: createDiagramDocument(deps),
+      deps: { ...deps, now: () => new Date("2026-09-08T08:00:00.000Z") },
+    });
+    render(
+      <EditorStoreProvider store={store}>
+        <EditorShell />
+      </EditorStoreProvider>,
+    );
+
+    act(() => {
+      expectOk(
+        store
+          .getState()
+          .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+      );
+    });
+    const before = store.getState().document;
+
+    await user.upload(
+      screen.getByTestId("document-file-input"),
+      new File(["{not-json"], "basura.json", { type: "application/json" }),
+    );
+
+    expect(
+      await screen.findByRole("alertdialog", {
+        name: INVALID_DOCUMENT_FILE_MESSAGE,
+      }),
+    ).toBeInTheDocument();
+    expect(store.getState().document).toBe(before);
+    expect(screen.getByTestId("editor-live")).toHaveTextContent(
+      INVALID_DOCUMENT_FILE_MESSAGE,
+    );
   });
 });

@@ -45,4 +45,29 @@ describe("NewDiagramDialog", () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(onConfirm).not.toHaveBeenCalled();
   });
+
+  it("Abrir archivo reutiliza el cuerpo y cambia título y confirmación", async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+    const onConfirm = vi.fn();
+    render(
+      <NewDiagramDialog
+        title="Abrir archivo"
+        confirmLabel="Abrir archivo"
+        testId="open-file-dialog"
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+      />,
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Abrir archivo" });
+    expect(dialog).toHaveAttribute("data-testid", "open-file-dialog");
+    expect(dialog).toHaveTextContent(
+      "Se perderá el diagrama actual. Esta acción no se puede deshacer.",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
 });

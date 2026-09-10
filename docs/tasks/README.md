@@ -75,7 +75,9 @@ fuente de estado para TASK-026+.
 Gobierno y estado: [post-024/README.md](post-024/README.md). Roadmap
 (catálogo): [post-024/roadmap.md](post-024/roadmap.md).
 
-Wave 1 congelada (**Editor local sobre schema 1**). Próximo contrato
-ejecutable: [TASK-034](post-024/12-uml/TASK-034.md). Siguiente en la
-wave: [TASK-035](post-024/13-editor/TASK-035.md). No duplicar aquí los
+Wave 1 congelada (**Editor local sobre schema 1**). Wave 2 congelada
+(**Intercambio y distribución sobre schema 1**). Próximo contrato
+ejecutable: [TASK-039](post-024/13-editor/TASK-039.md). Siguientes
+en la wave: [TASK-040](post-024/15-export/TASK-040.md),
+[TASK-041](post-024/17-ecosystem/TASK-041.md). No duplicar aquí los
 contratos.

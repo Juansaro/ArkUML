@@ -4,6 +4,10 @@ import {
   createDiagramDocument,
   type IdFactory,
 } from "../../domain/diagram/factories.ts";
+import {
+  parseDocumentFileText,
+  serializeDocumentFile,
+} from "../../domain/diagram/documentFile.ts";
 import type {
   DiagramDocument,
   Geometry,
@@ -400,6 +404,36 @@ describe("domain errors and hydrate", () => {
     store.getState().hydrateWorkspace(replacement, VIEWPORT);
 
     expect(store.getState().document).toBe(replacement);
+    expect(store.getState().viewport).toEqual(VIEWPORT);
+    expect(store.getState().history.past).toHaveLength(0);
+    expect(store.getState().history.future).toHaveLength(0);
+    expect(selectCanUndo(store.getState())).toBe(false);
+  });
+
+  it("un archivo de usuario hidratado restaura documento y viewport y vacía el historial", () => {
+    const store = createStore();
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    store.getState().setViewport({ x: 1, y: 2, zoom: 0.5 });
+
+    const imported = createDiagramDocument({
+      createId: sequentialIds(90),
+      now: () => CREATED_AT,
+    });
+    const parsed = parseDocumentFileText(
+      serializeDocumentFile(imported, VIEWPORT),
+    );
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+
+    store.getState().hydrateWorkspace(parsed.value.document, parsed.value.view);
+
+    expect(store.getState().document).toEqual(imported);
     expect(store.getState().viewport).toEqual(VIEWPORT);
     expect(store.getState().history.past).toHaveLength(0);
     expect(store.getState().history.future).toHaveLength(0);

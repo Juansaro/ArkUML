@@ -331,6 +331,24 @@ describe("createAutosaveCoordinator", () => {
     });
   });
 
+  it("hydrateWorkspace escribe el snapshot interno, no el envelope público", async () => {
+    const next = createDiagramDocument({
+      createId: sequentialIds(50),
+      now: () => CREATED_AT,
+    });
+    store.getState().hydrateWorkspace(next, { x: 10, y: 20, zoom: 1.5 });
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+
+    const raw = storage.getItem(WORKSPACE_STORAGE_KEY);
+    expect(raw).not.toBeNull();
+    expect(JSON.parse(raw ?? "")).toEqual({
+      storageVersion: 1,
+      document: next,
+      view: { x: 10, y: 20, zoom: 1.5 },
+    });
+    expect(raw).not.toMatch(/arkuml-usecase-json/);
+  });
+
   it("startNewDiagram puede sustituir un blob corrupto tras confirmar", async () => {
     const corrupt = "{not-json";
     storage.setItem(WORKSPACE_STORAGE_KEY, corrupt);

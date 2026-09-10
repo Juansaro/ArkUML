@@ -3,6 +3,8 @@ export const ICON_NAMES = [
   "palette",
   "inspector",
   "newDiagram",
+  "openFile",
+  "saveJson",
   "undo",
   "redo",
   "export",
@@ -52,6 +54,24 @@ export function IconPaths({ name }: { name: IconName }) {
           <path d="M14 3v5h5" />
           <path d="M12 11v6" />
           <path d="M9 14h6" />
+        </>
+      );
+    case "openFile":
+      return (
+        <>
+          <path d="M7 3h7l5 5v13H7z" />
+          <path d="M14 3v5h5" />
+          <path d="M12 18v-6" />
+          <path d="M9 15l3-3 3 3" />
+        </>
+      );
+    case "saveJson":
+      return (
+        <>
+          <path d="M7 3h7l5 5v13H7z" />
+          <path d="M14 3v5h5" />
+          <path d="M12 10v6" />
+          <path d="M9 13l3 3 3-3" />
         </>
       );
     case "undo":

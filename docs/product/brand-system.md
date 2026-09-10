@@ -211,6 +211,24 @@ cual.
 <path d="M9 14h6" />
 ```
 
+**`openFile`** — documento con flecha de entrada:
+
+```text
+<path d="M7 3h7l5 5v13H7z" />
+<path d="M14 3v5h5" />
+<path d="M12 18v-6" />
+<path d="M9 15l3-3 3 3" />
+```
+
+**`saveJson`** — documento con flecha de salida:
+
+```text
+<path d="M7 3h7l5 5v13H7z" />
+<path d="M14 3v5h5" />
+<path d="M12 10v6" />
+<path d="M9 13l3 3 3-3" />
+```
+
 **`undo`** — flecha curva a la izquierda:
 
 ```text
@@ -341,6 +359,8 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Top bar | `palette` | Icon-only. Solo visible a `max-width: 1023px`, como hoy | Paleta | Cerrado: «Abrir paleta.» Abierto: «Cerrar paleta.» según `aria-expanded` | — |
 | Top bar | `inspector` | Icon-only. Mismo breakpoint | Inspector | Cerrado: «Abrir inspector.» Abierto: «Cerrar inspector.» | — |
 | Top bar | `newDiagram` | Icon-only | Nuevo | «Crear un diagrama nuevo.» | — |
+| Top bar | `openFile` | Icon-only | Abrir | «Abrir un archivo ArkUML.» | — |
+| Top bar | `saveJson` | Icon-only | Guardar JSON | «Descargar el diagrama como JSON.» | — |
 | Top bar | `undo` | Icon-only | Deshacer | «Deshacer (Ctrl/Cmd+Z).» | «Nada que deshacer (Ctrl/Cmd+Z).» |
 | Top bar | `redo` | Icon-only | Rehacer | «Rehacer (Ctrl/Cmd+Shift+Z o Ctrl/Cmd+Y).» | «Nada que rehacer (Ctrl/Cmd+Shift+Z o Ctrl/Cmd+Y).» |
 | Top bar | `export` | Icon-only | Exportar | «Exportar como PNG o JPG.» | — |

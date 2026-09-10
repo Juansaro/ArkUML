@@ -269,10 +269,24 @@ Candidatos P0/P1 con política de persistencia ya escrita
 TASK-033 elige el subconjunto y crea `TASK-034+` solo para ítems `Lista`.
 No congela la fase 12–17 entera.
 
+## Segunda wave (TASK-037, 2026-09-09)
+
+Nombre: **Intercambio y distribución sobre schema 1**. Schema `1`. Sin ADR.
+
+1. W14-03 / FR-P03 — JSON de usuario (envelope cerrado).
+2. W13-03 / FR-P04 — minimap (chrome).
+3. W15-03 / FR-P05 — clipboard de imagen.
+4. W17-05 / FR-P06 — runbook estático.
+
+W17-01 y W17-13 siguen más tarde / bloqueadas. Esta wave no es un
+segundo tipo de diagrama.
+
 ## Fuera de este contrato
 
-- Código, pins, schema `1` del árbol `src/`.
+- Código de la Wave 2 (eso es TASK-038–041).
+- Pins, schema `1` del árbol `src/` salvo lo que cada TASK de la wave
+  autorice en chrome/I/O.
 - Implementar `migrate()`, IndexedDB o un segundo `document.kind`.
-- Archivos `TASK-037+` o un freeze nuevo.
+- Archivos `TASK-042+` o un freeze nuevo.
 - Reabrir o enmendar ADRs.
 - Inventar el metamodelo de clases.

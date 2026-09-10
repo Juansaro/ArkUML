@@ -25,7 +25,13 @@ export const SAVE_STATUSES = ["idle", "saving", "saved", "error"] as const;
 export type SaveStatus = (typeof SAVE_STATUSES)[number];
 
 export type DialogMode =
-  "none" | "help" | "export" | "new-diagram" | "recovery";
+  | "none"
+  | "help"
+  | "export"
+  | "new-diagram"
+  | "open-file"
+  | "invalid-document-file"
+  | "recovery";
 
 export type SelectionState = {
   elementIds: readonly string[];

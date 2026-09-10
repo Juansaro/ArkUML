@@ -164,7 +164,7 @@ export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
     addParentIssues(document, ctx);
   });
 
-const viewportSchema = z.strictObject({
+export const viewportSchema = z.strictObject({
   x: finiteNumberSchema,
   y: finiteNumberSchema,
   zoom: finiteNumberSchema,

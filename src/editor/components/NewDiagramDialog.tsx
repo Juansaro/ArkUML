@@ -3,11 +3,21 @@ import { useFocusTrap } from "./useFocusTrap.ts";
 import styles from "./NewDiagramDialog.module.css";
 
 type NewDiagramDialogProps = {
+  title?: string;
+  confirmLabel?: string;
+  testId?: string;
   onCancel: () => void;
   onConfirm: () => void;
 };
 
+const DEFAULT_TITLE = "Nuevo diagrama";
+const DEFAULT_CONFIRM = "Crear diagrama nuevo";
+const DEFAULT_TEST_ID = "new-diagram-dialog";
+
 export function NewDiagramDialog({
+  title = DEFAULT_TITLE,
+  confirmLabel = DEFAULT_CONFIRM,
+  testId = DEFAULT_TEST_ID,
   onCancel,
   onConfirm,
 }: NewDiagramDialogProps) {
@@ -26,10 +36,10 @@ export function NewDiagramDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        data-testid="new-diagram-dialog"
+        data-testid={testId}
       >
         <h2 id={titleId} className={styles.title}>
-          Nuevo diagrama
+          {title}
         </h2>
         <p id={descriptionId} className={styles.body}>
           Se perderá el diagrama actual. Esta acción no se puede deshacer.
@@ -39,7 +49,7 @@ export function NewDiagramDialog({
             Cancelar
           </button>
           <button type="button" className={styles.confirm} onClick={onConfirm}>
-            Crear diagrama nuevo
+            {confirmLabel}
           </button>
         </div>
       </div>

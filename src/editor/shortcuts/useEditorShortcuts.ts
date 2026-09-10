@@ -28,6 +28,8 @@ export function useEditorShortcuts(options?: EditorShortcutOptions): void {
         (dialogMode === "help" ||
           dialogMode === "export" ||
           dialogMode === "new-diagram" ||
+          dialogMode === "open-file" ||
+          dialogMode === "invalid-document-file" ||
           dialogMode === "recovery") &&
         event.key === "Escape"
       ) {

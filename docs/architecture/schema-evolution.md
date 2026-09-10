@@ -260,4 +260,4 @@ es ninguno de los dos.
 - Implementar `migrate()`, IndexedDB, import/export JSON o cambiar Zod.
 - Reabrir o enmendar ADRs (solo se listan reaperturas **futuras**).
 - Forma persistida de Generalization, notas, waypoints, estilos o clases.
-- TASK-037+ o un freeze nuevo.
+- TASK-042+ o un freeze nuevo.
