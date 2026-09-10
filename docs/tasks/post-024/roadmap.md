@@ -6,6 +6,7 @@ entrada **no** es una TASK. La spec decide destinos y prioridades; este
 archivo proyecta el estado operativo. TASK-032 publicó
 [`schema-evolution.md`](../../architecture/schema-evolution.md).
 TASK-033 congeló la Wave 1; solo esas filas tienen archivo TASK.
+TASK-036 revisó W17-01/W17-13; no congeló implementación.
 
 ## Estados de catálogo
 
@@ -93,7 +94,8 @@ posterior.
 
 | ID | Capacidad | Pri. | Fuente | Valor / riesgo | Decisiones | ADR | Depende | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| W17-01 | Segundo `kind` de diagrama | — | `architecture.md`; `post-mvp-spec.md` | Producto UML genérico | Excluido | — | — | Fuera de alcance vigente |
+| W17-01 | Plataforma por `document.kind` (FR-P07) | P1 | `post-mvp-spec.md` FR-P07; `diagram-kinds.md` | Shell extensible; un documento, un kind | Cerrada: no multi-doc; no switcher en 1.x; host vacío prohibido | Posible addendum ADR-002 cuando exista el primer kind extra | W17-13 | Bloqueada |
+| W17-13 | Diagrama de clases (primer tipo extra) | P1 | `post-mvp-spec.md`; `diagram-kinds.md` | Primer `document.kind` ≠ `use-case` | Abiertas: fuente UML; forma persistida; iconos de marca | Bump `schemaVersion` (`schema-evolution.md`); posible addendum ADR-002 y `brand-system.md` | TASK-036 | Bloqueada |
 | W17-02 | Backend / auth / collab | — | `mvp-spec.md`; `post-mvp-spec.md` | SaaS | Excluido | No en dominio | — | Fuera de alcance vigente |
 | W17-03 | Remote `DiagramRepository` | — | `architecture.md`; `post-mvp-spec.md` | Sync | Excluido | ADR-004 | W17-02 | Fuera de alcance vigente |
 | W17-04 | PWA | — | `mvp-spec.md`; `post-mvp-spec.md` | Offline/install | Excluido | — | — | Fuera de alcance vigente |
@@ -118,8 +120,14 @@ posterior.
 ## Ambigüedades que siguen abiertas
 
 Cerradas en TASK-031 (ver spec): recorte 1.x vs 2.0; ciclos = warning;
-multi-documento = no; segundo tipo de diagrama = exclusión; temas = no
-enmendar `brand-system.md`; IndexedDB no elegido (condicional).
+multi-documento = no; temas = no enmendar `brand-system.md`; IndexedDB
+no elegido (condicional). TASK-036 sustituye «segundo tipo = exclusión»:
+W17-01/13 entran bloqueadas; 1.x sigue solo `use-case`.
+
+Cerradas en TASK-036
+([`diagram-kinds.md`](../../architecture/diagram-kinds.md)): un
+documento, un kind; plataforma por módulo; host vacío prohibido. El
+envelope `arkuml-usecase-json` no se reutiliza para clases.
 
 Cerradas en TASK-032
 ([`schema-evolution.md`](../../architecture/schema-evolution.md)): bump
@@ -136,10 +144,13 @@ Siguen siendo stop conditions, no copy de implementación:
 - PDF: SVG-print vs PNG embebido.
 - Notas: elemento vs overlay.
 - Actores no humanos: `kind` vs estereotipo.
+- Clases (W17-13): fuente UML citada y forma persistida (unión de
+  elementos/relaciones). Sin eso no hay FR.
 
 ## Relación con el registro
 
 Los grupos O-01–O-10 de [risk-register.md](risk-register.md) están
 dispuestos en `post-mvp-spec.md`. TASK-033 congeló W12-01 y W13-02.
-El resto de filas `Autorizado en spec` permanece catálogo hasta un freeze
-posterior; no hay TASK «para ir avanzando».
+TASK-036 revisó W17-01/13 (bloqueadas). El resto de filas `Autorizado en
+spec` permanece catálogo hasta un freeze posterior; no hay TASK «para ir
+avanzando». Nadie pinta un class diagram «porque está en el backlog».

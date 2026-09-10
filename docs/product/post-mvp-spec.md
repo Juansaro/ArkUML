@@ -9,22 +9,27 @@ El inventario desglosado vive en
 archivo es la spec; el roadmap no lo es.
 
 La política de migraciones está en
-[`schema-evolution.md`](../architecture/schema-evolution.md). TASK-033
-es el único que puede promover un subconjunto maduro a `TASK-034+`.
-Hasta entonces no hay Generalization, IndexedDB, PDF ni temas a medias
-(regla TASK-020).
+[`schema-evolution.md`](../architecture/schema-evolution.md). Cómo se
+añade un `document.kind` está en
+[`diagram-kinds.md`](../architecture/diagram-kinds.md). Una TASK de
+freeze (como TASK-033) es la única que puede promover un subconjunto
+maduro a TASK ejecutables. Hasta entonces no hay Generalization,
+IndexedDB, PDF, temas ni un segundo tipo a medias (regla TASK-020).
 
 ## Resumen
 
-ArkUML permanece una SPA desktop-first de **casos de uso**, local, un
-usuario, sin SaaS. El Post-MVP profundiza ese editor; no lo convierte en
-plataforma UML genérica ni en producto en la nube.
+ArkUML en **1.x** permanece una SPA desktop-first de **casos de uso**,
+local, un usuario, sin SaaS. El Post-MVP profundiza ese editor y **puede**
+abrir una línea **2.x** con más `document.kind`, empezando por clases.
+No es un producto en la nube ni un kit UML que aterrice todos los tipos
+a la vez.
 
 Supuestos que **no** cambian hasta una revisión explícita de este
 contrato:
 
 - Un único documento local activo (autosave). No hay multi-documento.
-- Un único `SystemBoundary` por documento.
+- Kind `use-case`: un único `SystemBoundary` por documento. Otros kinds
+  definen su propia cardinalidad cuando existan.
 - Sin imágenes embebidas.
 - Pantalla objetivo `>=1024×720`.
 - Identidad visual fija (`brand-system.md`): no hay selector de tema.
@@ -53,7 +58,7 @@ el MVP no puede abrir sin `migrate()`).
 | --- | --- | --- |
 | Patch `1.0.x` | Defectos, copy, a11y del chrome ya especificado, pulido que no añade FR | Siguen `1` / `1` |
 | Minor `1.x.0` | FR Post-MVP **aditivos** que un documento schema `1` sigue abriendo en 1.0 (solo chrome, warnings, o archivo JSON del mismo documento) | Schema `1`. Campos persistidos nuevos no entran: `strictObject` los haría unloadable en 1.0 (`schema-evolution.md`). `storageVersion` solo sube si cambia el envelope, no el documento |
-| Major `2.0.0` | Nuevo `kind` de elemento o relación; segundo tipo de diagrama; dejar de cargar schema `1` sin migración; cambiar la matriz de conexión del MVP de forma incompatible | `schemaVersion >= 2` y [`schema-evolution.md`](../architecture/schema-evolution.md) **antes** de tocar persistencia |
+| Major `2.0.0` | Nuevo `kind` de elemento o relación; el primer `document.kind` distinto de `use-case` (W17-13 clases u otro tipo extra); dejar de cargar schema `1` sin migración; cambiar la matriz de conexión del MVP de forma incompatible | `schemaVersion >= 2` y [`schema-evolution.md`](../architecture/schema-evolution.md) **antes** de tocar persistencia |
 
 ### Qué rompe el MVP (prohibido en 1.x)
 
@@ -89,6 +94,7 @@ subconjunto). «P1» / «P2» no entran en ese freeze.
 | FR-P04 | Minimap de navegación del documento. Chrome; se excluye del raster de export como el resto del shell. | P1 | In-scope |
 | FR-P05 | Copiar al portapapeles una imagen del diagrama completo, mismos techos y degradación 2x→1x que FR-12. Exporter hermano de PNG/JPG; no cambia el pin de `html-to-image`. | P1 | In-scope |
 | FR-P06 | Runbook de publicación del `dist/` estático (hosting sin secrets cloud). | P1 | In-scope |
+| FR-P07 | El chrome y el dominio se resuelven por `document.kind` (paleta, nodos/edges, `canConnect`, inspector, warnings, export) de modo que un tipo extra no reescriba el shell. Un documento, un kind. Ver [`diagram-kinds.md`](../architecture/diagram-kinds.md). | P1 | Más tarde |
 
 FR-P01 no declara que un ciclo sea ilegal en UML: no hay fuente UML
 acordada en el repo. El producto avisa para no rechazar diagramas que el
@@ -97,6 +103,10 @@ bloqueo exige una fuente citada y una revisión de este contrato.
 
 FR-P03 no es IndexedDB, no es sync y no es multi-documento. Es un
 archivo que el usuario descarga o abre.
+
+FR-P07 no es la notación de clases ni un selector de tipo en 1.x. No se
+implementa el host vacío «por si acaso». Va acoplado a W17-13: el primer
+`document.kind` persistido distinto de `use-case` es línea 2.0.
 
 ## Waves 12–17
 
@@ -159,7 +169,7 @@ roadmap es la proyección operativa.
 
 | ID | Destino | Pri. | Disposición |
 | --- | --- | --- | --- |
-| W17-01 | Exclusión | — | Segundo `kind` de diagrama. ArkUML no es UML genérico. |
+| W17-01 | Más tarde | P1 | FR-P07. Plataforma por `document.kind`. Un documento, un kind. **Bloqueada** hasta W17-13 (fuente UML + forma persistida). Sin switcher en 1.x. |
 | W17-02 | Exclusión | — | Backend, auth, colaboración, SaaS. |
 | W17-03 | Exclusión | — | `DiagramRepository` remoto. |
 | W17-04 | Exclusión | — | PWA. |
@@ -171,6 +181,7 @@ roadmap es la proyección operativa.
 | W17-10 | Exclusión | — | Analytics. |
 | W17-11 | Exclusión | — | SEO / SSR / Next.js. |
 | W17-12 | Exclusión | — | Jest, Cypress, Vitest Browser, Tailwind, shadcn, Router. |
+| W17-13 | Más tarde | P1 | Diagrama de clases (primer tipo extra). **Bloqueada**: fuente UML citada, unión de elementos/relaciones, bump de schema, addendum de marca para iconos (sin kit externo). No es FR hasta esos gates. |
 
 ### Contingencias
 
@@ -191,7 +202,7 @@ revisar este contrato.
 
 | ID | Grupo | Disposición |
 | --- | --- | --- |
-| O-01 | UML extra y otros diagramas | **Se parte.** Entran: W12-01 (in-scope), W12-02/03/04/07 (más tarde, bloqueados). Permanecen exclusión: paquetes (W12-05), multiplicidad (W12-06), segundo tipo de diagrama (W17-01). |
+| O-01 | UML extra y otros diagramas | **Se parte.** Entran: W12-01 (in-scope), W12-02/03/04/07 (más tarde, bloqueados), W17-01 (plataforma, más tarde / bloqueada) y W17-13 (clases, más tarde / bloqueada). Permanecen exclusión: paquetes (W12-05), multiplicidad (W12-06). |
 | O-02 | Potencia del editor | **Entra.** In-scope: W13-02, W13-03. Más tarde / bloqueado: W13-01, W13-04. |
 | O-03 | Multi-documento, IndexedDB, sync, remoto | **Se parte.** IndexedDB condicional (W14-01). Permanecen exclusión: multi-documento (W14-02), sync (W14-05), repo remoto (W17-03). |
 | O-04 | PDF, SVG, clipboard, JSON de usuario | **Se parte.** Entran: JSON de usuario (W14-03, in-scope) y clipboard (W15-03, in-scope). Más tarde / bloqueado: SVG (W15-01), PDF (W15-02). |
@@ -207,7 +218,9 @@ revisar este contrato.
 No implementar, ni preparar «por si acaso», hasta una revisión explícita
 de este contrato:
 
-- Cualquier tipo de diagrama UML distinto de casos de uso.
+- Un `document.kind` distinto de `use-case` en la línea **1.x**. 1.x no
+  persiste otro kind. Un tipo extra sin fuente UML acordada **no** es FR
+  (W17-13 sigue bloqueada).
 - Paquetes, multiplicidad, temas, plantillas, edición táctil/móvil.
 - Multi-documento, sync multi-tab, workspace remoto.
 - Backend, autenticación, usuarios, colaboración, PWA, analytics, SEO/SSR.
@@ -219,7 +232,8 @@ de este contrato:
   TASK de implementación.
 
 Preparar un `kind` discriminado o `DiagramRepository` async **no**
-autoriza esas capacidades (igual que en el MVP).
+autoriza un segundo diagrama ni IndexedDB (igual que en el MVP). FR-P07
+no se implementa como host vacío.
 
 ## ADRs que podrían reabrirse
 
@@ -229,11 +243,13 @@ tendría que hacerlo **antes** de tocar código.
 | ADR | Reabrir si… | No reabrir si… |
 | --- | --- | --- |
 | [ADR-003](../decisions/ADR-003-state-management.md) | El historial deja de ser RAM-only, se persiste, o undo debe restaurar viewport/selección (R-13). | FR-P01/P02: warnings y guías no entran al historial; el tope 100 y undo-sin-viewport se conservan. |
-| [ADR-004](../decisions/ADR-004-persistence.md) | C-QUOTA adelanta IndexedDB, o una revisión futura pide multi-documento. | FR-P03: archivo JSON del documento activo, sin cambiar el adapter de workspace (`schema-evolution.md`). Sync multi-tab sigue fuera. |
+| [ADR-004](../decisions/ADR-004-persistence.md) | C-QUOTA adelanta IndexedDB, o una revisión futura pide multi-documento. | FR-P03: archivo JSON del documento activo, sin cambiar el adapter de workspace (`schema-evolution.md`). Sync multi-tab sigue fuera. W17-01/13: un documento, un kind; no es lista de diagramas. |
 | [ADR-006](../decisions/ADR-006-export.md) | C-EXPORT, fallo nuevo de raster, o W15-01/02 (SVG/PDF). | FR-P05 si es exporter hermano que reutiliza `exportDiagram` y el pin `1.11.11`. Markers Safari ya aceptados. |
 
 ADR-001 (TS7 / hooks Git) y ADR-002 (waypoints, auto-layout, X6) siguen
 el mismo criterio: se reabren en la TASK que los necesite, no aquí.
+W17-13 puede exigir addendum de ADR-002 y de `brand-system.md` **antes**
+de código; no se reabren en esta revisión.
 
 ## Primera wave (recomendación a TASK-033)
 
@@ -256,6 +272,7 @@ No congela la fase 12–17 entera.
 ## Fuera de este contrato
 
 - Código, pins, schema `1` del árbol `src/`.
-- Implementar `migrate()` o IndexedDB (política: `schema-evolution.md`).
-- Archivos `TASK-034+` (TASK-033).
+- Implementar `migrate()`, IndexedDB o un segundo `document.kind`.
+- Archivos `TASK-037+` o un freeze nuevo.
 - Reabrir o enmendar ADRs.
+- Inventar el metamodelo de clases.

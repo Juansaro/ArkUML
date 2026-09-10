@@ -26,8 +26,9 @@ cerró el gate de fase 10 (**ship**, 2026-09-09). TASK-031 publicó
 [`post-mvp-spec.md`](../../product/post-mvp-spec.md). TASK-032 publicó
 [`schema-evolution.md`](../../architecture/schema-evolution.md).
 TASK-033 congeló la Wave 1 (**Editor local sobre schema 1**). TASK-034
-y TASK-035 están `Hecha`. No hay siguiente contrato ejecutable hasta un
-freeze posterior.
+y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
+(W17-01, W17-13); no congeló implementación. No hay siguiente contrato
+ejecutable hasta un freeze posterior.
 
 ## Estado
 
@@ -44,6 +45,7 @@ freeze posterior.
 | 033 | [`11-governance/TASK-033.md`](11-governance/TASK-033.md) | Hecha | P0 | 031, 032 | 2026-09-09: Wave 1 **Editor local sobre schema 1** (W12-01, W13-02); TASK-034 y TASK-035 |
 | 034 | [`12-uml/TASK-034.md`](12-uml/TASK-034.md) | Hecha | P0 | 033 | 2026-09-09: FR-P01; `INCLUDE_CYCLE`/`EXTEND_CYCLE`; schema 1 |
 | 035 | [`13-editor/TASK-035.md`](13-editor/TASK-035.md) | Hecha | P0 | 033 | 2026-09-09: FR-P02; guías de alineación (chrome); schema 1 |
+| 036 | [`11-governance/TASK-036.md`](11-governance/TASK-036.md) | Hecha | P0 | 031, 032 | 2026-09-09: W17-01 plataforma + W17-13 clases (bloqueadas); FR-P07; `diagram-kinds.md`; schema `1` intacto |
 
 ## Fases y gates
 
@@ -64,20 +66,25 @@ Gate (cumplido 2026-09-09):
 
 TASK-031 definió la spec futura; TASK-032 publicó
 [`schema-evolution.md`](../../architecture/schema-evolution.md);
-TASK-033 congeló la Wave 1 y creó TASK-034 y TASK-035.
+TASK-033 congeló la Wave 1 y creó TASK-034 y TASK-035. TASK-036 publicó
+[`diagram-kinds.md`](../../architecture/diagram-kinds.md) y enmendó
+W17-01/W17-13; Wave 1 intacta.
 
 Gate (cumplido 2026-09-09):
 
 - FR, non-goals y versión objetivo aprobados (TASK-031).
 - Compatibilidad y migración publicadas (TASK-032).
 - Primera wave acotada: **Editor local sobre schema 1** (TASK-033).
+- Catálogo multi-kind: plataforma (W17-01) y clases (W17-13) bloqueadas
+  (TASK-036). Sin TASK ejecutable nueva.
 
 ### Fases 12–17 — Catálogo salvo la Wave 1
 
 El inventario completo vive en [roadmap.md](roadmap.md), alineado con
 [`post-mvp-spec.md`](../../product/post-mvp-spec.md). Existen solo
 `12-uml/` (TASK-034) y `13-editor/` (TASK-035). No hay `14-persistence/`
-… `17-ecosystem/`. El resto del catálogo no es ejecutable.
+… `17-ecosystem/`. El resto del catálogo (incluidas plataforma
+multi-kind y clases, bloqueadas) no es ejecutable.
 
 ## Registro de auditoría
 
@@ -96,6 +103,7 @@ no como 94 features pendientes.
 
 Wave 1 (**Editor local sobre schema 1**) está cerrada: TASK-034 y
 TASK-035 `Hecha`. No hay siguiente contrato ejecutable. W14-03 y el
-resto del catálogo esperan un freeze posterior. Multi-documento: no.
-IndexedDB: no elegido (condicional C-QUOTA). No implementar
-Generalization, JSON de usuario, PDF ni temas en estos chats.
+resto del catálogo (incluidas W17-01/13) esperan un freeze posterior.
+Multi-documento: no. IndexedDB: no elegido (condicional C-QUOTA). No
+implementar Generalization, JSON de usuario, PDF, temas ni un class
+diagram en estos chats.

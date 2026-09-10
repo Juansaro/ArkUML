@@ -21,6 +21,7 @@ wave (schema `1`, chrome): ninguno.
 
 | ADR | Abrir **antes** de tocar código si… | No abrir si… |
 | --- | --- | --- |
-| ADR-004 | C-QUOTA → IndexedDB, o una revisión futura pide multi-documento | FR-P03 (archivo JSON del documento activo); sync multi-tab (sigue exclusión) |
+| ADR-004 | C-QUOTA → IndexedDB, o una revisión futura pide multi-documento | FR-P03 (archivo JSON del documento activo); sync multi-tab (sigue exclusión); W17-01/13 (un documento, un kind) |
 | ADR-003 | El historial deja de ser RAM-only o undo restaura viewport/selección | Warnings, guías, minimap o el JSON de usuario |
 | ADR-006 | C-EXPORT, fallo nuevo de raster, o W15-01/02 | Clipboard de imagen que reutiliza `exportDiagram` |
+| ADR-002 | Addendum cuando se desbloquee W17-13 (clases) o waypoints persistidos | Plataforma por `kind` (FR-P07) sin segundo motor |

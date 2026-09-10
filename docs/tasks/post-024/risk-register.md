@@ -78,7 +78,7 @@ código.
 
 | ID | Grupo | Fuente | Tratamiento |
 | --- | --- | --- | --- |
-| O-01 | Generalization, ciclos, extension points, notas, paquetes, multiplicidad, actores especializados y otros diagramas | `docs/product/mvp-spec.md:66-70,192-205` | Se parte: ciclos in-scope (warning); Generalization/notas/extension points/actores más tarde y bloqueados; paquetes, multiplicidad y segundo diagrama permanecen exclusión |
+| O-01 | Generalization, ciclos, extension points, notas, paquetes, multiplicidad, actores especializados y otros diagramas | `docs/product/mvp-spec.md:66-70,192-205`; `post-mvp-spec.md` (TASK-036) | Se parte: ciclos in-scope (warning); Generalization/notas/extension points/actores más tarde y bloqueados; plataforma multi-kind (W17-01) y clases (W17-13) más tarde / bloqueadas; paquetes y multiplicidad permanecen exclusión |
 | O-02 | Minimap, auto-layout, alignment guides, waypoints y routing | `docs/product/mvp-spec.md:50,192-205` | Entra: guides P0 y minimap P1 in-scope; waypoints y auto-layout más tarde / bloqueados |
 | O-03 | Multi-documento, IndexedDB, sync y workspace remoto | `docs/product/mvp-spec.md:192-205`; `ADR-004-persistence.md:37` | Se parte: IndexedDB condicional (C-QUOTA, no elegido); multi-documento, sync y remoto permanecen exclusión |
 | O-04 | PDF, SVG persistido, clipboard e import/export JSON | `docs/product/mvp-spec.md:192-205` | Se parte: JSON de usuario y clipboard in-scope; SVG/PDF más tarde / bloqueados |
@@ -87,7 +87,7 @@ código.
 | O-07 | Touch y edición móvil | `docs/product/mvp-spec.md:48-53,192-205` | Permanece exclusión (W16-03) |
 | O-08 | Backend, auth, colaboración, hosting, analytics, SaaS y PWA | `docs/product/mvp-spec.md:192-205` | Se parte: SaaS/PWA/analytics/remoto permanecen exclusión; runbook estático in-scope (W17-05) |
 | O-09 | Husky, lint-staged, commitlint, Jest, Cypress, Tailwind, shadcn, Router y TS7 | `docs/decisions/ADR-001-frontend-stack.md:41-49`; `ADR-005-testing.md:35-41` | Se parte: Husky/stack permanecen exclusión; TS7 más tarde / bloqueado (W17-06) |
-| O-10 | X6/Konva, Canvas/WebGL, DI, event bus, Redux y arquitectura ceremonial | `docs/architecture/architecture.md:108-118`; `ADR-002-diagram-engine.md:28-45` | Permanece exclusión programada; W17-08/09 solo contingencia medida |
+| O-10 | X6/Konva, Canvas/WebGL, DI, event bus, Redux y arquitectura ceremonial | `docs/architecture/architecture.md:116-122`; `ADR-002-diagram-engine.md:28-45` | Permanece exclusión programada; W17-08/09 solo contingencia medida |
 
 ## Cobertura
 
@@ -98,4 +98,6 @@ Ningún R/P/A de severidad alta quedó sin decisión, evidencia o aceptación
 explícita (gate TASK-030, 2026-09-09: **ship**). TASK-031 (2026-09-09)
 dispuso O-01–O-10 en `docs/product/post-mvp-spec.md`: unas líneas entran
 al catálogo (in-scope, más tarde o condicional) y otras permanecen
-exclusión vigente. Eso no autoriza implementación.
+exclusión vigente. TASK-036 (2026-09-09) revisó O-01: W17-01 y W17-13
+entran bloqueadas; paquetes y multiplicidad siguen exclusión. Eso no
+autoriza implementación.

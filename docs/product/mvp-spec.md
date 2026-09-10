@@ -211,5 +211,6 @@ Preparar interfaces (`DiagramRepository`, `kind` discriminado) **no autoriza** i
 
 Prioridades, FR futuros, non-goals y versionado:
 [post-mvp-spec.md](post-mvp-spec.md). No copia ni sustituye este
-documento. Un ítem allí no autoriza código hasta que TASK-033 congele
-una wave.
+documento. Un ítem allí no autoriza código hasta que una TASK de freeze
+congele una wave. El MVP no gana un segundo tipo de diagrama: 1.x sigue
+siendo solo casos de uso.

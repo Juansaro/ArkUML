@@ -119,6 +119,6 @@ Zod 4 valida `WorkspaceSnapshot` al cargar. `z.strictObject` (o equivalente Zod 
 
 ## Compatibilidad futura
 
-- `kind` en documento, elemento y relación permite otros diagramas sin romper el parser si se usa unión exhaustiva y `default` que falle con `UNKNOWN_KIND`.
+- `kind` en documento, elemento y relación permite otros diagramas sin romper el parser si se usa unión exhaustiva y `default` que falle con `UNKNOWN_KIND`. Política de extensión: [diagram-kinds.md](diagram-kinds.md). 1.x solo `use-case`.
 - Generalization será un `kind` de relación nuevo, no un flag en Association.
 - Estilos visuales, si aparecen, vivirán en un mapa opcional versionado, no en el motor gráfico.

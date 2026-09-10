@@ -6,7 +6,8 @@ código. El schema `1` del MVP no cambia aquí.
 `mvp-spec.md` gana para el producto actual. Los ADRs vigentes ganan hasta
 que una TASK futura los reabra **antes** de tocar `src/persistence`.
 El contrato de alcance Post-MVP está en
-[`post-mvp-spec.md`](../product/post-mvp-spec.md).
+[`post-mvp-spec.md`](../product/post-mvp-spec.md). Cómo se añade un
+`document.kind` está en [`diagram-kinds.md`](diagram-kinds.md).
 
 ## Números vigentes
 
@@ -39,6 +40,7 @@ Sube **antes** de persistir cualquier cambio de forma de
 - Cambiar el tipo o el significado de un campo existente.
 - Nuevo `kind` de elemento o relación (Generalization, notas persistidas,
   extension points, actores con `kind` nuevo).
+- `document.kind` distinto de `use-case` (primer extra: clases, W17-13).
 - Geometría persistida que hoy no existe (waypoints en el documento).
 - Cambiar la matriz de conexión de forma incompatible.
 
@@ -72,7 +74,7 @@ dos workspaces vivos.
 | --- | --- |
 | Patch `1.0.x` | Schema `1` / storage `1`. Defectos, copy, a11y ya especificada. |
 | Minor `1.x.0` | Schema `1`. FR aditivos **no persistidos** (chrome, warnings) o I/O de archivo sobre el mismo documento. `storageVersion` solo sube si cambia el envelope, no el documento. |
-| Major `2.0.0` | `schemaVersion >= 2` y `migrate()` implementado **antes** del primer save de esa forma. |
+| Major `2.0.0` | `schemaVersion >= 2` y `migrate()` implementado **antes** del primer save de esa forma. El primer `document.kind` extra (W17-13) ya es este bump. |
 
 ## Qué es breaking
 
@@ -84,6 +86,8 @@ Breaking para un lector schema `1` (el MVP y toda la línea 1.x):
 - Cambiar `kind: "use-case"` del documento, o la matriz Actor / UseCase /
   Include / Extend del MVP, de forma que un diagrama 1.0 deje de ser
   válido.
+- Persistir un `document.kind` que el parser 1.0 no conoce (el 1.0 lo
+  trata como `UNKNOWN_KIND`).
 - Persistir selección, historial, herramienta u objetos de React Flow.
 
 No es breaking:
@@ -96,10 +100,14 @@ No es breaking:
 - Fallo de cuota o storage bloqueado: el trabajo sigue en memoria
   (NFR-07).
 
-Waypoints, estilos, extension points, notas y Generalization **no**
-tienen forma persistida aquí. Cuando una TASK futura las desbloquee con
-fuente canónica, bumpan `schemaVersion` y siguen esta política. Inventar
-esa forma en una TASK de implementación es stop.
+Waypoints, estilos, extension points, notas, Generalization y el
+diagrama de clases **no** tienen forma persistida aquí. Cuando una TASK
+futura las desbloquee con fuente canónica, bumpan `schemaVersion` y
+siguen esta política. Inventar esa forma en una TASK de implementación
+es stop.
+
+FR-P07 (plataforma por `kind`) no bumpa solo: el host vacío no se
+persiste. El primer `document.kind` extra es el bump.
 
 ## Envelope público (FR-P03)
 
@@ -138,6 +146,10 @@ Rechazo de archivo (no se escribe el workspace):
 - `kind` de documento, elemento o relación desconocido.
 
 Este I/O no cambia `DiagramRepository`. No reabre ADR-004.
+
+El identificador `arkuml-usecase-json` es del intercambio schema `1`
+(casos de uso). **No** se reutiliza para un documento de clases. El
+nombre del envelope 2.x se decide en la TASK que desbloquee W17-13.
 
 ## `migrate()`
 
@@ -226,7 +238,8 @@ Ningún ADR se reabre en esta TASK ni en la primera wave recomendada
 | [ADR-003](../decisions/ADR-003-state-management.md) | **Sí, antes de código**, si el historial deja de ser RAM-only, se persiste, o undo debe restaurar viewport/selección. | Hoy: pila 100 en RAM; undo no restaura viewport. |
 | ADR-003 | **No** para FR-P01/P02/P04 ni para FR-P03. | Warnings, guías y minimap no entran al historial; el JSON de usuario no serializa la pila. |
 | [ADR-006](../decisions/ADR-006-export.md) | **No** en esta política. | Export de imagen; fuera de alcance de TASK-032. Se reabre solo por C-EXPORT o W15-01/02. |
-| ADR-001 / ADR-002 | **No** por persistencia. | Toolchain y motor gráfico. Waypoints persistidos (W13-01) exigirían addendum de ADR-002 **además** del bump de schema. |
+| ADR-001 / ADR-002 | **No** por persistencia. | Toolchain y motor gráfico. Waypoints persistidos (W13-01) exigirían addendum de ADR-002 **además** del bump de schema. W17-13 (clases) puede exigir addendum de ADR-002 y de marca **antes** de código; no se reabre aquí. |
+| ADR-004 | **No** para W17-01/13. | Un documento, un kind. No es lista de diagramas (W14-02). |
 
 Quien toque `src/persistence` por IndexedDB o multi-doc **para** y abre
 ADR-004. Quien persista el historial **para** y abre ADR-003. FR-P03 no
@@ -246,5 +259,5 @@ es ninguno de los dos.
 
 - Implementar `migrate()`, IndexedDB, import/export JSON o cambiar Zod.
 - Reabrir o enmendar ADRs (solo se listan reaperturas **futuras**).
-- Forma persistida de Generalization, notas, waypoints o estilos.
-- TASK-034+ (TASK-033).
+- Forma persistida de Generalization, notas, waypoints, estilos o clases.
+- TASK-037+ o un freeze nuevo.
