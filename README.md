@@ -4,7 +4,7 @@ Editor web de diagramas UML. El MVP cubre únicamente **diagramas de casos de us
 
 Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación. El código es **Open Source** bajo [Apache License 2.0](LICENSE).
 
-**Gate de salida (TASK-030, 2026-09-09): ship.** El RC es honesto y reproducible. Checklist firmado post-identidad (TASK-026). Licencia Apache-2.0 (TASK-027). Contratos reconciliados (TASK-028). Riesgos técnicos medidos o aceptados (TASK-029). La identidad (fase 9) no bloqueó el RC de TASK-020; TASK-024 está cerrada. El contrato Post-MVP está en [post-mvp-spec.md](docs/product/post-mvp-spec.md); la política de schema/storage en [schema-evolution.md](docs/architecture/schema-evolution.md). Wave 1 está `Hecha`. Wave 2 está congelada; el próximo contrato es [TASK-039](docs/tasks/post-024/13-editor/TASK-039.md).
+**Gate de salida (TASK-030, 2026-09-09): ship.** El RC es honesto y reproducible. Checklist firmado post-identidad (TASK-026). Licencia Apache-2.0 (TASK-027). Contratos reconciliados (TASK-028). Riesgos técnicos medidos o aceptados (TASK-029). La identidad (fase 9) no bloqueó el RC de TASK-020; TASK-024 está cerrada. El contrato Post-MVP está en [post-mvp-spec.md](docs/product/post-mvp-spec.md); la política de schema/storage en [schema-evolution.md](docs/architecture/schema-evolution.md). Wave 1 y Wave 2 están `Hecha`. **Release 1** (línea 2.0: biblioteca + secuencia) está congelada; el próximo contrato es [TASK-046](docs/tasks/post-024/12-uml/TASK-046.md).
 
 ## Requisitos
 

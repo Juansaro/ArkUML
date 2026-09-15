@@ -373,6 +373,7 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | --- | --- | --- | --- | --- | --- |
 | Top bar | `palette` | Icon-only. Solo visible a `max-width: 1023px` (drawers) | Paleta | Cerrado: «Abrir paleta.» Abierto: «Cerrar paleta.» según `aria-expanded` | — |
 | Top bar | `inspector` | Icon-only. Mismo breakpoint | Inspector | Cerrado: «Abrir inspector.» Abierto: «Cerrar inspector.» | — |
+| Top bar | `diagramSwitcher` | Combobox (no `<select>` nativo). Sustituye el título estático. Trigger 32 px de alto, min-width 12 rem, max-width 20 rem | Diagrama activo | «Cambiar de diagrama.» | — |
 | Top bar | `newDiagram` | Icon-only | Nuevo | «Crear un diagrama nuevo.» | — |
 | Top bar | `openFile` | Icon-only | Abrir | «Abrir un archivo ArkUML.» | — |
 | Top bar | `saveJson` | Icon-only | Guardar JSON | «Descargar el diagrama como JSON.» | — |
@@ -401,14 +402,15 @@ Esos controles conservan etiqueta visible y no reciben la primitiva Tooltip.
 ## Composición por superficie
 
 - **Top bar:** grupo de marca (isotipo 24 px + `h1` «ArkUML», `display: flex`,
-  `align-items: center`, gap `--space-2`) + título del documento + tagline.
+  `align-items: center`, gap `--space-2`) + **combobox del diagrama
+  activo** (Release 1; sustituye el título estático) + tagline.
   `.identity` conserva `flex: 1 1 12rem`, `min-width: 0`, gap `--space-3`
-  entre el grupo de marca y el título, ellipsis en el título, y pasa a
-  `align-items: center` (el isotipo de 24 px no se alinea por baseline). Las
+  entre el grupo de marca y el combobox. Las
   acciones son icon-only 32×32 px (`box-sizing: border-box`, padding
   6 px, icono 20 px). Conservan `aria-haspopup` / `aria-expanded` /
   `aria-controls` actuales en Exportar, Ayuda y drawers (Paleta /
-  Inspector, solo `max-width: 1023px`).
+  Inspector, solo `max-width: 1023px`). El combobox usa `aria-expanded`,
+  `aria-controls` y `aria-haspopup="listbox"`.
 - **Paleta:** fila icono 20 px + gap 8 px + etiqueta; botón a ancho completo,
   `min-height` 32 px, `text-align: start`. El tooltip no repite la etiqueta
   como única información.
@@ -487,10 +489,40 @@ Apariencia:
   `z-index: var(--z-tooltip)`.
 - `TooltipProvider` se monta una vez en `EditorShell`.
 
+## Combobox de diagrama (Release 1)
+
+Chrome de FR-R02. No es notación UML. Sin paquete de combobox, sin
+`<select>` nativo, sin webfonts ni kit de iconos.
+
+- **Trigger:** superficie `--color-surface`, borde 1 px
+  `--color-control-border`, radio `--radius-sm`, altura 32 px. Título del
+  activo (`--font-size-sm`, ellipsis) y kind secundario en `--color-muted`
+  («Casos de uso» / «Secuencia»). Caret de texto `▾` (no SVG de kit),
+  tinta `--color-muted`. Foco: anillo global `:focus-visible`.
+- **Listbox:** portal o anclado bajo el trigger, `z-index` del chrome
+  (sobre el lienzo, bajo diálogos). Fondo `--color-surface`, borde 1 px
+  `--color-control-border`, radio `--radius-md`,
+  `box-shadow: 0 1px 3px var(--color-shadow)`, padding `--space-2`,
+  max-height 16 rem, scroll interno.
+- **Búsqueda:** primer hijo del listbox. Input a ancho completo, altura
+  32 px, placeholder «Buscar diagrama». No dispara historial ni autosave.
+- **Filas:** título + kind; hover `--color-bg`; activa
+  `--color-brand` en el borde izquierdo 2 px o `aria-selected`. Hit
+  mínimo 32 px.
+- **Vacío:** «Sin coincidencias.» en `--color-muted`.
+- **Borrar** (si la fila no es la única): icon-only en la fila, nombre
+  «Eliminar diagrama», no usa un kit nuevo (reutilizar trazo de borrar
+  si ya existe en paleta/inspector; si no, addendum en TASK-048).
+
+Iconos de paleta de secuencia: TASK-049, mismo contrato SVG que el resto
+de esta matriz.
+
 ## Límites
 
 Este sistema no incluye dark mode, temas, personalización, ilustraciones,
 animación de marca, elección de licencia, webfonts, librerías de iconos,
-nuevos tipos UML, cambios al documento persistido ni alteraciones de
+cambios al documento persistidos desde este archivo ni alteraciones de
 exportación. Los assets de marca forman parte del chrome y se excluyen del
-raster del diagrama como el resto del shell.
+raster del diagrama como el resto del shell. La notación UML del lienzo
+(casos de uso y, en Release 1, el subconjunto de secuencia) no se redefine
+aquí: `mvp-spec.md` y `sequence-model.md`.

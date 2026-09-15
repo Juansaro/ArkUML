@@ -121,6 +121,7 @@ Zod 4 valida `WorkspaceSnapshot` al cargar. `z.strictObject` (o equivalente Zod 
 
 ## Compatibilidad futura
 
-- `kind` en documento, elemento y relación permite otros diagramas sin romper el parser si se usa unión exhaustiva y `default` que falle con `UNKNOWN_KIND`. Política de extensión: [diagram-kinds.md](diagram-kinds.md). 1.x solo `use-case`.
+- `kind` en documento, elemento y relación permite otros diagramas sin romper el parser si se usa unión exhaustiva y `default` que falle con `UNKNOWN_KIND`. Política de extensión: [diagram-kinds.md](diagram-kinds.md). 1.x solo `use-case`. Release 1 (schema 2): `"use-case" | "sequence"`; forma de secuencia en [sequence-model.md](sequence-model.md). Clases (W17-13) siguen sin forma.
+- Workspace 2.0 (biblioteca): [ADR-007](../decisions/ADR-007-workspace-library.md). El árbol v1 de este archivo permanece el contrato del MVP hasta TASK-046/047.
 - Generalization será un `kind` de relación nuevo, no un flag en Association.
 - Estilos visuales, si aparecen, vivirán en un mapa opcional versionado, no en el motor gráfico.

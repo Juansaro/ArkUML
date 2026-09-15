@@ -39,6 +39,14 @@ No persistir «nada» fue rechazado por UX. Guardar solo como descarga JSON obli
 - Multi-tab: último write gana; no hay sync. Aceptable para un solo usuario.
 - No hay lista de documentos.
 
+## Addendum Release 1 (TASK-045 / ADR-007)
+
+La consecuencia «No hay lista de documentos» **deja de aplicar** en la
+línea 2.0. El backend, la clave `arkuml:workspace:v1`, Zod, el debounce
+y last-write-wins se conservan. La cardinalidad del snapshot es
+[ADR-007](ADR-007-workspace-library.md). IndexedDB sigue sin elegirse
+(C-QUOTA).
+
 ## Rejected alternatives
 
 - **Sin persistencia:** pérdida de trabajo.

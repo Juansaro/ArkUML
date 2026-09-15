@@ -37,6 +37,13 @@ Zustand tiene poco boilerplate, selectores baratos y tests simples (store sin Re
 - 100 snapshots copian el documento; el tamaño JSON esperado es pequeño. Medido en TASK-029: ver [performance.md](../architecture/performance.md).
 - Undo no restaura selección ni zoom (intencional).
 
+## Addendum Release 1 (TASK-045 / ADR-007)
+
+El historial sigue siendo RAM-only, snapshots de `DiagramDocument`, tope
+100, undo sin viewport ni selección. En `storageVersion` 2 hay **una
+pila por `document.id`**. No se persiste. Al borrar un documento se
+descarta su pila. No se reabre el resto de esta ADR.
+
 ## Rejected alternatives
 
 - **Redux Toolkit:** más archivos y conceptos (slices, thunks) sin requisito de DevTools empresariales.

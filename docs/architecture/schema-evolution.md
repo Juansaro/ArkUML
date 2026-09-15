@@ -15,18 +15,20 @@ Tres números distintos. No se sustituyen entre sí.
 
 | Número | Identifica | Valor actual | Dónde vive |
 | --- | --- | --- | --- |
-| Producto | Promesa al usuario (SemVer de distribución) | MVP shipped; primer tag `1.0.0` | `post-mvp-spec.md` |
-| `schemaVersion` | Forma de `DiagramDocument` | `1` | Documento |
-| `storageVersion` | Envelope de `WorkspaceSnapshot` | `1` | Snapshot de workspace |
+| Producto | Promesa al usuario (SemVer de distribución) | MVP 1.x shipped; Release 1 = línea 2.0 (tag **2.0.0**) | `post-mvp-spec.md` |
+| `schemaVersion` | Forma de `DiagramDocument` | `1` en `src/` hasta TASK-046; Release 1 autoriza `2` | Documento |
+| `storageVersion` | Envelope de `WorkspaceSnapshot` | `1` en `src/` hasta TASK-047; Release 1 autoriza `2` | Snapshot de workspace |
 
 Clave de workspace: `arkuml:workspace:v1` ([ADR-004](../decisions/ADR-004-persistence.md)).
-Un único documento. Historial (máximo 100 snapshots de `DiagramDocument`)
-solo en RAM.
+En 1.x: un único documento. En 2.0: biblioteca
+([ADR-007](../decisions/ADR-007-workspace-library.md)). Historial
+(máximo 100 snapshots de `DiagramDocument` por id) solo en RAM.
 
 `z.strictObject` rechaza claves desconocidas. El MVP solo acepta
-`schemaVersion` `1` y `storageVersion` `1`. No hay `migrate()`. JSON
-corrupto o versión distinta es `PARSE_INVALID`: no se sobrescribe hasta
-«Comenzar limpio».
+`schemaVersion` `1` y `storageVersion` `1`. Release 1 implementa
+`migrate()` `1→2` **antes** del primer save 2.0 (TASK-046/047). JSON
+corrupto o versión distinta no soportada es `PARSE_INVALID`: no se
+sobrescribe hasta «Comenzar limpio».
 
 ## Qué es un bump
 
@@ -40,7 +42,8 @@ Sube **antes** de persistir cualquier cambio de forma de
 - Cambiar el tipo o el significado de un campo existente.
 - Nuevo `kind` de elemento o relación (Generalization, notas persistidas,
   extension points, actores con `kind` nuevo).
-- `document.kind` distinto de `use-case` (primer extra: clases, W17-13).
+- `document.kind` distinto de `use-case` (primer extra: secuencia,
+  W17-14; clases W17-13 siguen sin forma).
 - Geometría persistida que hoy no existe (waypoints en el documento).
 - Cambiar la matriz de conexión de forma incompatible.
 
@@ -74,7 +77,7 @@ dos workspaces vivos.
 | --- | --- |
 | Patch `1.0.x` | Schema `1` / storage `1`. Defectos, copy, a11y ya especificada. |
 | Minor `1.x.0` | Schema `1`. FR aditivos **no persistidos** (chrome, warnings) o I/O de archivo sobre el mismo documento. `storageVersion` solo sube si cambia el envelope, no el documento. |
-| Major `2.0.0` | `schemaVersion >= 2` y `migrate()` implementado **antes** del primer save de esa forma. El primer `document.kind` extra (W17-13) ya es este bump. |
+| Major `2.0.0` | `schemaVersion >= 2` y `migrate()` implementado **antes** del primer save de esa forma. Release 1: schema `2`, storage `2`, kind `sequence`, biblioteca (ADR-007). |
 
 ## Qué es breaking
 
@@ -101,60 +104,67 @@ No es breaking:
   (NFR-07).
 
 Waypoints, estilos, extension points, notas, Generalization y el
-diagrama de clases **no** tienen forma persistida aquí. Cuando una TASK
-futura las desbloquee con fuente canónica, bumpan `schemaVersion` y
+diagrama de clases **no** tienen forma persistida aquí. Secuencia
+Release 1 sí: [`sequence-model.md`](sequence-model.md). Cuando una TASK
+futura desbloquee el resto con fuente canónica, bumpan `schemaVersion` y
 siguen esta política. Inventar esa forma en una TASK de implementación
 es stop.
 
 FR-P07 (plataforma por `kind`) no bumpa solo: el host vacío no se
-persiste. El primer `document.kind` extra es el bump.
+persiste. El primer `document.kind` extra (secuencia) es el bump de
+Release 1, junto con la biblioteca (`storageVersion` 2).
 
 ## Envelope público (FR-P03)
 
 Intercambio de **archivo**, no el adapter de workspace. No sustituye el
-autosave. No es IndexedDB, no es sync, no es multi-documento.
+autosave. No es IndexedDB, no es sync. No exporta la biblioteca entera.
+
+### 1.x (`formatVersion` 1)
 
 ```text
 ArkUmlDocumentFile
 ├─ format: "arkuml-usecase-json"
 ├─ formatVersion: 1
-├─ document: DiagramDocument   (schemaVersion 1)
+├─ document: DiagramDocument   (schemaVersion 1, kind use-case)
 └─ view: { x, y, zoom }
 ```
 
-Reglas:
+Reglas 1.x (siguen vigentes para abrir archivos antiguos):
 
 - `format` y `formatVersion` identifican el archivo. No se reutiliza
-  `storageVersion` (eso es interno del workspace).
-- `document` y `view` se validan con el mismo Zod estricto que el MVP.
-- Exportar: serializar el documento activo y su viewport.
-- Importar: validar → sustituir documento y viewport en memoria → el
-  autosave escribe `WorkspaceSnapshot` en `arkuml:workspace:v1`.
-- Si hay cambios en el workspace, la confirmación es la de «Nuevo
-  diagrama».
+  `storageVersion`.
 - Un blob de localStorage (`WorkspaceSnapshot`) **no** es el formato
-  público. Copiar la clave no es import.
+  público.
 
-Rechazo de archivo (no se escribe el workspace):
+### 2.x (Release 1, `formatVersion` 2)
 
-- JSON inválido.
-- `format` distinto de `arkuml-usecase-json`.
-- `formatVersion` distinto de `1`.
-- `schemaVersion` distinto de `1` (hasta que exista `migrate()` para esa
-  versión y el producto sea 2.0).
-- Claves desconocidas en cualquier `strictObject`.
-- `kind` de documento, elemento o relación desconocido.
+```text
+ArkUmlDocumentFile
+├─ format: "arkuml-document-json"
+├─ formatVersion: 2
+├─ document: DiagramDocument   (schemaVersion 2, kind use-case | sequence)
+└─ view: { x, y, zoom }
+```
 
-Este I/O no cambia `DiagramRepository`. No reabre ADR-004.
+- **No** se reutiliza `arkuml-usecase-json` para secuencia ni para
+  schema 2.
+- Exportar: serializar el documento **activo** y su viewport.
+- Importar: validar → `migrateDocument` si el archivo es 1.x → **añadir**
+  a la biblioteca y activar (ADR-007). No sustituye los demás.
+- Si el archivo es `arkuml-usecase-json` / `formatVersion` 1: migrar
+  `1→2` y añadir.
+- Rechazo (no se escribe el workspace): JSON inválido; `format`
+  desconocido; `formatVersion` no soportado; claves de más; `kind`
+  desconocido; secuencia dentro de `arkuml-usecase-json`.
 
-El identificador `arkuml-usecase-json` es del intercambio schema `1`
-(casos de uso). **No** se reutiliza para un documento de clases. El
-nombre del envelope 2.x se decide en la TASK que desbloquee W17-13.
+Este I/O no cambia `DiagramRepository`. No reabre ADR-004 (sí usa
+ADR-007 para la cardinalidad de la lista).
 
 ## `migrate()`
 
 Infraestructura, no FR de usuario. Obligatorio **antes** del primer bump
-que se persista. No se implementa mientras el producto escriba schema `1`.
+que se persista. Release 1 lo implementa (TASK-046 documento, TASK-047
+workspace). Hasta entonces el producto escribe schema `1`.
 
 Orden:
 
@@ -227,37 +237,41 @@ de escape si el save falla; no sustituye el aviso de cuota.
 
 ## ADRs: reabrir / no reabrir
 
-Ningún ADR se reabre en esta TASK ni en la primera wave recomendada
-(W12-01 + W13-02: schema `1`, sin persistencia).
+La primera wave (W12-01 + W13-02) no reabrió ADRs. TASK-045 acepta
+ADR-007 y el addendum de historial en ADR-003. IndexedDB sigue exigiendo
+reabrir ADR-004 **antes** de código.
 
 | ADR | ¿Reabrir? | Motivo |
 | --- | --- | --- |
-| [ADR-004](../decisions/ADR-004-persistence.md) | **Sí, antes de código**, si C-QUOTA adelanta IndexedDB o una revisión futura levanta multi-documento (W14-02). | Cambia el backend o la cardinalidad del workspace. |
-| ADR-004 | **No** para FR-P03 / W14-03. | Archivo del documento activo; el adapter `LocalStorageDiagramRepository` no cambia. |
+| [ADR-004](../decisions/ADR-004-persistence.md) | **Sí, antes de código**, si C-QUOTA adelanta IndexedDB. | Cambia el backend. |
+| ADR-004 | **Addendum en TASK-045 / ADR-007.** | Cardinalidad: lista de documentos en 2.0. LocalStorage se conserva. |
+| ADR-004 | **No** para FR-P03 / W14-03. | Archivo del documento activo. |
 | ADR-004 | **No** para W14-05. | Sync multi-tab sigue last-write-wins; exclusión vigente. |
-| [ADR-003](../decisions/ADR-003-state-management.md) | **Sí, antes de código**, si el historial deja de ser RAM-only, se persiste, o undo debe restaurar viewport/selección. | Hoy: pila 100 en RAM; undo no restaura viewport. |
+| [ADR-007](../decisions/ADR-007-workspace-library.md) | Aceptada. | Biblioteca; no IndexedDB. |
+| [ADR-003](../decisions/ADR-003-state-management.md) | **Sí, antes de código**, si el historial deja de ser RAM-only, se persiste, o undo debe restaurar viewport/selección. Addendum Release 1: pila por `document.id` (ADR-007). | Hoy: pila 100 en RAM; undo no restaura viewport. |
 | ADR-003 | **No** para FR-P01/P02/P04 ni para FR-P03. | Warnings, guías y minimap no entran al historial; el JSON de usuario no serializa la pila. |
-| [ADR-006](../decisions/ADR-006-export.md) | **No** en esta política. | Export de imagen; fuera de alcance de TASK-032. Se reabre solo por C-EXPORT o W15-01/02. |
-| ADR-001 / ADR-002 | **No** por persistencia. | Toolchain y motor gráfico. Waypoints persistidos (W13-01) exigirían addendum de ADR-002 **además** del bump de schema. W17-13 (clases) puede exigir addendum de ADR-002 y de marca **antes** de código; no se reabre aquí. |
-| ADR-004 | **No** para W17-01/13. | Un documento, un kind. No es lista de diagramas (W14-02). |
+| [ADR-006](../decisions/ADR-006-export.md) | **No** en esta política. | Export de imagen. Se reabre solo por C-EXPORT o W15-01/02. |
+| ADR-001 / ADR-002 | **No** por persistencia. | Toolchain y motor gráfico. Waypoints persistidos (W13-01) exigirían addendum de ADR-002 **además** del bump de schema. W17-13 (clases) puede exigir addendum de ADR-002 y de marca **antes** de código; no se reabre en Release 1. |
+| ADR-004 | **No** para W17-01/14 como «lista = remoto». | Un documento, un kind. La lista es ADR-007. |
 
-Quien toque `src/persistence` por IndexedDB o multi-doc **para** y abre
-ADR-004. Quien persista el historial **para** y abre ADR-003. FR-P03 no
-es ninguno de los dos.
+Quien toque `src/persistence` por IndexedDB **para** y reabre ADR-004.
+Quien persista el historial **para** y abre ADR-003. La biblioteca 2.0
+ya está decidida en ADR-007; no se reabre ADR-004 para «otra clave por
+diagrama».
 
 ## Fase 14 (disposición)
 
 | ID | Destino tras esta política |
 | --- | --- |
 | W14-01 IndexedDB | Condicional C-QUOTA. Backend no elegido. ADR-004 primero. |
-| W14-02 Multi-documento | Exclusión vigente. Esta política no diseña lista ni switch. |
-| W14-03 JSON de usuario | Autorizado en spec. Envelope arriba. Sin ADR-004. |
-| W14-04 `migrate()` | Política publicada. Código no autorizado hasta un bump en una wave. |
+| W14-02 Multi-documento | In-scope Release 1. ADR-007. No es IndexedDB. |
+| W14-03 JSON de usuario | Autorizado. 1.x: envelope arriba. 2.x: `arkuml-document-json`. |
+| W14-04 `migrate()` | Política publicada. Código autorizado en Release 1 (046/047). |
 | W14-05 Sync multi-tab | Exclusión vigente. Last-write-wins. |
 
 ## Fuera de esta política
 
-- Implementar `migrate()`, IndexedDB, import/export JSON o cambiar Zod.
-- Reabrir o enmendar ADRs (solo se listan reaperturas **futuras**).
+- Código en `src/` (TASK-046, 047, 050).
 - Forma persistida de Generalization, notas, waypoints, estilos o clases.
-- TASK-042+ o un freeze nuevo.
+- Fragmentos de secuencia.
+- Reabrir ADR-002/006.

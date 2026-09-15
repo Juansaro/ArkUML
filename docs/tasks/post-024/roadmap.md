@@ -5,9 +5,10 @@ Inventario alineado con
 entrada **no** es una TASK. La spec decide destinos y prioridades; este
 archivo proyecta el estado operativo. TASK-032 publicó
 [`schema-evolution.md`](../../architecture/schema-evolution.md).
-TASK-033 congeló la Wave 1; TASK-037 congeló la Wave 2. Solo esas filas
-tienen archivo TASK. TASK-036 revisó W17-01/W17-13; no congeló
-implementación.
+TASK-033 congeló la Wave 1; TASK-037 congeló la Wave 2; TASK-045 congeló
+**Release 1**. Solo esas filas tienen archivo TASK. TASK-036 revisó
+W17-01/W17-13; TASK-045 sustituye el primer tipo extra por secuencia
+(W17-14) y levanta W14-02.
 
 ## Estados de catálogo
 
@@ -37,8 +38,8 @@ Nombre: **Editor local sobre schema 1**. Schema `1`. Sin ADR.
 | W12-01 | [`12-uml/TASK-034.md`](12-uml/TASK-034.md) | FR-P01 |
 | W13-02 | [`13-editor/TASK-035.md`](13-editor/TASK-035.md) | FR-P02 |
 
-No hay carpeta `16-a11y/`. W17-01/13 y el resto no congelado esperan un
-freeze posterior.
+No hay carpeta `16-a11y/`. W17-13 y el resto no congelado esperan un
+freeze posterior. Release 1 (TASK-045) congeló biblioteca y secuencia.
 
 ## Wave 2 congelada (TASK-037, 2026-09-09)
 
@@ -50,6 +51,21 @@ Nombre: **Intercambio y distribución sobre schema 1**. Schema `1`. Sin ADR.
 | W13-03 | [`13-editor/TASK-039.md`](13-editor/TASK-039.md) | FR-P04 |
 | W15-03 | [`15-export/TASK-040.md`](15-export/TASK-040.md) | FR-P05 |
 | W17-05 | [`17-ecosystem/TASK-041.md`](17-ecosystem/TASK-041.md) | FR-P06 |
+
+## Release 1 congelada (TASK-045, 2026-09-14)
+
+Nombre: **Biblioteca local y diagrama de secuencia (schema 2)**. Línea
+**2.0**. ADR-007.
+
+| ID catálogo | TASK | FR |
+| --- | --- | --- |
+| W14-04 + schema 2 | [`12-uml/TASK-046.md`](12-uml/TASK-046.md) | — (infra dominio) |
+| W14-02 | [`14-persistence/TASK-047.md`](14-persistence/TASK-047.md) | FR-R01 |
+| FR-R02 | [`13-editor/TASK-048.md`](13-editor/TASK-048.md) | FR-R02 |
+| W17-01 + W17-14 | [`13-editor/TASK-049.md`](13-editor/TASK-049.md) | FR-P07, FR-R03 |
+| FR-P03 2.x | [`14-persistence/TASK-050.md`](14-persistence/TASK-050.md) | FR-P03 |
+
+W17-13 sigue bloqueada. IndexedDB no. Sin `16-a11y/`.
 
 ## Fase 12 — Semántica UML
 
@@ -77,9 +93,9 @@ Nombre: **Intercambio y distribución sobre schema 1**. Schema `1`. Sin ADR.
 | ID | Capacidad | Pri. | Fuente | Valor / riesgo | Decisiones | ADR | Depende | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | W14-01 | IndexedDB `DiagramRepository` | — | `ADR-004`; `schema-evolution.md` | Cuota ~5 MiB; umbral ~1 MiB habitual | No elegido. Solo C-QUOTA. localStorage hasta evidencia | Reabrir ADR-004 **antes** de código | C-QUOTA | Condicional |
-| W14-02 | Multi-documento | — | `mvp-spec.md`; `post-mvp-spec.md` | Varios diagramas locales | Excluido: un único workspace | ADR-004 si una revisión futura lo levanta | — | Fuera de alcance vigente |
-| W14-03 | Import/export JSON de usuario | P0 | `post-mvp-spec.md` FR-P03; `schema-evolution.md` | Intercambio de archivos | Cerrada: envelope `arkuml-usecase-json` / `formatVersion` 1; payload schema 1; no es el snapshot interno | No reabrir ADR-004 | TASK-038 | Congelada |
-| W14-04 | `migrate()` real | — | `domain-model.md`; `schema-evolution.md` | Evolución sin pérdida | Política publicada (bump, orden, rechazo, confirmación). Sin código hasta el primer bump | — | Primer bump de schema en una wave | Autorizado en spec |
+| W14-02 | Multi-documento (biblioteca local) | P0 | `post-mvp-spec.md` FR-R01; ADR-007 | Varios diagramas locales | Cerrada: lista en el mismo autosave; un activo; búsqueda chrome | ADR-007 (addendum ADR-004/003) | TASK-047 | Congelada |
+| W14-03 | Import/export JSON de usuario | P0 | `post-mvp-spec.md` FR-P03; `schema-evolution.md` | Intercambio de archivos | Cerrada 1.x: `arkuml-usecase-json`; 2.x: `arkuml-document-json` (TASK-050) | No reabrir ADR-004 | TASK-038, TASK-050 | Congelada |
+| W14-04 | `migrate()` real | — | `domain-model.md`; `schema-evolution.md` | Evolución sin pérdida | Cerrada: `1→2` documento (046) y workspace (047) | — | TASK-046, TASK-047 | Congelada |
 | W14-05 | Sync multi-tab | — | `ADR-004`; `post-mvp-spec.md` | Hoy last-write-wins | Aceptado; no se reabre | ADR-004 | — | Fuera de alcance vigente |
 
 ## Fase 15 — Exportación
@@ -105,8 +121,9 @@ Nombre: **Intercambio y distribución sobre schema 1**. Schema `1`. Sin ADR.
 
 | ID | Capacidad | Pri. | Fuente | Valor / riesgo | Decisiones | ADR | Depende | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| W17-01 | Plataforma por `document.kind` (FR-P07) | P1 | `post-mvp-spec.md` FR-P07; `diagram-kinds.md` | Shell extensible; un documento, un kind | Cerrada: no multi-doc; no switcher en 1.x; host vacío prohibido | Posible addendum ADR-002 cuando exista el primer kind extra | W17-13 | Bloqueada |
-| W17-13 | Diagrama de clases (primer tipo extra) | P1 | `post-mvp-spec.md`; `diagram-kinds.md` | Primer `document.kind` ≠ `use-case` | Abiertas: fuente UML; forma persistida; iconos de marca | Bump `schemaVersion` (`schema-evolution.md`); posible addendum ADR-002 y `brand-system.md` | TASK-036 | Bloqueada |
+| W17-01 | Plataforma por `document.kind` (FR-P07) | P0 | `post-mvp-spec.md` FR-P07; `diagram-kinds.md` | Shell por módulo; un documento, un kind | Cerrada: Release 1 acoplada a W17-14; host vacío prohibido | ADR-002 sin segundo motor | TASK-049 | Congelada |
+| W17-13 | Diagrama de clases | P1 | `post-mvp-spec.md`; `diagram-kinds.md` | Tipo extra posterior | Abiertas: fuente UML; forma persistida; iconos de marca. Ya no es el primer extra | Bump `schemaVersion`; posible addendum ADR-002 y `brand-system.md` | TASK-036 | Bloqueada |
+| W17-14 | Diagrama de secuencia | P0 | `sequence-model.md` (UML 2.5.1 §17); `post-mvp-spec.md` FR-R03 | Primer `document.kind` ≠ `use-case` | Cerrada: lifeline + synchCall + reply; sin fragmentos | Schema `2`; addendum de marca en TASK-049 | TASK-046, TASK-049 | Congelada |
 | W17-02 | Backend / auth / collab | — | `mvp-spec.md`; `post-mvp-spec.md` | SaaS | Excluido | No en dominio | — | Fuera de alcance vigente |
 | W17-03 | Remote `DiagramRepository` | — | `architecture.md`; `post-mvp-spec.md` | Sync | Excluido | ADR-004 | W17-02 | Fuera de alcance vigente |
 | W17-04 | PWA | — | `mvp-spec.md`; `post-mvp-spec.md` | Offline/install | Excluido | — | — | Fuera de alcance vigente |
@@ -131,20 +148,21 @@ Nombre: **Intercambio y distribución sobre schema 1**. Schema `1`. Sin ADR.
 ## Ambigüedades que siguen abiertas
 
 Cerradas en TASK-031 (ver spec): recorte 1.x vs 2.0; ciclos = warning;
-multi-documento = no; temas = no enmendar `brand-system.md`; IndexedDB
-no elegido (condicional). TASK-036 sustituye «segundo tipo = exclusión»:
-W17-01/13 entran bloqueadas; 1.x sigue solo `use-case`.
+temas = no enmendar `brand-system.md`; IndexedDB no elegido
+(condicional). TASK-036 sustituyó «segundo tipo = exclusión» por
+plataforma + clases bloqueadas. TASK-045 cierra: multi-documento =
+biblioteca ADR-007; primer tipo extra = secuencia (W17-14); clases
+siguen bloqueadas; envelope 2.x = `arkuml-document-json`.
 
 Cerradas en TASK-036
 ([`diagram-kinds.md`](../../architecture/diagram-kinds.md)): un
-documento, un kind; plataforma por módulo; host vacío prohibido. El
-envelope `arkuml-usecase-json` no se reutiliza para clases.
+documento, un kind; plataforma por módulo; host vacío prohibido.
 
-Cerradas en TASK-032
+Cerradas en TASK-032 / TASK-045
 ([`schema-evolution.md`](../../architecture/schema-evolution.md)): bump
-vs chrome; rechazo de desconocidos; cuota; envelope
-`arkuml-usecase-json`; ADRs a reabrir. IndexedDB sigue condicional.
-`migrate()` no se implementa hasta un bump.
+vs chrome; rechazo de desconocidos; cuota; envelopes 1.x y 2.x; ADRs.
+IndexedDB sigue condicional. `migrate()` `1→2` está congelado en
+TASK-046/047.
 
 Siguen siendo stop conditions, no copy de implementación:
 
@@ -155,13 +173,15 @@ Siguen siendo stop conditions, no copy de implementación:
 - PDF: SVG-print vs PNG embebido.
 - Notas: elemento vs overlay.
 - Actores no humanos: `kind` vs estereotipo.
-- Clases (W17-13): fuente UML citada y forma persistida (unión de
-  elementos/relaciones). Sin eso no hay FR.
+- Clases (W17-13): fuente UML citada y forma persistida. Sin eso no hay
+  FR.
+- Secuencia fuera de `sequence-model.md` (fragmentos, async, activaciones).
 
 ## Relación con el registro
 
 Los grupos O-01–O-10 de [risk-register.md](risk-register.md) están
 dispuestos en `post-mvp-spec.md`. TASK-033 congeló W12-01 y W13-02.
 TASK-037 congeló W14-03, W13-03, W15-03 y W17-05. TASK-036 revisó
-W17-01/13 (bloqueadas). El resto permanece catálogo hasta un freeze
-posterior. Nadie pinta un class diagram «porque está en el backlog».
+W17-01/13. TASK-045 congeló W14-02, W14-04, W17-01, W17-14 y el envelope
+2.x. El resto permanece catálogo hasta un freeze posterior. Nadie pinta
+un class diagram «porque está en el backlog».

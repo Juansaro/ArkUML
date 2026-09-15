@@ -27,11 +27,11 @@ cerró el gate de fase 10 (**ship**, 2026-09-09). TASK-031 publicó
 [`schema-evolution.md`](../../architecture/schema-evolution.md).
 TASK-033 congeló la Wave 1 (**Editor local sobre schema 1**). TASK-034
 y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
-(W17-01, W17-13); no congeló implementación. TASK-037 congeló la Wave 2
+(W17-01, W17-13). TASK-037 congeló la Wave 2
 (**Intercambio y distribución sobre schema 1**). TASK-038–041 están
-`Hecha`. Wave 2 cerrada. TASK-042 y TASK-043 son remediación 1.x
-(defectos de selección; no son freeze de catálogo). TASK-044 es
-remediación 1.x (ocultar paleta/inspector en desktop).
+`Hecha`. Wave 2 cerrada. TASK-042–044 son remediación 1.x. TASK-045
+congeló **Release 1** (biblioteca + secuencia, schema 2). El próximo
+contrato ejecutable es TASK-046.
 
 ## Estado
 
@@ -57,6 +57,12 @@ remediación 1.x (ocultar paleta/inspector en desktop).
 | 042 | [`13-editor/TASK-042.md`](13-editor/TASK-042.md) | Hecha | P0 | 014, 041 | 2026-09-14: click selecciona Association/Include/Extend; inspector y reconnect retargetean; interior del boundary pasante |
 | 043 | [`13-editor/TASK-043.md`](13-editor/TASK-043.md) | Hecha | P0 | 042 | 2026-09-14: paleta Selección; crear relación vuelve a ese modo; click de nodo no conserva la relación |
 | 044 | [`13-editor/TASK-044.md`](13-editor/TASK-044.md) | Hecha | P1 | 043 | 2026-09-14: rieles `<<`/`>>` en paleta/inspector ≥1024; drawers compactos intactos |
+| 045 | [`11-governance/TASK-045.md`](11-governance/TASK-045.md) | Hecha | P0 | 036, 037, 044 | 2026-09-14: freeze **Release 1** (schema 2); ADR-007; `sequence-model.md`; TASK-046–050 |
+| 046 | [`12-uml/TASK-046.md`](12-uml/TASK-046.md) | Lista | P0 | 045 | Schema 2 + dominio de secuencia + `migrateDocument` |
+| 047 | [`14-persistence/TASK-047.md`](14-persistence/TASK-047.md) | Lista | P0 | 046 | Biblioteca `storageVersion` 2 (ADR-007) |
+| 048 | [`13-editor/TASK-048.md`](13-editor/TASK-048.md) | Lista | P0 | 047 | Combobox + búsqueda (FR-R02) |
+| 049 | [`13-editor/TASK-049.md`](13-editor/TASK-049.md) | Lista | P0 | 046, 048 | Módulo secuencia (FR-R03, FR-P07) |
+| 050 | [`14-persistence/TASK-050.md`](14-persistence/TASK-050.md) | Lista | P0 | 049 | Envelope `arkuml-document-json` v2 |
 
 ## Fases y gates
 
@@ -79,26 +85,31 @@ TASK-031 definió la spec futura; TASK-032 publicó
 [`schema-evolution.md`](../../architecture/schema-evolution.md);
 TASK-033 congeló la Wave 1 y creó TASK-034 y TASK-035. TASK-036 publicó
 [`diagram-kinds.md`](../../architecture/diagram-kinds.md) y enmendó
-W17-01/W17-13. TASK-037 congeló la Wave 2 y creó TASK-038–041.
+W17-01/W17-13. TASK-037 congeló la Wave 2 y creó TASK-038–041. TASK-045
+congeló **Release 1** (ADR-007, `sequence-model.md`, TASK-046–050).
 
-Gate (cumplido 2026-09-09):
+Gate (cumplido 2026-09-09; Release 1 2026-09-14):
 
 - FR, non-goals y versión objetivo aprobados (TASK-031).
 - Compatibilidad y migración publicadas (TASK-032).
 - Primera wave acotada: **Editor local sobre schema 1** (TASK-033).
-- Catálogo multi-kind: plataforma (W17-01) y clases (W17-13) bloqueadas
-  (TASK-036).
+- Catálogo multi-kind: plataforma (W17-01) y clases (W17-13) (TASK-036);
+  Release 1 desbloquea W17-01 con secuencia (W17-14); clases siguen
+  bloqueadas.
 - Segunda wave acotada: **Intercambio y distribución sobre schema 1**
   (TASK-037).
+- Release 1 acotada: **Biblioteca local y diagrama de secuencia
+  (schema 2)** (TASK-045).
 
 ### Fases 12–17 — Catálogo salvo las waves congeladas
 
 El inventario completo vive en [roadmap.md](roadmap.md), alineado con
 [`post-mvp-spec.md`](../../product/post-mvp-spec.md). Existen
-`12-uml/` (TASK-034), `13-editor/` (TASK-035, TASK-039, TASK-042, TASK-043 y TASK-044),
-`14-persistence/` (TASK-038), `15-export/` (TASK-040) y
-`17-ecosystem/` (TASK-041). No hay `16-a11y/`. W17-01/13 y el resto del
-catálogo no son ejecutables.
+`12-uml/` (TASK-034, TASK-046), `13-editor/` (TASK-035, TASK-039,
+TASK-042, TASK-043, TASK-044, TASK-048, TASK-049),
+`14-persistence/` (TASK-038, TASK-047, TASK-050), `15-export/` (TASK-040) y
+`17-ecosystem/` (TASK-041). No hay `16-a11y/`. W17-13 y el resto del
+catálogo no congelado no son ejecutables.
 
 ## Registro de auditoría
 
@@ -116,9 +127,9 @@ no como 94 features pendientes.
 ## Próximo paso
 
 Wave 2 (**Intercambio y distribución sobre schema 1**) está `Hecha`
-(TASK-038–041). TASK-042 y TASK-043 (remediación 1.x, selección)
-están `Hecha`. TASK-044 (ocultar paleta/inspector en desktop) está
-`Hecha`. W17-01/13 siguen bloqueadas.
-Multi-documento: no. IndexedDB: no elegido (condicional C-QUOTA). No
-implementar Generalization, PDF, temas ni un class diagram en estos
-chats.
+(TASK-038–041). TASK-042–044 (remediación 1.x) están `Hecha`. TASK-045
+congeló **Release 1**. El próximo contrato es
+[TASK-046](12-uml/TASK-046.md) (schema 2 y dominio de secuencia).
+W17-13 clases sigue bloqueada. IndexedDB: no elegido (condicional
+C-QUOTA). No implementar Generalization, PDF, temas, fragmentos de
+secuencia ni un class diagram en estos chats.

@@ -76,9 +76,7 @@ Gobierno y estado: [post-024/README.md](post-024/README.md). Roadmap
 (catálogo): [post-024/roadmap.md](post-024/roadmap.md).
 
 Wave 1 congelada (**Editor local sobre schema 1**). Wave 2 congelada
-(**Intercambio y distribución sobre schema 1**). Remediación 1.x:
-[TASK-042](post-024/13-editor/TASK-042.md) (selección y retarget de
-relaciones) `Hecha`. [TASK-043](post-024/13-editor/TASK-043.md) (modo
-Selección en paleta) `Hecha`. [TASK-044](post-024/13-editor/TASK-044.md)
-(ocultar paleta e inspector en desktop) `Hecha`. No duplicar aquí
-los contratos.
+(**Intercambio y distribución sobre schema 1**). Remediación 1.x
+TASK-042–044 `Hecha`. **Release 1** congelada (TASK-045): biblioteca
+local y diagrama de secuencia (schema 2). Próximo contrato:
+[TASK-046](post-024/12-uml/TASK-046.md). No duplicar aquí los contratos.

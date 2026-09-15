@@ -104,11 +104,16 @@ visibilidad de paleta e inspector.
 
 ## Evolución
 
-**Persistencia futura:** [schema-evolution.md](schema-evolution.md). Schema `1` cerrado. IndexedDB solo con C-QUOTA y ADR-004 reabierto. `src/domain` no importa storage.
+**Persistencia:** [schema-evolution.md](schema-evolution.md). Schema `1`
+cerrado en el árbol `src/` hasta TASK-046. Release 1 autoriza schema `2`
+/ storage `2` y `migrate()` `1→2`. IndexedDB solo con C-QUOTA y ADR-004
+reabierto. Biblioteca: [ADR-007](../decisions/ADR-007-workspace-library.md).
+`src/domain` no importa storage.
 
 **Tipos de diagrama:** [diagram-kinds.md](diagram-kinds.md). 1.x solo
-`use-case`. Un kind extra es 2.0. Extraer un registry/plugin **solo**
-cuando dos implementaciones revelen el contrato real.
+`use-case`. Release 1: secuencia ([sequence-model.md](sequence-model.md)).
+Extraer un registry/plugin **solo** cuando dos implementaciones revelen
+el contrato real (TASK-049 puede el mínimo). Clases siguen bloqueadas.
 
 **Backend futuro:** sustituir la implementación de `DiagramRepository`. Auth, sync y multi-usuario no entran en dominio.
 
@@ -127,9 +132,9 @@ cuando dos implementaciones revelen el contrato real.
 ```text
 docs/
   product/{mvp-spec,brand-system,post-mvp-spec}.md
-  architecture/{architecture,domain-model,schema-evolution,diagram-kinds,rendering-and-export,testing-strategy,performance}.md
+  architecture/{architecture,domain-model,schema-evolution,diagram-kinds,sequence-model,rendering-and-export,testing-strategy,performance}.md
   operations/static-hosting.md
-  decisions/ADR-001 … ADR-006
+  decisions/ADR-001 … ADR-007
   development/{agent-workflow,task-template}.md
   tasks/TASK-001 … TASK-025
   tasks/post-024/          índice, registro, roadmap y TASK-026+

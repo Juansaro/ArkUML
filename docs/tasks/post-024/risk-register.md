@@ -78,9 +78,9 @@ código.
 
 | ID | Grupo | Fuente | Tratamiento |
 | --- | --- | --- | --- |
-| O-01 | Generalization, ciclos, extension points, notas, paquetes, multiplicidad, actores especializados y otros diagramas | `docs/product/mvp-spec.md:66-70,192-205`; `post-mvp-spec.md` (TASK-036) | Se parte: ciclos in-scope (warning); Generalization/notas/extension points/actores más tarde y bloqueados; plataforma multi-kind (W17-01) y clases (W17-13) más tarde / bloqueadas; paquetes y multiplicidad permanecen exclusión |
+| O-01 | Generalization, ciclos, extension points, notas, paquetes, multiplicidad, actores especializados y otros diagramas | `docs/product/mvp-spec.md:66-70,192-205`; `post-mvp-spec.md` (TASK-036, TASK-045) | Se parte: ciclos in-scope; secuencia (W17-14) y plataforma (W17-01) Release 1; Generalization/notas/extension points/actores más tarde y bloqueados; clases (W17-13) más tarde / bloqueada; paquetes y multiplicidad permanecen exclusión |
 | O-02 | Minimap, auto-layout, alignment guides, waypoints y routing | `docs/product/mvp-spec.md:50,192-205` | Entra: guides P0 y minimap P1 in-scope; waypoints y auto-layout más tarde / bloqueados |
-| O-03 | Multi-documento, IndexedDB, sync y workspace remoto | `docs/product/mvp-spec.md:192-205`; `ADR-004-persistence.md:37` | Se parte: IndexedDB condicional (C-QUOTA, no elegido); multi-documento, sync y remoto permanecen exclusión |
+| O-03 | Multi-documento, IndexedDB, sync y workspace remoto | `docs/product/mvp-spec.md:192-205`; `ADR-004`; `ADR-007` | Se parte: biblioteca local in-scope (W14-02, Release 1); IndexedDB condicional (C-QUOTA); sync y remoto permanecen exclusión |
 | O-04 | PDF, SVG persistido, clipboard e import/export JSON | `docs/product/mvp-spec.md:192-205` | Se parte: JSON de usuario y clipboard in-scope; SVG/PDF más tarde / bloqueados |
 | O-05 | Dark mode, temas, webfonts y animación de marca | `docs/product/brand-system.md:444-450`; `TASK-024.md:49-58` | Permanece exclusión (W16-04, W16-05) |
 | O-06 | Editor paralelo/semántico para lector de pantalla | `docs/product/mvp-spec.md:171-181` | Entra como más tarde / bloqueado (W16-01, W16-02) |
@@ -99,5 +99,7 @@ explícita (gate TASK-030, 2026-09-09: **ship**). TASK-031 (2026-09-09)
 dispuso O-01–O-10 en `docs/product/post-mvp-spec.md`: unas líneas entran
 al catálogo (in-scope, más tarde o condicional) y otras permanecen
 exclusión vigente. TASK-036 (2026-09-09) revisó O-01: W17-01 y W17-13
-entran bloqueadas; paquetes y multiplicidad siguen exclusión. Eso no
-autoriza implementación.
+entran bloqueadas; paquetes y multiplicidad siguen exclusión. TASK-045
+(2026-09-14) revisó O-01/O-03: secuencia y biblioteca local entran a
+Release 1; clases e IndexedDB no. Eso no autoriza código fuera de
+TASK-046–050.
