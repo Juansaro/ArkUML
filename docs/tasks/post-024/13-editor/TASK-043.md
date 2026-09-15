@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-En curso
+Hecha
 
 ## Objetivo
 
@@ -49,6 +49,8 @@ Post-MVP).
 - Tras **un** `commitRelationship` exitoso: `setTool("select")`. La
   relación creada sigue seleccionada. Intento inválido permanece en
   la herramienta de relación.
+- Click en un nodo en Selección (sin Shift) deja solo ese elemento;
+  no conserva la relación que siguiera seleccionada.
 - En Selección: click selecciona elementos y relaciones; copiar,
   pegar y eliminar aplican a lo seleccionado (semántica existente;
   no se inventa copy de relaciones).
@@ -70,6 +72,7 @@ Post-MVP).
 - `src/editor/components/shell/EditorShell.test.tsx`
 - `src/editor/tools/relationshipTool.ts`
 - `src/editor/tools/relationshipTool.test.ts`
+- `src/editor/canvas/DiagramCanvas.tsx`
 - `docs/product/mvp-spec.md`
 - `docs/product/brand-system.md`
 - `docs/architecture/rendering-and-export.md`
@@ -98,18 +101,18 @@ Include otra vez.
 
 ## Criterios de aceptación
 
-- [ ] El primer botón de la paleta se llama **Selección** y está
+- [x] El primer botón de la paleta se llama **Selección** y está
       pulsado al abrir el editor.
-- [ ] Tras crear Association, Include o Extend, Selección queda
+- [x] Tras crear Association, Include o Extend, Selección queda
       pulsada, la herramienta de relación no, y `data-show-handles`
       es `false`.
-- [ ] Tras esa creación, click en otro elemento lo selecciona sin
+- [x] Tras esa creación, click en otro elemento lo selecciona sin
       pulsar Escape.
-- [ ] Un intento de conexión inválido permanece en la herramienta de
+- [x] Un intento de conexión inválido permanece en la herramienta de
       relación (handles visibles).
-- [ ] Copiar, pegar y eliminar siguen aplicando a la selección
+- [x] Copiar, pegar y eliminar siguen aplicando a la selección
       vigente (actores/casos en copy-paste; Delete también relaciones).
-- [ ] Round-trip workspace: ninguna clave nueva; `schemaVersion` `1`.
+- [x] Round-trip workspace: ninguna clave nueva; `schemaVersion` `1`.
 
 ## Tests
 
@@ -140,4 +143,30 @@ criterios `[x]` con evidencia.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-14. Criterios `[x]`. Defecto 1.x: Include/Extend ya no dejan
+los handles de conexión visibles. El primer control de la paleta es
+**Selección** (pressed por default). `commitRelationship` exitoso
+vuelve a `tool === "select"`; inválido permanece en la herramienta.
+Click en un nodo (sin Shift) reemplaza la selección y no conserva
+la relación. Schema `1` intacto. Copy/paste/delete no cambian de
+semántica (FR-13).
+
+Comandos realmente corridos:
+
+```bash
+npx vitest run src/editor/tools/relationshipTool.test.ts src/editor/components/common/Icon.test.tsx src/editor/components/shell/EditorShell.test.tsx src/editor/canvas/DiagramCanvas.test.tsx
+npx playwright test e2e/association.spec.ts e2e/include-extend.spec.ts e2e/relationships.spec.ts e2e/editor-flow.spec.ts e2e/tooltips.spec.ts e2e/accessibility.spec.ts e2e/shell-layout.spec.ts --project=chromium
+npx eslint src/editor/components/shell/paletteTools.ts src/editor/components/shell/Palette.tsx src/editor/components/common/icons.tsx src/editor/tools/relationshipTool.ts src/editor/canvas/DiagramCanvas.tsx
+npx prettier --write <archivos de la TASK>
+```
+
+Unidad: 43/43 en los cuatro archivos. E2E Chromium: 28/28 en la
+primera tanda (tras actualizar baselines del shell) más 14/14 de
+relationships/tooltips/accessibility. Lint de los módulos tocados:
+OK. `npx tsc -b --noEmit` sigue fallando por
+`e2e/document-file.spec.ts` (variable `canvas` no usada; sucio
+previo) y por `SVGPathElement`/`DOMPoint` en el evaluate de
+include interno (TASK-042, no tocado en esta TASK salvo re-click
+de Include). `npm run check` no se da por verde entero por ese
+typecheck previo.
+

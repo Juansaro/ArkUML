@@ -79,4 +79,4 @@ Wave 1 congelada (**Editor local sobre schema 1**). Wave 2 congelada
 (**Intercambio y distribución sobre schema 1**). Remediación 1.x:
 [TASK-042](post-024/13-editor/TASK-042.md) (selección y retarget de
 relaciones) `Hecha`. [TASK-043](post-024/13-editor/TASK-043.md) (modo
-Selección en paleta) `En curso`. No duplicar aquí los contratos.
+Selección en paleta) `Hecha`. No duplicar aquí los contratos.

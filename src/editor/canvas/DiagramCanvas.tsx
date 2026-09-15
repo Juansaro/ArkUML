@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react";
 import {
   Background,
   BackgroundVariant,
@@ -231,6 +238,24 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
     [placing, store],
   );
 
+  const handleNodeClick = useCallback(
+    (event: MouseEvent, node: DiagramNode) => {
+      onNodeClick(event);
+      if (placing || connecting || event.shiftKey) {
+        return;
+      }
+      ignoreSelectionAfterPaneClick.current = true;
+      store.getState().setSelection({
+        elementIds: [node.id],
+        relationshipIds: [],
+      });
+      window.setTimeout(() => {
+        ignoreSelectionAfterPaneClick.current = false;
+      }, 0);
+    },
+    [connecting, onNodeClick, placing, store],
+  );
+
   const onReconnect = useCallback<OnReconnect>(
     (oldEdge, connection) => {
       const kind = oldEdge.data?.kind;
@@ -310,7 +335,7 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
         onSelectionChange={onSelectionChange}
         onPaneClick={onPaneClick}
         onPaneContextMenu={onPaneContextMenu}
-        onNodeClick={onNodeClick}
+        onNodeClick={handleNodeClick}
         onEdgeClick={onEdgeClick}
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onPaneContextMenu}
