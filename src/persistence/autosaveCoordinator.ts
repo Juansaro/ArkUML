@@ -3,23 +3,22 @@ import {
   STORAGE_VERSION,
 } from "../domain/diagram/defaults.ts";
 import { createDiagramDocument } from "../domain/diagram/factories.ts";
-import type {
-  DiagramDocument,
-  Viewport,
-  WorkspaceSnapshot,
-} from "../domain/diagram/model.ts";
+import type { Viewport, WorkspaceSnapshot } from "../domain/diagram/model.ts";
 import type {
   EditorStore,
   EditorStoreApi,
 } from "../editor/store/editorStore.ts";
 import {
   persistenceErr,
+  persistenceOk,
   type DiagramRepository,
   type PersistenceResult,
 } from "./diagramRepository.ts";
 
 export const AUTOSAVE_DEBOUNCE_MS = 750;
 export const SAVED_ANNOUNCEMENT = "Diagrama guardado.";
+export const STORAGE_UPGRADE_MESSAGE =
+  "Este workspace es único. Al guardar, el formato 2.0 sustituye al de 1.0 y no se puede deshacer.";
 
 export type AutosaveCoordinatorOptions = {
   store: EditorStoreApi;
@@ -39,6 +38,9 @@ export type AutosaveCoordinator = {
   startNewDiagram(): Promise<PersistenceResult<undefined>>;
   isOverwriteBlocked(): boolean;
   allowOverwrite(): void;
+  isStorageUpgradePending(): boolean;
+  confirmStorageUpgrade(): Promise<PersistenceResult<undefined>>;
+  cancelStorageUpgrade(): void;
   dispose(): void;
 };
 
@@ -52,9 +54,9 @@ export function createAutosaveCoordinator(
 
   let timer: ReturnType<typeof setTimeout> | undefined;
   let blockedByCorrupt = false;
+  let pendingStorageUpgrade = false;
   let suppressCommit = false;
-  let lastSavedDocument: DiagramDocument | undefined;
-  let lastSavedView: Viewport | undefined;
+  let lastSavedSnapshot: WorkspaceSnapshot | undefined;
 
   const unsubscribe = store.subscribe((state, previous) => {
     if (suppressCommit || blockedByCorrupt) {
@@ -69,6 +71,7 @@ export function createAutosaveCoordinator(
   const onBeforeUnload = (): void => {
     if (
       blockedByCorrupt ||
+      pendingStorageUpgrade ||
       (timer === undefined && !isDirty(store.getState()))
     ) {
       return;
@@ -103,13 +106,18 @@ export function createAutosaveCoordinator(
       return persistenceErr("PARSE_INVALID", message);
     }
 
+    if (pendingStorageUpgrade) {
+      store.getState().setDialogMode("storage-upgrade");
+      store.getState().setMessage(STORAGE_UPGRADE_MESSAGE);
+      return persistenceErr("PARSE_INVALID", STORAGE_UPGRADE_MESSAGE);
+    }
+
     const state = store.getState();
     const snapshot = toWorkspaceSnapshot(state);
     state.setSaveStatus("saving");
     const result = await repository.save(snapshot);
     if (result.ok) {
-      lastSavedDocument = state.document;
-      lastSavedView = copyViewport(state.viewport);
+      lastSavedSnapshot = snapshot;
       store.getState().setSaveStatus("saved", now().toISOString());
       store.getState().setMessage(announce ? SAVED_ANNOUNCEMENT : undefined);
       return result;
@@ -121,15 +129,17 @@ export function createAutosaveCoordinator(
   }
 
   function isDirty(state: EditorStore): boolean {
-    if (lastSavedDocument === undefined || lastSavedView === undefined) {
+    if (lastSavedSnapshot === undefined) {
       return true;
     }
     return (
-      state.document !== lastSavedDocument ||
-      state.viewport.x !== lastSavedView.x ||
-      state.viewport.y !== lastSavedView.y ||
-      state.viewport.zoom !== lastSavedView.zoom
+      JSON.stringify(toWorkspaceSnapshot(state)) !==
+      JSON.stringify(lastSavedSnapshot)
     );
+  }
+
+  function rememberClean(state: EditorStore): void {
+    lastSavedSnapshot = toWorkspaceSnapshot(state);
   }
 
   return {
@@ -142,21 +152,28 @@ export function createAutosaveCoordinator(
         return result;
       }
 
-      const snapshot = result.value;
-      if (snapshot === undefined) {
-        lastSavedDocument = store.getState().document;
-        lastSavedView = copyViewport(store.getState().viewport);
-        return result;
+      const loaded = result.value;
+      if (loaded === undefined) {
+        pendingStorageUpgrade = false;
+        rememberClean(store.getState());
+        return persistenceOk(undefined);
       }
 
       suppressCommit = true;
-      store.getState().hydrateWorkspace(snapshot.document, snapshot.view);
-      lastSavedDocument = snapshot.document;
-      lastSavedView = copyViewport(snapshot.view);
+      pendingStorageUpgrade = loaded.migratedFromV1;
+      store.getState().hydrateWorkspaceSnapshot(loaded.snapshot);
+      rememberClean(store.getState());
       suppressCommit = false;
-      store.getState().setSaveStatus("saved", now().toISOString());
-      store.getState().setMessage(undefined);
-      return result;
+
+      if (loaded.migratedFromV1) {
+        store.getState().setSaveStatus("idle");
+        store.getState().setDialogMode("storage-upgrade");
+        store.getState().setMessage(STORAGE_UPGRADE_MESSAGE);
+      } else {
+        store.getState().setSaveStatus("saved", now().toISOString());
+        store.getState().setMessage(undefined);
+      }
+      return persistenceOk(loaded.snapshot);
     },
 
     flush(options) {
@@ -173,13 +190,13 @@ export function createAutosaveCoordinator(
         timer = undefined;
       }
       blockedByCorrupt = false;
+      pendingStorageUpgrade = false;
       const nextDocument = createDiagramDocument();
       suppressCommit = true;
       store.getState().hydrateWorkspace(nextDocument, DEFAULT_VIEWPORT);
       store.getState().setTool("select");
       store.getState().setDialogMode("none");
-      lastSavedDocument = undefined;
-      lastSavedView = undefined;
+      lastSavedSnapshot = undefined;
       suppressCommit = false;
 
       const cleared = await repository.clear();
@@ -197,6 +214,20 @@ export function createAutosaveCoordinator(
 
     allowOverwrite() {
       blockedByCorrupt = false;
+    },
+
+    isStorageUpgradePending() {
+      return pendingStorageUpgrade;
+    },
+
+    confirmStorageUpgrade() {
+      pendingStorageUpgrade = false;
+      store.getState().setDialogMode("none");
+      return writeNow();
+    },
+
+    cancelStorageUpgrade() {
+      store.getState().setDialogMode("none");
     },
 
     dispose() {
@@ -218,15 +249,27 @@ function isHistoryCommit(state: EditorStore, previous: EditorStore): boolean {
   return (
     state.document !== previous.document ||
     state.history.past !== previous.history.past ||
-    state.history.future !== previous.history.future
+    state.history.future !== previous.history.future ||
+    state.activeDocumentId !== previous.activeDocumentId ||
+    state.documents !== previous.documents
   );
 }
 
 function toWorkspaceSnapshot(state: EditorStore): WorkspaceSnapshot {
   return {
     storageVersion: STORAGE_VERSION,
-    document: state.document,
-    view: copyViewport(state.viewport),
+    activeDocumentId: state.activeDocumentId,
+    documents: state.documents.map((entry) =>
+      entry.document.id === state.activeDocumentId
+        ? {
+            document: state.document,
+            view: copyViewport(state.viewport),
+          }
+        : {
+            document: entry.document,
+            view: copyViewport(entry.view),
+          },
+    ),
   };
 }
 

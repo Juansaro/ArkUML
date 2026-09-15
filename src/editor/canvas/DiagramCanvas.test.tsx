@@ -144,17 +144,23 @@ describe("DiagramCanvas", () => {
     expect(store.getState().history).toBe(history);
     expect(JSON.stringify(store.getState().document)).toBe(before);
 
+    const document = store.getState().document;
     const snapshot = {
       storageVersion: STORAGE_VERSION,
-      document: store.getState().document,
-      view: store.getState().viewport,
+      activeDocumentId: document.id,
+      documents: [
+        {
+          document,
+          view: store.getState().viewport,
+        },
+      ],
     };
     expect(Object.keys(snapshot).sort()).toEqual([
-      "document",
+      "activeDocumentId",
+      "documents",
       "storageVersion",
-      "view",
     ]);
-    expect(snapshot.document.schemaVersion).toBe(2);
+    expect(document.schemaVersion).toBe(2);
     expect(
       parseWorkspaceSnapshot(JSON.parse(JSON.stringify(snapshot))),
     ).toEqual({

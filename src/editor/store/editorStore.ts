@@ -4,7 +4,11 @@ import {
   createDiagramDocument,
   type DiagramFactoryDeps,
 } from "../../domain/diagram/factories.ts";
-import type { DiagramDocument, Viewport } from "../../domain/diagram/model.ts";
+import type {
+  DiagramDocument,
+  Viewport,
+  WorkspaceDocumentEntry,
+} from "../../domain/diagram/model.ts";
 import type { ElementCopy } from "../../domain/diagram/operations.ts";
 import { createEditorActions, type EditorActions } from "./actions.ts";
 import { emptyHistory, type DocumentHistory } from "./history.ts";
@@ -37,7 +41,8 @@ export type DialogMode =
   | "new-diagram"
   | "open-file"
   | "invalid-document-file"
-  | "recovery";
+  | "recovery"
+  | "storage-upgrade";
 
 export type SelectionState = {
   elementIds: readonly string[];
@@ -63,10 +68,13 @@ export type HistorySlice = DocumentHistory & {
 
 export type EditorSlices = {
   document: DiagramDocument;
+  documents: readonly WorkspaceDocumentEntry[];
+  activeDocumentId: string;
   selection: SelectionState;
   viewport: Viewport;
   tool: EditorTool;
   history: HistorySlice;
+  histories: Readonly<Record<string, DocumentHistory>>;
   hover: HoverState;
   ui: UiState;
   clipboard: EditorClipboard;
@@ -99,16 +107,21 @@ const EMPTY_CLIPBOARD: EditorClipboard = {
 
 function createInitialSlices(options?: CreateEditorStoreOptions): EditorSlices {
   const viewport = options?.viewport ?? DEFAULT_VIEWPORT;
+  const document = options?.document ?? createDiagramDocument(options?.deps);
+  const view = { x: viewport.x, y: viewport.y, zoom: viewport.zoom };
 
   return {
-    document: options?.document ?? createDiagramDocument(options?.deps),
+    document,
+    documents: [{ document, view }],
+    activeDocumentId: document.id,
     selection: EMPTY_SELECTION,
-    viewport: { x: viewport.x, y: viewport.y, zoom: viewport.zoom },
+    viewport: view,
     tool: "select",
     history: {
       ...emptyHistory(),
       transactionBaseline: undefined,
     },
+    histories: {},
     hover: EMPTY_HOVER,
     ui: {
       saveStatus: "idle",

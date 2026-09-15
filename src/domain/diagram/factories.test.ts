@@ -33,24 +33,30 @@ function sequentialIds(start = 1): IdFactory {
 const FIXED_NOW = new Date("2026-09-07T12:00:00.000Z");
 
 describe("createWorkspaceSnapshot", () => {
-  it("crea un snapshot v1 con boundary Sistema, ids y timestamps", () => {
+  it("crea un snapshot v2 con boundary Sistema, ids y timestamps", () => {
     const createId = sequentialIds();
     const snapshot = createWorkspaceSnapshot({
       createId,
       now: () => FIXED_NOW,
     });
+    const entry = snapshot.documents[0];
+    if (entry === undefined) {
+      throw new Error("Falta la entrada activa");
+    }
 
-    expect(snapshot.storageVersion).toBe(1);
-    expect(snapshot.document.schemaVersion).toBe(2);
-    expect(snapshot.document.kind).toBe("use-case");
-    expect(snapshot.document.id).toBe("00000000-0000-4000-8000-000000000001");
-    expect(snapshot.document.metadata).toEqual({
+    expect(snapshot.storageVersion).toBe(2);
+    expect(snapshot.activeDocumentId).toBe(entry.document.id);
+    expect(snapshot.documents).toHaveLength(1);
+    expect(entry.document.schemaVersion).toBe(2);
+    expect(entry.document.kind).toBe("use-case");
+    expect(entry.document.id).toBe("00000000-0000-4000-8000-000000000001");
+    expect(entry.document.metadata).toEqual({
       title: DEFAULT_DOCUMENT_TITLE,
       createdAt: "2026-09-07T12:00:00.000Z",
       updatedAt: "2026-09-07T12:00:00.000Z",
     });
-    expect(snapshot.document.relationships).toEqual([]);
-    expect(snapshot.document.elements).toEqual([
+    expect(entry.document.relationships).toEqual([]);
+    expect(entry.document.elements).toEqual([
       {
         id: "00000000-0000-4000-8000-000000000002",
         kind: "system-boundary",
@@ -58,7 +64,7 @@ describe("createWorkspaceSnapshot", () => {
         geometry: DEFAULT_BOUNDARY_GEOMETRY,
       },
     ]);
-    expect(snapshot.view).toEqual(DEFAULT_VIEWPORT);
+    expect(entry.view).toEqual(DEFAULT_VIEWPORT);
   });
 
   it("no incluye selección, historial ni herramienta", () => {
@@ -68,9 +74,9 @@ describe("createWorkspaceSnapshot", () => {
     });
 
     expect(Object.keys(snapshot).sort()).toEqual([
-      "document",
+      "activeDocumentId",
+      "documents",
       "storageVersion",
-      "view",
     ]);
     expect(snapshot).not.toHaveProperty("selection");
     expect(snapshot).not.toHaveProperty("history");
@@ -79,12 +85,13 @@ describe("createWorkspaceSnapshot", () => {
 
   it("genera UUID v4 y timestamps ISO sin dependencias inyectadas", () => {
     const snapshot = createWorkspaceSnapshot();
-    const boundary = snapshot.document.elements[0];
+    const entry = snapshot.documents[0];
+    const boundary = entry?.document.elements[0];
 
-    expect(snapshot.document.id).toMatch(UUID_V4);
+    expect(entry?.document.id).toMatch(UUID_V4);
     expect(boundary?.id).toMatch(UUID_V4);
-    expect(boundary?.id).not.toBe(snapshot.document.id);
-    expect(snapshot.document.metadata.createdAt).toMatch(
+    expect(boundary?.id).not.toBe(entry?.document.id);
+    expect(entry?.document.metadata.createdAt).toMatch(
       /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
     );
     expect(createUuid()).toMatch(UUID_V4);

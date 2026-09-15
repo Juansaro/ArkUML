@@ -223,9 +223,10 @@ export function createEmptySequenceDocument(
 export function createWorkspaceSnapshot(
   deps?: DiagramFactoryDeps,
 ): WorkspaceSnapshot {
+  const document = createDiagramDocument(deps);
   return {
     storageVersion: STORAGE_VERSION,
-    document: createDiagramDocument(deps),
-    view: createViewport(),
+    activeDocumentId: document.id,
+    documents: [{ document, view: createViewport() }],
   };
 }

@@ -1,14 +1,15 @@
 import type { WorkspaceSnapshot } from "../domain/diagram/model.ts";
-import { parseWorkspaceSnapshot } from "../domain/diagram/schema.ts";
 import {
   persistenceErr,
   persistenceOk,
   WORKSPACE_STORAGE_KEY,
   type DiagramRepository,
   type KeyValueStorage,
+  type MigratedWorkspace,
   type PersistenceError,
   type PersistenceResult,
 } from "./diagramRepository.ts";
+import { migrateWorkspace } from "./migrateWorkspace.ts";
 
 export type LocalStorageDiagramRepositoryOptions = {
   storage?: KeyValueStorage;
@@ -34,7 +35,7 @@ export function createLocalStorageDiagramRepository(
 
 function loadSnapshot(
   storage: KeyValueStorage | undefined,
-): PersistenceResult<WorkspaceSnapshot | undefined> {
+): PersistenceResult<MigratedWorkspace | undefined> {
   const rawResult = readRaw(storage);
   if (!rawResult.ok) {
     return rawResult;
@@ -55,12 +56,7 @@ function loadSnapshot(
     );
   }
 
-  const snapshot = parseWorkspaceSnapshot(parsed);
-  if (!snapshot.ok) {
-    return persistenceErr("PARSE_INVALID", snapshot.error.message);
-  }
-
-  return persistenceOk(snapshot.value);
+  return migrateWorkspace(parsed);
 }
 
 function saveSnapshot(

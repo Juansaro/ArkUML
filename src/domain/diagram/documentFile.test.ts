@@ -53,7 +53,6 @@ function toV1(document: DiagramDocument): DiagramDocumentV1 {
 }
 
 function sampleFileSnapshot(): {
-  storageVersion: 1;
   document: DiagramDocumentV1;
   view: Viewport;
 } {
@@ -62,7 +61,11 @@ function sampleFileSnapshot(): {
     createId,
     now: () => FIXED_NOW,
   });
-  const boundary = snapshot.document.elements[0];
+  const entry = snapshot.documents[0];
+  if (entry === undefined) {
+    throw new Error("El documento por defecto debe incluir un boundary");
+  }
+  const boundary = entry.document.elements[0];
   if (boundary === undefined) {
     throw new Error("El documento por defecto debe incluir un boundary");
   }
@@ -91,13 +94,12 @@ function sampleFileSnapshot(): {
   );
 
   const document = toV1({
-    ...snapshot.document,
-    elements: [...snapshot.document.elements, actor, useCase],
+    ...entry.document,
+    elements: [...entry.document.elements, actor, useCase],
     relationships: [relationship],
   });
 
   return {
-    ...snapshot,
     document,
     view: VIEW,
   };
@@ -151,7 +153,7 @@ describe("rechazo del archivo de usuario", () => {
   });
 
   it("rechaza un WorkspaceSnapshot interno", () => {
-    expectRejected(sampleFileSnapshot());
+    expectRejected(createWorkspaceSnapshot());
   });
 
   it("rechaza format distinto de arkuml-usecase-json", () => {

@@ -10,7 +10,11 @@ import {
   createWorkspaceSnapshot,
   type IdFactory,
 } from "./factories.ts";
-import type { WorkspaceSnapshot } from "./model.ts";
+import {
+  activeWorkspaceEntry,
+  type DiagramDocument,
+  type WorkspaceSnapshot,
+} from "./model.ts";
 import { parseDiagramDocument, parseWorkspaceSnapshot } from "./schema.ts";
 
 function sequentialIds(start = 1): IdFactory {
@@ -24,13 +28,36 @@ function sequentialIds(start = 1): IdFactory {
 
 const FIXED_NOW = new Date("2026-09-07T12:00:00.000Z");
 
+function activeDocument(snapshot: WorkspaceSnapshot): DiagramDocument {
+  const entry = activeWorkspaceEntry(snapshot);
+  if (entry === undefined) {
+    throw new Error("Falta el documento activo");
+  }
+  return entry.document;
+}
+
+function withActiveDocument(
+  snapshot: WorkspaceSnapshot,
+  document: unknown,
+): unknown {
+  return {
+    ...snapshot,
+    documents: snapshot.documents.map((entry) =>
+      entry.document.id === snapshot.activeDocumentId
+        ? { document, view: entry.view }
+        : entry,
+    ),
+  };
+}
+
 function sampleSnapshot(): WorkspaceSnapshot {
   const createId = sequentialIds();
   const snapshot = createWorkspaceSnapshot({
     createId,
     now: () => FIXED_NOW,
   });
-  const boundary = snapshot.document.elements[0];
+  const document = activeDocument(snapshot);
+  const boundary = document.elements[0];
   if (boundary === undefined) {
     throw new Error("El documento por defecto debe incluir un boundary");
   }
@@ -58,14 +85,11 @@ function sampleSnapshot(): WorkspaceSnapshot {
     { createId },
   );
 
-  return {
-    ...snapshot,
-    document: {
-      ...snapshot.document,
-      elements: [...snapshot.document.elements, actor, useCase],
-      relationships: [relationship],
-    },
-  };
+  return withActiveDocument(snapshot, {
+    ...document,
+    elements: [...document.elements, actor, useCase],
+    relationships: [relationship],
+  }) as WorkspaceSnapshot;
 }
 
 function expectRejected(
@@ -120,10 +144,10 @@ describe("parseWorkspaceSnapshot", () => {
   it("rechaza un kind de documento desconocido", () => {
     const snapshot = sampleSnapshot();
     expectRejected(
-      {
-        ...snapshot,
-        document: { ...snapshot.document, kind: "class" },
-      },
+      withActiveDocument(snapshot, {
+        ...activeDocument(snapshot),
+        kind: "class",
+      }),
       "UNKNOWN_KIND",
       /kind|no soportado/i,
     );
@@ -131,15 +155,13 @@ describe("parseWorkspaceSnapshot", () => {
 
   it("rechaza un kind de elemento desconocido", () => {
     const snapshot = sampleSnapshot();
-    const [boundary, ...rest] = snapshot.document.elements;
+    const document = activeDocument(snapshot);
+    const [boundary, ...rest] = document.elements;
     expectRejected(
-      {
-        ...snapshot,
-        document: {
-          ...snapshot.document,
-          elements: [boundary, { ...rest[0], kind: "note" }, ...rest.slice(1)],
-        },
-      },
+      withActiveDocument(snapshot, {
+        ...document,
+        elements: [boundary, { ...rest[0], kind: "note" }, ...rest.slice(1)],
+      }),
       "UNKNOWN_KIND",
       /kind|no soportado|Valor no soportado/i,
     );
@@ -148,10 +170,10 @@ describe("parseWorkspaceSnapshot", () => {
   it("rechaza un UUID inválido", () => {
     const snapshot = sampleSnapshot();
     expectRejected(
-      {
-        ...snapshot,
-        document: { ...snapshot.document, id: "not-a-uuid" },
-      },
+      withActiveDocument(snapshot, {
+        ...activeDocument(snapshot),
+        id: "not-a-uuid",
+      }),
       "UNKNOWN_ELEMENT",
       /UUID/,
     );
@@ -159,7 +181,7 @@ describe("parseWorkspaceSnapshot", () => {
 
   it("rechaza geometría no finita", () => {
     const snapshot = structuredClone(sampleSnapshot());
-    const boundary = snapshot.document.elements[0];
+    const boundary = activeDocument(snapshot).elements[0];
     if (boundary === undefined) {
       throw new Error("Falta el boundary");
     }
@@ -169,7 +191,7 @@ describe("parseWorkspaceSnapshot", () => {
 
   it("rechaza geometría NaN", () => {
     const snapshot = structuredClone(sampleSnapshot());
-    const boundary = snapshot.document.elements[0];
+    const boundary = activeDocument(snapshot).elements[0];
     if (boundary === undefined) {
       throw new Error("Falta el boundary");
     }
@@ -179,10 +201,9 @@ describe("parseWorkspaceSnapshot", () => {
 
   it("rechaza parentId que no es un boundary del documento", () => {
     const snapshot = sampleSnapshot();
-    const actor = snapshot.document.elements.find(
-      (element) => element.kind === "actor",
-    );
-    const useCase = snapshot.document.elements.find(
+    const document = activeDocument(snapshot);
+    const actor = document.elements.find((element) => element.kind === "actor");
+    const useCase = document.elements.find(
       (element) => element.kind === "use-case",
     );
     if (actor === undefined || useCase === undefined) {
@@ -190,17 +211,14 @@ describe("parseWorkspaceSnapshot", () => {
     }
 
     expectRejected(
-      {
-        ...snapshot,
-        document: {
-          ...snapshot.document,
-          elements: snapshot.document.elements.map((element) =>
-            element.kind === "use-case"
-              ? { ...element, parentId: actor.id }
-              : element,
-          ),
-        },
-      },
+      withActiveDocument(snapshot, {
+        ...document,
+        elements: document.elements.map((element) =>
+          element.kind === "use-case"
+            ? { ...element, parentId: actor.id }
+            : element,
+        ),
+      }),
       "INVALID_PARENT",
       /parentId|SystemBoundary/,
     );
@@ -208,21 +226,19 @@ describe("parseWorkspaceSnapshot", () => {
 
   it("rechaza parentId ausente en el documento", () => {
     const snapshot = sampleSnapshot();
+    const document = activeDocument(snapshot);
     expectRejected(
-      {
-        ...snapshot,
-        document: {
-          ...snapshot.document,
-          elements: snapshot.document.elements.map((element) =>
-            element.kind === "use-case"
-              ? {
-                  ...element,
-                  parentId: "00000000-0000-4000-8000-ffffffffffff",
-                }
-              : element,
-          ),
-        },
-      },
+      withActiveDocument(snapshot, {
+        ...document,
+        elements: document.elements.map((element) =>
+          element.kind === "use-case"
+            ? {
+                ...element,
+                parentId: "00000000-0000-4000-8000-ffffffffffff",
+              }
+            : element,
+        ),
+      }),
       "INVALID_PARENT",
       /parentId/,
     );
@@ -230,19 +246,17 @@ describe("parseWorkspaceSnapshot", () => {
 
   it("rechaza parentId en un actor", () => {
     const snapshot = sampleSnapshot();
-    const boundary = snapshot.document.elements[0];
+    const document = activeDocument(snapshot);
+    const boundary = document.elements[0];
     expectRejected(
-      {
-        ...snapshot,
-        document: {
-          ...snapshot.document,
-          elements: snapshot.document.elements.map((element) =>
-            element.kind === "actor"
-              ? { ...element, parentId: boundary?.id }
-              : element,
-          ),
-        },
-      },
+      withActiveDocument(snapshot, {
+        ...document,
+        elements: document.elements.map((element) =>
+          element.kind === "actor"
+            ? { ...element, parentId: boundary?.id }
+            : element,
+        ),
+      }),
       "UNKNOWN_KIND",
       /Claves no permitidas|parentId/,
     );
@@ -265,10 +279,10 @@ describe("parseWorkspaceSnapshot", () => {
   it("rechaza claves extra en el documento", () => {
     const snapshot = sampleSnapshot();
     expectRejected(
-      {
-        ...snapshot,
-        document: { ...snapshot.document, selected: true },
-      },
+      withActiveDocument(snapshot, {
+        ...activeDocument(snapshot),
+        selected: true,
+      }),
       "UNKNOWN_KIND",
       /Claves no permitidas/,
     );
@@ -276,26 +290,45 @@ describe("parseWorkspaceSnapshot", () => {
 
   it("no persiste geometría de React Flow ni campos medidos", () => {
     const snapshot = sampleSnapshot();
+    const document = activeDocument(snapshot);
+    expectRejected(
+      withActiveDocument(snapshot, {
+        ...document,
+        elements: document.elements.map((element) =>
+          element.kind === "system-boundary"
+            ? {
+                ...element,
+                geometry: {
+                  ...DEFAULT_BOUNDARY_GEOMETRY,
+                  measured: { width: 1, height: 1 },
+                },
+              }
+            : element,
+        ),
+      }),
+      "UNKNOWN_KIND",
+      /Claves no permitidas.*measured/,
+    );
+  });
+
+  it("rechaza una biblioteca vacía", () => {
+    const snapshot = sampleSnapshot();
+    expectRejected(
+      { ...snapshot, documents: [] },
+      "UNKNOWN_KIND",
+      /biblioteca no puede estar vacía/i,
+    );
+  });
+
+  it("rechaza un activeDocumentId huérfano", () => {
+    const snapshot = sampleSnapshot();
     expectRejected(
       {
         ...snapshot,
-        document: {
-          ...snapshot.document,
-          elements: snapshot.document.elements.map((element) =>
-            element.kind === "system-boundary"
-              ? {
-                  ...element,
-                  geometry: {
-                    ...DEFAULT_BOUNDARY_GEOMETRY,
-                    measured: { width: 1, height: 1 },
-                  },
-                }
-              : element,
-          ),
-        },
+        activeDocumentId: "00000000-0000-4000-8000-ffffffffffff",
       },
       "UNKNOWN_KIND",
-      /Claves no permitidas.*measured/,
+      /activeDocumentId/,
     );
   });
 });
@@ -357,9 +390,10 @@ describe("parser schema 2 — secuencia y mezclas", () => {
       { name: "L" },
       { createId: sequentialIds(80) },
     );
+    const document = activeDocument(snapshot);
     const parsed = parseDiagramDocument({
-      ...snapshot.document,
-      elements: [...snapshot.document.elements, lifeline],
+      ...document,
+      elements: [...document.elements, lifeline],
     });
     expect(parsed.ok).toBe(false);
     if (parsed.ok) {

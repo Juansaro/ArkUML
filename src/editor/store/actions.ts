@@ -1,10 +1,13 @@
 import type { StoreApi } from "zustand/vanilla";
+import { DEFAULT_VIEWPORT } from "../../domain/diagram/defaults.ts";
 import type { DiagramFactoryDeps } from "../../domain/diagram/factories.ts";
 import type {
   DiagramDocument,
   Geometry,
   Result,
   Viewport,
+  WorkspaceDocumentEntry,
+  WorkspaceSnapshot,
 } from "../../domain/diagram/model.ts";
 import {
   createElement,
@@ -40,6 +43,7 @@ import {
   recordMutation,
   redoHistory,
   undoHistory,
+  type DocumentHistory,
 } from "./history.ts";
 
 type SetEditorState = StoreApi<EditorStore>["setState"];
@@ -98,6 +102,10 @@ export type EditorActions = {
   setMessage: (message: string | undefined) => void;
   setDialogMode: (dialogMode: DialogMode) => void;
   hydrateWorkspace: (document: DiagramDocument, viewport?: Viewport) => void;
+  hydrateWorkspaceSnapshot: (snapshot: WorkspaceSnapshot) => void;
+  addDocument: (document: DiagramDocument, viewport?: Viewport) => boolean;
+  activateDocument: (documentId: string) => boolean;
+  deleteDocument: (documentId: string) => boolean;
 };
 
 const EMPTY_SELECTION: SelectionState = {
@@ -238,6 +246,7 @@ export function createEditorActions(
       }
       set({
         document: baseline,
+        documents: replaceActiveEntry(state, baseline),
         history: {
           ...state.history,
           transactionBaseline: undefined,
@@ -371,10 +380,12 @@ export function createEditorActions(
       const state = get();
       const nextViewport =
         viewport === undefined
-          ? state.viewport
-          : { x: viewport.x, y: viewport.y, zoom: viewport.zoom };
+          ? copyViewport(state.viewport)
+          : copyViewport(viewport);
       set({
         document,
+        documents: [{ document, view: nextViewport }],
+        activeDocumentId: document.id,
         viewport: nextViewport,
         selection: EMPTY_SELECTION,
         hover: EMPTY_HOVER,
@@ -382,6 +393,7 @@ export function createEditorActions(
           ...emptyHistory(),
           transactionBaseline: undefined,
         },
+        histories: {},
         ui: {
           ...state.ui,
           message: undefined,
@@ -389,6 +401,166 @@ export function createEditorActions(
         },
         clipboard: EMPTY_CLIPBOARD,
       });
+    },
+    hydrateWorkspaceSnapshot: (snapshot) => {
+      const state = get();
+      const documents = snapshot.documents.map((entry) => ({
+        document: entry.document,
+        view: copyViewport(entry.view),
+      }));
+      const active =
+        documents.find(
+          (entry) => entry.document.id === snapshot.activeDocumentId,
+        ) ?? documents[0];
+      if (active === undefined) {
+        return;
+      }
+      set({
+        document: active.document,
+        documents,
+        activeDocumentId: active.document.id,
+        viewport: copyViewport(active.view),
+        selection: EMPTY_SELECTION,
+        hover: EMPTY_HOVER,
+        history: {
+          ...emptyHistory(),
+          transactionBaseline: undefined,
+        },
+        histories: {},
+        ui: {
+          ...state.ui,
+          message: undefined,
+          editingElementId: undefined,
+        },
+        clipboard: EMPTY_CLIPBOARD,
+      });
+    },
+    addDocument: (document, viewport) => {
+      const state = get();
+      if (state.history.transactionBaseline !== undefined) {
+        return false;
+      }
+      if (state.documents.some((entry) => entry.document.id === document.id)) {
+        return false;
+      }
+      const view =
+        viewport === undefined
+          ? copyViewport(DEFAULT_VIEWPORT)
+          : copyViewport(viewport);
+      set({
+        document,
+        documents: [
+          ...replaceActiveEntry(state, state.document),
+          { document, view },
+        ],
+        activeDocumentId: document.id,
+        viewport: view,
+        selection: EMPTY_SELECTION,
+        hover: EMPTY_HOVER,
+        history: {
+          ...emptyHistory(),
+          transactionBaseline: undefined,
+        },
+        histories: stashActiveHistory(state),
+        ui: {
+          ...state.ui,
+          message: undefined,
+          editingElementId: undefined,
+        },
+      });
+      return true;
+    },
+    activateDocument: (documentId) => {
+      const state = get();
+      if (documentId === state.activeDocumentId) {
+        return true;
+      }
+      if (state.history.transactionBaseline !== undefined) {
+        return false;
+      }
+      const documents = replaceActiveEntry(state, state.document);
+      const target = documents.find(
+        (entry) => entry.document.id === documentId,
+      );
+      if (target === undefined) {
+        return false;
+      }
+      const histories = stashActiveHistory(state);
+      const incoming = histories[documentId] ?? emptyHistory();
+      set({
+        document: target.document,
+        documents,
+        activeDocumentId: documentId,
+        viewport: copyViewport(target.view),
+        selection: EMPTY_SELECTION,
+        hover: EMPTY_HOVER,
+        history: {
+          ...incoming,
+          transactionBaseline: undefined,
+        },
+        histories,
+        ui: {
+          ...state.ui,
+          message: undefined,
+          editingElementId: undefined,
+        },
+      });
+      return true;
+    },
+    deleteDocument: (documentId) => {
+      const state = get();
+      if (state.history.transactionBaseline !== undefined) {
+        return false;
+      }
+      if (state.documents.length <= 1) {
+        return false;
+      }
+      if (!state.documents.some((entry) => entry.document.id === documentId)) {
+        return false;
+      }
+
+      const remaining = state.documents.filter(
+        (entry) => entry.document.id !== documentId,
+      );
+      const histories = omitHistory(
+        documentId === state.activeDocumentId
+          ? state.histories
+          : stashActiveHistory(state),
+        documentId,
+      );
+
+      if (documentId !== state.activeDocumentId) {
+        set({
+          documents: remaining,
+          histories,
+        });
+        return true;
+      }
+
+      const next = remaining[0];
+      if (next === undefined) {
+        return false;
+      }
+      const incoming = histories[next.document.id] ?? emptyHistory();
+      set({
+        document: next.document,
+        documents: remaining,
+        activeDocumentId: next.document.id,
+        viewport: copyViewport(next.view),
+        selection: EMPTY_SELECTION,
+        hover: EMPTY_HOVER,
+        history: {
+          ...incoming,
+          transactionBaseline: undefined,
+        },
+        histories,
+        ui: {
+          ...state.ui,
+          message: undefined,
+          editingElementId: undefined,
+        },
+      });
+      return true;
     },
   };
 }
@@ -471,6 +643,7 @@ function applyDocumentOperation(
 
   set({
     document: nextDocument,
+    documents: replaceActiveEntry(state, nextDocument),
     ...(selection === state.selection ? {} : { selection }),
     ...(hover === state.hover ? {} : { hover }),
     ...(ui === state.ui ? {} : { ui }),
@@ -496,6 +669,7 @@ function documentPatch(
   const hover = retainHover(state.hover, document);
   return {
     document,
+    documents: replaceActiveEntry(state, document),
     history,
     ...(selection === state.selection ? {} : { selection }),
     ...(hover === state.hover ? {} : { hover }),
@@ -557,6 +731,44 @@ function clearMessage(ui: UiState): UiState {
 
 function stacksOf(history: HistorySlice) {
   return { past: history.past, future: history.future };
+}
+
+function copyViewport(viewport: Viewport): Viewport {
+  return { x: viewport.x, y: viewport.y, zoom: viewport.zoom };
+}
+
+function replaceActiveEntry(
+  state: EditorStore,
+  document: DiagramDocument,
+): WorkspaceDocumentEntry[] {
+  const nextView = copyViewport(state.viewport);
+  return state.documents.map((entry) =>
+    entry.document.id === state.activeDocumentId
+      ? { document, view: nextView }
+      : entry,
+  );
+}
+
+function stashActiveHistory(
+  state: EditorStore,
+): Readonly<Record<string, DocumentHistory>> {
+  return {
+    ...state.histories,
+    [state.activeDocumentId]: stacksOf(state.history),
+  };
+}
+
+function omitHistory(
+  histories: Readonly<Record<string, DocumentHistory>>,
+  documentId: string,
+): Readonly<Record<string, DocumentHistory>> {
+  const next: Record<string, DocumentHistory> = {};
+  for (const [id, history] of Object.entries(histories)) {
+    if (id !== documentId) {
+      next[id] = history;
+    }
+  }
+  return next;
 }
 
 function renamePatchIfStale(

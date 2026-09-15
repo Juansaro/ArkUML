@@ -4,6 +4,7 @@ import {
   type IdFactory,
 } from "../domain/diagram/factories.ts";
 import type { Geometry, Result } from "../domain/diagram/model.ts";
+import { parseWorkspaceSnapshot } from "../domain/diagram/schema.ts";
 import {
   createEditorStore,
   type EditorStoreApi,
@@ -14,6 +15,7 @@ import {
   AUTOSAVE_DEBOUNCE_MS,
   createAutosaveCoordinator,
   SAVED_ANNOUNCEMENT,
+  STORAGE_UPGRADE_MESSAGE,
   type AutosaveCoordinator,
 } from "./autosaveCoordinator.ts";
 import {
@@ -125,7 +127,9 @@ describe("createAutosaveCoordinator", () => {
     if (!loaded.ok) {
       throw new Error("Expected loaded snapshot");
     }
-    expect(loaded.value?.document).toEqual(store.getState().document);
+    expect(loaded.value?.documents[0]?.document).toEqual(
+      store.getState().document,
+    );
     expect(restored.getState().document).toEqual(store.getState().document);
     expect(selectSaveStatus(restored.getState())).toBe("saved");
   });
@@ -153,9 +157,13 @@ describe("createAutosaveCoordinator", () => {
     const raw = storage.getItem(WORKSPACE_STORAGE_KEY);
     expect(raw).not.toBeNull();
     expect(JSON.parse(raw ?? "")).toMatchObject({
-      document: {
-        elements: [{ geometry: { x: 99, y: 0 } }],
-      },
+      documents: [
+        {
+          document: {
+            elements: [{ geometry: { x: 99, y: 0 } }],
+          },
+        },
+      ],
     });
     expect(selectSaveStatus(store.getState())).toBe("saved");
     expect(store.getState().ui.lastSavedAt).toBe(SAVED_AT.toISOString());
@@ -258,7 +266,7 @@ describe("createAutosaveCoordinator", () => {
     expect(
       JSON.parse(storage.getItem(WORKSPACE_STORAGE_KEY) ?? ""),
     ).toMatchObject({
-      document: store.getState().document,
+      documents: [{ document: store.getState().document }],
     });
   });
 
@@ -325,9 +333,15 @@ describe("createAutosaveCoordinator", () => {
     const raw = storage.getItem(WORKSPACE_STORAGE_KEY);
     expect(raw).not.toBeNull();
     expect(JSON.parse(raw ?? "")).toMatchObject({
-      document: {
-        elements: [{ kind: "system-boundary", name: DEFAULT_BOUNDARY_NAME }],
-      },
+      documents: [
+        {
+          document: {
+            elements: [
+              { kind: "system-boundary", name: DEFAULT_BOUNDARY_NAME },
+            ],
+          },
+        },
+      ],
     });
   });
 
@@ -342,9 +356,14 @@ describe("createAutosaveCoordinator", () => {
     const raw = storage.getItem(WORKSPACE_STORAGE_KEY);
     expect(raw).not.toBeNull();
     expect(JSON.parse(raw ?? "")).toEqual({
-      storageVersion: 1,
-      document: next,
-      view: { x: 10, y: 20, zoom: 1.5 },
+      storageVersion: 2,
+      activeDocumentId: next.id,
+      documents: [
+        {
+          document: next,
+          view: { x: 10, y: 20, zoom: 1.5 },
+        },
+      ],
     });
     expect(raw).not.toMatch(/arkuml-usecase-json/);
   });
@@ -359,5 +378,72 @@ describe("createAutosaveCoordinator", () => {
     expect(reset.ok).toBe(true);
     expect(coordinator.isOverwriteBlocked()).toBe(false);
     expect(storage.getItem(WORKSPACE_STORAGE_KEY)).not.toBe(corrupt);
+  });
+
+  it("un blob v1 se hidrata y no se pisa hasta confirmar el overwrite 2.0", async () => {
+    const document = createDiagramDocument({
+      createId: sequentialIds(20),
+      now: () => CREATED_AT,
+    });
+    const v1 = {
+      storageVersion: 1,
+      document: {
+        schemaVersion: 1,
+        id: document.id,
+        kind: "use-case",
+        metadata: document.metadata,
+        elements: document.elements,
+        relationships: document.relationships,
+      },
+      view: { x: 4, y: 8, zoom: 1.25 },
+    };
+    const raw = JSON.stringify(v1);
+    storage.setItem(WORKSPACE_STORAGE_KEY, raw);
+
+    const loaded = await coordinator.hydrate();
+    expect(loaded.ok).toBe(true);
+    expect(coordinator.isStorageUpgradePending()).toBe(true);
+    expect(store.getState().document.id).toBe(document.id);
+    expect(store.getState().document.schemaVersion).toBe(2);
+    expect(store.getState().ui.dialogMode).toBe("storage-upgrade");
+    expect(store.getState().ui.message).toBe(STORAGE_UPGRADE_MESSAGE);
+    expect(storage.getItem(WORKSPACE_STORAGE_KEY)).toBe(raw);
+
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    const flushed = await coordinator.flush();
+    expect(flushed.ok).toBe(false);
+    expect(storage.getItem(WORKSPACE_STORAGE_KEY)).toBe(raw);
+    expect(
+      store
+        .getState()
+        .document.elements.some((element) => element.kind === "actor"),
+    ).toBe(true);
+
+    coordinator.cancelStorageUpgrade();
+    expect(coordinator.isStorageUpgradePending()).toBe(true);
+    expect(storage.getItem(WORKSPACE_STORAGE_KEY)).toBe(raw);
+
+    const confirmed = await coordinator.confirmStorageUpgrade();
+    expect(confirmed.ok).toBe(true);
+    expect(coordinator.isStorageUpgradePending()).toBe(false);
+    const savedRaw = storage.getItem(WORKSPACE_STORAGE_KEY);
+    expect(savedRaw).not.toBe(raw);
+    const saved = parseWorkspaceSnapshot(JSON.parse(savedRaw ?? "") as unknown);
+    expect(saved.ok).toBe(true);
+    if (!saved.ok) {
+      throw new Error("Expected saved v2 snapshot");
+    }
+    expect(saved.value.storageVersion).toBe(2);
+    expect(saved.value.activeDocumentId).toBe(document.id);
+    expect(saved.value.documents[0]?.document.schemaVersion).toBe(2);
+    expect(
+      saved.value.documents[0]?.document.elements.some(
+        (element) => element.kind === "actor",
+      ),
+    ).toBe(true);
   });
 });

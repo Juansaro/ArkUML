@@ -42,6 +42,7 @@ import { Inspector } from "../Inspector/Inspector.tsx";
 import { InvalidDocumentFileDialog } from "../InvalidDocumentFileDialog.tsx";
 import { NewDiagramDialog } from "../NewDiagramDialog.tsx";
 import { RecoveryDialog } from "../RecoveryDialog.tsx";
+import { StorageUpgradeDialog } from "../StorageUpgradeDialog.tsx";
 import { HelpDialog } from "./HelpDialog.tsx";
 import { Palette } from "./Palette.tsx";
 import { StatusBar } from "./StatusBar.tsx";
@@ -78,6 +79,7 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   const openFileOpen = dialogMode === "open-file";
   const invalidFileOpen = dialogMode === "invalid-document-file";
   const recoveryOpen = dialogMode === "recovery";
+  const storageUpgradeOpen = dialogMode === "storage-upgrade";
   const title = documentTitle ?? storeTitle;
   const zoom = zoomPercent ?? Math.round(viewport.zoom * 100);
   const paletteHeadingId = useId();
@@ -454,6 +456,17 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
             onCancel={cancelDialog}
             onConfirm={() => {
               void confirmNewWorkspace();
+            }}
+          />
+        ) : null}
+        {storageUpgradeOpen ? (
+          <StorageUpgradeDialog
+            onCancel={() => {
+              session?.coordinator.cancelStorageUpgrade();
+              store.getState().setDialogMode("none");
+            }}
+            onConfirm={() => {
+              void session?.coordinator.confirmStorageUpgrade();
             }}
           />
         ) : null}

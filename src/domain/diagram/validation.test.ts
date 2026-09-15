@@ -341,8 +341,14 @@ describe("collectWarnings", () => {
         createId: sequentialIds(90),
         now: () => FIXED_NOW,
       }),
-      document: cyclic,
     };
+    snapshot.documents = [
+      {
+        document: cyclic,
+        view: snapshot.documents[0]?.view ?? { x: 0, y: 0, zoom: 1 },
+      },
+    ];
+    snapshot.activeDocumentId = cyclic.id;
     const parsed = parseWorkspaceSnapshot(
       JSON.parse(JSON.stringify(snapshot)) as unknown,
     );
@@ -350,9 +356,9 @@ describe("collectWarnings", () => {
     if (!parsed.ok) {
       throw new Error("Expected ok parse");
     }
-    expect(parsed.value.document.schemaVersion).toBe(2);
-    expect(parsed.value.storageVersion).toBe(1);
-    expect(parsed.value.document).not.toHaveProperty("warnings");
+    expect(parsed.value.documents[0]?.document.schemaVersion).toBe(2);
+    expect(parsed.value.storageVersion).toBe(2);
+    expect(parsed.value.documents[0]?.document).not.toHaveProperty("warnings");
     expect(JSON.stringify(parsed.value)).not.toMatch(/INCLUDE_CYCLE/);
   });
 });

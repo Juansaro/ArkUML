@@ -2,7 +2,8 @@ import type { Geometry, Viewport } from "./model.ts";
 
 export const SCHEMA_VERSION_V1 = 1;
 export const SCHEMA_VERSION = 2;
-export const STORAGE_VERSION = 1;
+export const STORAGE_VERSION_V1 = 1;
+export const STORAGE_VERSION = 2;
 export const DOCUMENT_KIND = "use-case";
 export const SEQUENCE_DOCUMENT_KIND = "sequence";
 

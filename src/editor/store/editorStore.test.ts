@@ -539,6 +539,96 @@ describe("domain errors and hydrate", () => {
   });
 });
 
+describe("biblioteca local", () => {
+  it("añade, activa y no borra el último documento", () => {
+    const store = createStore();
+    const firstId = store.getState().document.id;
+    const second = createDiagramDocument({
+      createId: sequentialIds(40),
+      now: () => CREATED_AT,
+    });
+
+    expect(store.getState().addDocument(second)).toBe(true);
+    expect(store.getState().activeDocumentId).toBe(second.id);
+    expect(store.getState().document).toBe(second);
+    expect(store.getState().documents).toHaveLength(2);
+    expect(store.getState().history.past).toHaveLength(0);
+
+    expect(store.getState().activateDocument(firstId)).toBe(true);
+    expect(store.getState().activeDocumentId).toBe(firstId);
+
+    expect(store.getState().deleteDocument(firstId)).toBe(true);
+    expect(store.getState().documents).toHaveLength(1);
+    expect(store.getState().activeDocumentId).toBe(second.id);
+    expect(store.getState().deleteDocument(second.id)).toBe(false);
+    expect(store.getState().documents).toHaveLength(1);
+  });
+
+  it("aisla el historial por document.id", () => {
+    const store = createStore();
+    const firstId = store.getState().document.id;
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    const afterA = store.getState().document;
+
+    const second = createDiagramDocument({
+      createId: sequentialIds(40),
+      now: () => CREATED_AT,
+    });
+    expect(store.getState().addDocument(second)).toBe(true);
+    expectOk(
+      store.getState().createActor({ name: "Otro", geometry: ACTOR_GEOMETRY }),
+    );
+    const afterB = store.getState().document;
+
+    expect(store.getState().activateDocument(firstId)).toBe(true);
+    expect(store.getState().document).toEqual(afterA);
+    expect(store.getState().undo()).toBe(true);
+    expect(
+      store
+        .getState()
+        .document.elements.some((element) => element.kind === "actor"),
+    ).toBe(false);
+
+    expect(store.getState().activateDocument(second.id)).toBe(true);
+    expect(store.getState().document).toEqual(afterB);
+    expect(
+      store
+        .getState()
+        .document.elements.some((element) => element.name === "Otro"),
+    ).toBe(true);
+  });
+
+  it("hydrateWorkspaceSnapshot restaura todos los documentos y el activo", () => {
+    const store = createStore();
+    const first = createDiagramDocument({
+      createId: sequentialIds(40),
+      now: () => CREATED_AT,
+    });
+    const second = createDiagramDocument({
+      createId: sequentialIds(60),
+      now: () => CREATED_AT,
+    });
+    store.getState().hydrateWorkspaceSnapshot({
+      storageVersion: 2,
+      activeDocumentId: second.id,
+      documents: [
+        { document: first, view: { x: 1, y: 2, zoom: 1 } },
+        { document: second, view: VIEWPORT },
+      ],
+    });
+
+    expect(store.getState().documents).toHaveLength(2);
+    expect(store.getState().activeDocumentId).toBe(second.id);
+    expect(store.getState().document).toBe(second);
+    expect(store.getState().viewport).toEqual(VIEWPORT);
+    expect(store.getState().history.past).toHaveLength(0);
+  });
+});
+
 describe("selectors", () => {
   it("shallow compara proyecciones de objeto", () => {
     const store = createStore();

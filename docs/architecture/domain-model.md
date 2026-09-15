@@ -10,16 +10,22 @@ Release 1 (schema **2**). El árbol v1 del MVP permanece el origen de
 
 ```text
 WorkspaceSnapshot
-├─ storageVersion: 1          // envelope 2: TASK-047
-├─ document: DiagramDocument
-│  ├─ schemaVersion: 2
-│  ├─ id: UUID
-│  ├─ kind: "use-case" | "sequence"
-│  ├─ metadata: { title, createdAt, updatedAt }
-│  ├─ elements: DiagramElement[]
-│  └─ relationships: Relationship[]
-└─ view: { x, y, zoom }
+├─ storageVersion: 2
+├─ activeDocumentId: UUID
+└─ documents: { document: DiagramDocument, view }[]
+   └─ document
+      ├─ schemaVersion: 2
+      ├─ id: UUID
+      ├─ kind: "use-case" | "sequence"
+      ├─ metadata: { title, createdAt, updatedAt }
+      ├─ elements: DiagramElement[]
+      └─ relationships: Relationship[]
 ```
+
+La lista no está vacía. Los `document.id` son únicos. `activeDocumentId`
+coincide con exactamente un `document.id`. Envelope v1 (un `document` +
+`view`, `storageVersion` 1): origen de `migrateWorkspace` `1→2` en
+`src/persistence`.
 
 `DiagramElement` es una unión discriminada por `kind`:
 
@@ -145,11 +151,12 @@ Usar estos códigos; no strings ad hoc:
 Zod 4 valida `WorkspaceSnapshot` al cargar. `z.strictObject` (o equivalente Zod 4) rechaza claves desconocidas en el documento. Datos corruptos **no** se migran en silencio y **no** se sobrescriben hasta que el usuario confirme «comenzar limpio».
 
 `schemaVersion` (documento) y `storageVersion` (snapshot) son independientes.
-El parser actual acepta `schemaVersion` `2`. `migrateDocument` encadena
-`1→2` (copia el documento de casos de uso, escribe `schemaVersion: 2`, no
-altera elementos) y valida con Zod del destino. Política:
-[schema-evolution.md](schema-evolution.md). `storageVersion` sigue en `1`
-hasta TASK-047.
+El parser actual acepta `schemaVersion` `2` y `storageVersion` `2`.
+`migrateDocument` encadena `1→2` (copia el documento de casos de uso,
+escribe `schemaVersion: 2`, no altera elementos) y valida con Zod del
+destino. `migrateWorkspace` `1→2` envuelve el snapshot de un documento
+como lista de un elemento y, si hace falta, sube el documento. Política:
+[schema-evolution.md](schema-evolution.md).
 
 ## Serialización
 
@@ -158,6 +165,6 @@ hasta TASK-047.
 ## Compatibilidad futura
 
 - `kind` en documento, elemento y relación permite otros diagramas sin romper el parser si se usa unión exhaustiva y `default` que falle con `UNKNOWN_KIND`. Política de extensión: [diagram-kinds.md](diagram-kinds.md). 1.x solo `use-case`. Release 1 (schema 2): `"use-case" | "sequence"`; forma de secuencia en [sequence-model.md](sequence-model.md). Clases (W17-13) siguen sin forma.
-- Workspace 2.0 (biblioteca): [ADR-007](../decisions/ADR-007-workspace-library.md). El envelope de storage permanece v1 hasta TASK-047.
+- Workspace 2.0 (biblioteca): [ADR-007](../decisions/ADR-007-workspace-library.md). Envelope `storageVersion` 2: lista de documentos y `activeDocumentId`.
 - Generalization será un `kind` de relación nuevo, no un flag en Association.
 - Estilos visuales, si aparecen, vivirán en un mapa opcional versionado, no en el motor gráfico.

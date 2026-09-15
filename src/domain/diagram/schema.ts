@@ -6,6 +6,7 @@ import {
   SCHEMA_VERSION,
   SCHEMA_VERSION_V1,
   STORAGE_VERSION,
+  STORAGE_VERSION_V1,
 } from "./defaults.ts";
 import {
   type DiagramDocument,
@@ -14,6 +15,7 @@ import {
   type DomainErrorCode,
   type Result,
   type WorkspaceSnapshot,
+  type WorkspaceSnapshotV1,
 } from "./model.ts";
 
 const uuidSchema = z.uuidv4({
@@ -280,13 +282,58 @@ export const viewportSchema = z.strictObject({
   zoom: finiteNumberSchema,
 });
 
-export const workspaceSnapshotSchema: z.ZodType<WorkspaceSnapshot> =
+export const workspaceDocumentEntrySchema = z.strictObject({
+  document: diagramDocumentSchema,
+  view: viewportSchema,
+});
+
+export const workspaceSnapshotV1Schema: z.ZodType<WorkspaceSnapshotV1> =
   z.strictObject({
-    storageVersion: z.literal(STORAGE_VERSION, {
+    storageVersion: z.literal(STORAGE_VERSION_V1, {
       error: "storageVersion debe ser 1.",
     }),
-    document: diagramDocumentSchema,
+    document: z.union([diagramDocumentSchema, diagramDocumentV1Schema]),
     view: viewportSchema,
+  });
+
+export const workspaceSnapshotSchema: z.ZodType<WorkspaceSnapshot> = z
+  .strictObject({
+    storageVersion: z.literal(STORAGE_VERSION, {
+      error: "storageVersion debe ser 2.",
+    }),
+    activeDocumentId: uuidSchema,
+    documents: z.array(workspaceDocumentEntrySchema),
+  })
+  .superRefine((snapshot, ctx) => {
+    if (snapshot.documents.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        message: "La biblioteca no puede estar vacía.",
+        path: ["documents"],
+      });
+      return;
+    }
+
+    const seen = new Set<string>();
+    snapshot.documents.forEach((entry, index) => {
+      if (seen.has(entry.document.id)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Los identificadores de documento deben ser únicos.",
+          path: ["documents", index, "document", "id"],
+        });
+        return;
+      }
+      seen.add(entry.document.id);
+    });
+
+    if (!seen.has(snapshot.activeDocumentId)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "activeDocumentId debe coincidir con un documento.",
+        path: ["activeDocumentId"],
+      });
+    }
   });
 
 function pathOf(issue: z.core.$ZodIssue): string {
@@ -339,7 +386,7 @@ function domainCodeForIssue(issue: z.core.$ZodIssue): DomainErrorCode {
   if (
     path.includes("geometry") ||
     path.includes("stemLength") ||
-    path[0] === "view"
+    path.includes("view")
   ) {
     return "INVALID_GEOMETRY";
   }
@@ -404,6 +451,17 @@ export function parseWorkspaceSnapshot(
   input: unknown,
 ): Result<WorkspaceSnapshot> {
   const result = workspaceSnapshotSchema.safeParse(input);
+  if (result.success) {
+    return { ok: true, value: result.data };
+  }
+
+  return { ok: false, error: toDomainError(result.error) };
+}
+
+export function parseWorkspaceSnapshotV1(
+  input: unknown,
+): Result<WorkspaceSnapshotV1> {
+  const result = workspaceSnapshotV1Schema.safeParse(input);
   if (result.success) {
     return { ok: true, value: result.data };
   }

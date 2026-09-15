@@ -74,8 +74,12 @@ describe("bootstrapWorkspace", () => {
 
     const session = await boot(storage);
 
-    expect(session.store.getState().document).toEqual(snapshot.document);
-    expect(session.store.getState().viewport).toEqual(snapshot.view);
+    expect(session.store.getState().document).toEqual(
+      snapshot.documents[0]?.document,
+    );
+    expect(session.store.getState().viewport).toEqual(
+      snapshot.documents[0]?.view,
+    );
     expect(session.store.getState().ui.saveStatus).toBe("saved");
     expect(session.store.getState().ui.dialogMode).toBe("none");
   });

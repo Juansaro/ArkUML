@@ -30,7 +30,8 @@ export function useEditorShortcuts(options?: EditorShortcutOptions): void {
           dialogMode === "new-diagram" ||
           dialogMode === "open-file" ||
           dialogMode === "invalid-document-file" ||
-          dialogMode === "recovery") &&
+          dialogMode === "recovery" ||
+          dialogMode === "storage-upgrade") &&
         event.key === "Escape"
       ) {
         event.preventDefault();

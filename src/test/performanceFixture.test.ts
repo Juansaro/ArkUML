@@ -17,8 +17,9 @@ describe("performanceFixture", () => {
     const counts = performanceCounts("target");
 
     expect(parsed.ok).toBe(true);
-    expect(snapshot.document.elements).toHaveLength(counts.elements);
-    expect(snapshot.document.relationships).toHaveLength(counts.relationships);
+    const document = snapshot.documents[0]?.document;
+    expect(document?.elements).toHaveLength(counts.elements);
+    expect(document?.relationships).toHaveLength(counts.relationships);
     expect(counts).toEqual({
       actors: 30,
       useCases: 69,
@@ -27,7 +28,7 @@ describe("performanceFixture", () => {
     });
 
     const preview = evaluateExportScale(
-      paddedExportBounds(diagramContentBounds(snapshot.document)),
+      paddedExportBounds(diagramContentBounds(document!)),
       2,
     );
     expect(preview).toEqual({
@@ -45,8 +46,9 @@ describe("performanceFixture", () => {
     const counts = performanceCounts("stress");
 
     expect(parsed.ok).toBe(true);
-    expect(snapshot.document.elements).toHaveLength(counts.elements);
-    expect(snapshot.document.relationships).toHaveLength(counts.relationships);
+    const document = snapshot.documents[0]?.document;
+    expect(document?.elements).toHaveLength(counts.elements);
+    expect(document?.relationships).toHaveLength(counts.relationships);
     expect(counts).toEqual({
       actors: 50,
       useCases: 149,
@@ -54,7 +56,7 @@ describe("performanceFixture", () => {
       relationships: 300,
     });
 
-    const bounds = paddedExportBounds(diagramContentBounds(snapshot.document));
+    const bounds = paddedExportBounds(diagramContentBounds(document!));
     expect(evaluateExportScale(bounds, 2)).toEqual({
       width: 4864,
       height: 6496,

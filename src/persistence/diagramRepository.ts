@@ -19,6 +19,11 @@ export type PersistenceResult<T> =
   | { readonly ok: true; readonly value: T }
   | { readonly ok: false; readonly error: PersistenceError };
 
+export type MigratedWorkspace = {
+  snapshot: WorkspaceSnapshot;
+  migratedFromV1: boolean;
+};
+
 export function persistenceOk<T>(value: T): PersistenceResult<T> {
   return { ok: true, value };
 }
@@ -37,7 +42,7 @@ export type KeyValueStorage = {
 };
 
 export type DiagramRepository = {
-  load(): Promise<PersistenceResult<WorkspaceSnapshot | undefined>>;
+  load(): Promise<PersistenceResult<MigratedWorkspace | undefined>>;
   save(snapshot: WorkspaceSnapshot): Promise<PersistenceResult<undefined>>;
   clear(): Promise<PersistenceResult<undefined>>;
 };

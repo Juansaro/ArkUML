@@ -63,10 +63,11 @@ export function performanceCounts(
 export function createPerformanceSnapshot(
   scenario: PerformanceScenario,
 ): WorkspaceSnapshot {
+  const document = createPerformanceDocument(scenario);
   return {
     storageVersion: STORAGE_VERSION,
-    document: createPerformanceDocument(scenario),
-    view: { x: 220, y: 40, zoom: 0.5 },
+    activeDocumentId: document.id,
+    documents: [{ document, view: { x: 220, y: 40, zoom: 0.5 } }],
   };
 }
 

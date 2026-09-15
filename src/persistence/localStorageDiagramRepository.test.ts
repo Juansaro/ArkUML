@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  createDiagramDocument,
+  createEmptySequenceDocument,
   createWorkspaceSnapshot,
   type IdFactory,
 } from "../domain/diagram/factories.ts";
@@ -84,7 +86,10 @@ describe("DiagramRepository contract", () => {
     expect(expectOk(await repository.load())).toBeUndefined();
 
     expectOk(await repository.save(snapshot));
-    expect(expectOk(await repository.load())).toEqual(snapshot);
+    expect(expectOk(await repository.load())).toEqual({
+      snapshot,
+      migratedFromV1: false,
+    });
 
     expectOk(await repository.clear());
     expect(expectOk(await repository.load())).toBeUndefined();
@@ -101,7 +106,10 @@ describe("createLocalStorageDiagramRepository", () => {
     expectOk(await repository.save(snapshot));
     const raw = storage.getItem(WORKSPACE_STORAGE_KEY);
     expect(raw).toEqual(JSON.stringify(snapshot));
-    expect(expectOk(await repository.load())).toEqual(snapshot);
+    expect(expectOk(await repository.load())).toEqual({
+      snapshot,
+      migratedFromV1: false,
+    });
   });
 
   it("no pisa la clave si el JSON está corrupto", async () => {
@@ -182,5 +190,98 @@ describe("createLocalStorageDiagramRepository", () => {
       throw new Error("Expected unavailable");
     }
     expect(save.error.code).toBe("STORAGE_UNAVAILABLE");
+  });
+
+  it("hace round-trip de una biblioteca v2 con casos de uso y secuencia", async () => {
+    const createId = sequentialIds();
+    const useCase = createDiagramDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const sequence = createEmptySequenceDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const snapshot: WorkspaceSnapshot = {
+      storageVersion: 2,
+      activeDocumentId: sequence.id,
+      documents: [
+        { document: useCase, view: { x: 1, y: 2, zoom: 1 } },
+        { document: sequence, view: { x: 0, y: 0, zoom: 1.5 } },
+      ],
+    };
+    const storage = createMemoryStorage();
+    const repository = createLocalStorageDiagramRepository({ storage });
+
+    expectOk(await repository.save(snapshot));
+    expect(storage.getItem(WORKSPACE_STORAGE_KEY)).toEqual(
+      JSON.stringify(snapshot),
+    );
+    expect(expectOk(await repository.load())).toEqual({
+      snapshot,
+      migratedFromV1: false,
+    });
+  });
+
+  it("migra un blob v1 en memoria y no escribe hasta save", async () => {
+    const createId = sequentialIds();
+    const document = createDiagramDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const v1 = {
+      storageVersion: 1,
+      document: {
+        schemaVersion: 1,
+        id: document.id,
+        kind: "use-case",
+        metadata: document.metadata,
+        elements: document.elements,
+        relationships: document.relationships,
+      },
+      view: { x: 8, y: 16, zoom: 2 },
+    };
+    const raw = JSON.stringify(v1);
+    const storage = createMemoryStorage({
+      [WORKSPACE_STORAGE_KEY]: raw,
+    });
+    const repository = createLocalStorageDiagramRepository({ storage });
+
+    const loaded = expectOk(await repository.load());
+    expect(storage.getItem(WORKSPACE_STORAGE_KEY)).toBe(raw);
+    expect(loaded?.migratedFromV1).toBe(true);
+    expect(loaded?.snapshot.storageVersion).toBe(2);
+    expect(loaded?.snapshot.activeDocumentId).toBe(document.id);
+    expect(loaded?.snapshot.documents).toHaveLength(1);
+    expect(loaded?.snapshot.documents[0]?.document.schemaVersion).toBe(2);
+    expect(loaded?.snapshot.documents[0]?.view).toEqual(v1.view);
+
+    expectOk(await repository.save(loaded!.snapshot));
+    expect(storage.getItem(WORKSPACE_STORAGE_KEY)).toEqual(
+      JSON.stringify(loaded!.snapshot),
+    );
+    expect(
+      JSON.parse(storage.getItem(WORKSPACE_STORAGE_KEY) ?? ""),
+    ).not.toEqual(v1);
+  });
+
+  it("rechaza una lista vacía como PARSE_INVALID y conserva el blob", async () => {
+    const empty = JSON.stringify({
+      storageVersion: 2,
+      activeDocumentId: "00000000-0000-4000-8000-000000000001",
+      documents: [],
+    });
+    const storage = createMemoryStorage({
+      [WORKSPACE_STORAGE_KEY]: empty,
+    });
+    const repository = createLocalStorageDiagramRepository({ storage });
+
+    const result = await repository.load();
+    expect(result.ok).toBe(false);
+    if (result.ok) {
+      throw new Error("Expected parse error");
+    }
+    expect(result.error.code).toBe("PARSE_INVALID");
+    expect(storage.getItem(WORKSPACE_STORAGE_KEY)).toBe(empty);
   });
 });

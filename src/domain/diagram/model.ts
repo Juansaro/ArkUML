@@ -134,11 +134,30 @@ export type Viewport = {
   zoom: number;
 };
 
-export type WorkspaceSnapshot = {
-  storageVersion: 1;
+export type WorkspaceDocumentEntry = {
   document: DiagramDocument;
   view: Viewport;
 };
+
+export type WorkspaceSnapshotV1 = {
+  storageVersion: 1;
+  document: DiagramDocument | DiagramDocumentV1;
+  view: Viewport;
+};
+
+export type WorkspaceSnapshot = {
+  storageVersion: 2;
+  activeDocumentId: string;
+  documents: WorkspaceDocumentEntry[];
+};
+
+export function activeWorkspaceEntry(
+  snapshot: WorkspaceSnapshot,
+): WorkspaceDocumentEntry | undefined {
+  return snapshot.documents.find(
+    (entry) => entry.document.id === snapshot.activeDocumentId,
+  );
+}
 
 export function isLifeline(element: DiagramElement): element is Lifeline {
   return element.kind === "lifeline";

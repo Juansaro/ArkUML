@@ -25,7 +25,9 @@ export function SaveStatus() {
     session !== undefined &&
     saveStatus === "error" &&
     dialogMode !== "recovery" &&
-    !overwriteBlocked;
+    dialogMode !== "storage-upgrade" &&
+    !overwriteBlocked &&
+    session?.coordinator.isStorageUpgradePending() !== true;
   const errorMessage = saveStatus === "error" ? message : undefined;
   const label = STATUS_LABEL[saveStatus];
 
