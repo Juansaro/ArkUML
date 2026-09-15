@@ -2,9 +2,10 @@ import type {
   Anchor,
   DiagramDocument,
   DiagramElement,
-  RelationshipKind,
+  UseCaseRelationshipKind,
   Viewport,
 } from "../../domain/diagram/model.ts";
+import { isUseCaseRelationship } from "../../domain/diagram/model.ts";
 import {
   elementAccessibleName,
   elementTypeLabel,
@@ -178,7 +179,7 @@ export type InspectorView =
   | {
       status: "relationship";
       id: string;
-      kind: RelationshipKind;
+      kind: UseCaseRelationshipKind;
       typeLabel: string;
       sourceId: string;
       targetId: string;
@@ -225,6 +226,9 @@ export function selectInspectorView(state: EditorStore): InspectorView {
     (candidate) => candidate.id === relationshipId,
   );
   if (relationship === undefined) {
+    return EMPTY_INSPECTOR_VIEW;
+  }
+  if (!isUseCaseRelationship(relationship)) {
     return EMPTY_INSPECTOR_VIEW;
   }
   return {

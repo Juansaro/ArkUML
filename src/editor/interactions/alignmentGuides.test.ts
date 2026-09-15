@@ -232,7 +232,7 @@ describe("computeAlignmentGuidesForDocument", () => {
       "storageVersion",
       "view",
     ]);
-    expect(document.schemaVersion).toBe(1);
+    expect(document.schemaVersion).toBe(2);
     expect(
       parseWorkspaceSnapshot(JSON.parse(JSON.stringify(snapshot))),
     ).toEqual({

@@ -18,6 +18,7 @@ import {
   type ArkUmlDocumentFile,
 } from "../../../domain/diagram/documentFile.ts";
 import { createDiagramDocument } from "../../../domain/diagram/factories.ts";
+import { migrateDocument } from "../../../domain/diagram/migrate.ts";
 import { downloadBlob } from "../../../export/download.ts";
 import { useCompactLayout } from "../../a11y/useCompactLayout.ts";
 import { DiagramCanvas } from "../../canvas/DiagramCanvas.tsx";
@@ -245,8 +246,15 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   }
 
   function applyDocumentFile(file: ArkUmlDocumentFile) {
+    const migrated = migrateDocument(file.document);
+    if (!migrated.ok) {
+      pendingFileRef.current = undefined;
+      store.getState().setMessage(INVALID_DOCUMENT_FILE_MESSAGE);
+      store.getState().setDialogMode("invalid-document-file");
+      return;
+    }
     pendingFileRef.current = undefined;
-    store.getState().hydrateWorkspace(file.document, file.view);
+    store.getState().hydrateWorkspace(migrated.value, file.view);
     store.getState().setTool("select");
     store.getState().setDialogMode("none");
     setCanvasNonce((value) => value + 1);

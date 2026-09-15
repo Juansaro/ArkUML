@@ -12,6 +12,7 @@ import {
   type IdFactory,
 } from "../../../domain/diagram/factories.ts";
 import type {
+  DiagramDocumentV1,
   Geometry,
   Result,
   Viewport,
@@ -547,13 +548,25 @@ describe("EditorShell", () => {
       now: () => new Date("2026-09-09T10:00:00.000Z"),
     });
     const importedView: Viewport = { x: 48, y: -24, zoom: 1.25 };
-    const json = serializeDocumentFile(
-      {
-        ...imported,
-        metadata: { ...imported.metadata, title: "Importado" },
-      },
-      importedView,
-    );
+    const importedV1: DiagramDocumentV1 = {
+      schemaVersion: 1,
+      id: imported.id,
+      kind: "use-case",
+      metadata: { ...imported.metadata, title: "Importado" },
+      elements: imported.elements.filter(
+        (element): element is DiagramDocumentV1["elements"][number] =>
+          element.kind !== "lifeline",
+      ),
+      relationships: imported.relationships.filter(
+        (
+          relationship,
+        ): relationship is DiagramDocumentV1["relationships"][number] =>
+          relationship.kind === "association" ||
+          relationship.kind === "include" ||
+          relationship.kind === "extend",
+      ),
+    };
+    const json = serializeDocumentFile(importedV1, importedView);
 
     render(
       <EditorStoreProvider store={store}>

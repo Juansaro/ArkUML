@@ -8,8 +8,10 @@ import {
   parseDocumentFileText,
   serializeDocumentFile,
 } from "../../domain/diagram/documentFile.ts";
+import { migrateDocument } from "../../domain/diagram/migrate.ts";
 import type {
   DiagramDocument,
+  DiagramDocumentV1,
   Geometry,
   Result,
   Viewport,
@@ -498,15 +500,36 @@ describe("domain errors and hydrate", () => {
       createId: sequentialIds(90),
       now: () => CREATED_AT,
     });
-    const parsed = parseDocumentFileText(
-      serializeDocumentFile(imported, VIEWPORT),
-    );
+    const v1: DiagramDocumentV1 = {
+      schemaVersion: 1,
+      id: imported.id,
+      kind: "use-case",
+      metadata: imported.metadata,
+      elements: imported.elements.filter(
+        (element): element is DiagramDocumentV1["elements"][number] =>
+          element.kind !== "lifeline",
+      ),
+      relationships: imported.relationships.filter(
+        (
+          relationship,
+        ): relationship is DiagramDocumentV1["relationships"][number] =>
+          relationship.kind === "association" ||
+          relationship.kind === "include" ||
+          relationship.kind === "extend",
+      ),
+    };
+    const parsed = parseDocumentFileText(serializeDocumentFile(v1, VIEWPORT));
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) {
       return;
     }
+    const migrated = migrateDocument(parsed.value.document);
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) {
+      return;
+    }
 
-    store.getState().hydrateWorkspace(parsed.value.document, parsed.value.view);
+    store.getState().hydrateWorkspace(migrated.value, parsed.value.view);
 
     expect(store.getState().document).toEqual(imported);
     expect(store.getState().viewport).toEqual(VIEWPORT);

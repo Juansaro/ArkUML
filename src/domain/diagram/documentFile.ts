@@ -1,6 +1,11 @@
 import { z } from "zod";
-import type { DiagramDocument, Result, Viewport } from "./model.ts";
-import { diagramDocumentSchema, viewportSchema } from "./schema.ts";
+import type {
+  DiagramDocument,
+  DiagramDocumentV1,
+  Result,
+  Viewport,
+} from "./model.ts";
+import { diagramDocumentV1Schema, viewportSchema } from "./schema.ts";
 
 export const DOCUMENT_FILE_FORMAT = "arkuml-usecase-json" as const;
 export const DOCUMENT_FILE_FORMAT_VERSION = 1 as const;
@@ -22,7 +27,7 @@ const ILLEGAL_FILENAME_CHARS = new Set([
 export type ArkUmlDocumentFile = {
   format: typeof DOCUMENT_FILE_FORMAT;
   formatVersion: typeof DOCUMENT_FILE_FORMAT_VERSION;
-  document: DiagramDocument;
+  document: DiagramDocumentV1;
   view: Viewport;
 };
 
@@ -30,12 +35,12 @@ export const arkUmlDocumentFileSchema: z.ZodType<ArkUmlDocumentFile> =
   z.strictObject({
     format: z.literal(DOCUMENT_FILE_FORMAT),
     formatVersion: z.literal(DOCUMENT_FILE_FORMAT_VERSION),
-    document: diagramDocumentSchema,
+    document: diagramDocumentV1Schema,
     view: viewportSchema,
   });
 
 export function toDocumentFile(
-  document: DiagramDocument,
+  document: DiagramDocumentV1,
   view: Viewport,
 ): ArkUmlDocumentFile {
   return {
@@ -47,10 +52,15 @@ export function toDocumentFile(
 }
 
 export function serializeDocumentFile(
-  document: DiagramDocument,
+  document: DiagramDocumentV1 | DiagramDocument,
   view: Viewport,
 ): string {
-  return JSON.stringify(toDocumentFile(document, view));
+  return JSON.stringify({
+    format: DOCUMENT_FILE_FORMAT,
+    formatVersion: DOCUMENT_FILE_FORMAT_VERSION,
+    document,
+    view: { x: view.x, y: view.y, zoom: view.zoom },
+  });
 }
 
 export function parseDocumentFileText(

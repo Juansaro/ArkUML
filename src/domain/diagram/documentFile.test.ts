@@ -17,7 +17,7 @@ import {
   createWorkspaceSnapshot,
   type IdFactory,
 } from "./factories.ts";
-import type { DiagramDocument, Viewport, WorkspaceSnapshot } from "./model.ts";
+import type { DiagramDocument, DiagramDocumentV1, Viewport } from "./model.ts";
 
 function sequentialIds(start = 1): IdFactory {
   let next = start;
@@ -31,7 +31,32 @@ function sequentialIds(start = 1): IdFactory {
 const FIXED_NOW = new Date("2026-09-07T12:00:00.000Z");
 const VIEW: Viewport = { x: 40, y: -12, zoom: 1.25 };
 
-function sampleSnapshot(): WorkspaceSnapshot {
+function toV1(document: DiagramDocument): DiagramDocumentV1 {
+  return {
+    schemaVersion: 1,
+    id: document.id,
+    kind: "use-case",
+    metadata: document.metadata,
+    elements: document.elements.filter(
+      (element): element is DiagramDocumentV1["elements"][number] =>
+        element.kind !== "lifeline",
+    ),
+    relationships: document.relationships.filter(
+      (
+        relationship,
+      ): relationship is DiagramDocumentV1["relationships"][number] =>
+        relationship.kind === "association" ||
+        relationship.kind === "include" ||
+        relationship.kind === "extend",
+    ),
+  };
+}
+
+function sampleFileSnapshot(): {
+  storageVersion: 1;
+  document: DiagramDocumentV1;
+  view: Viewport;
+} {
   const createId = sequentialIds();
   const snapshot = createWorkspaceSnapshot({
     createId,
@@ -65,13 +90,15 @@ function sampleSnapshot(): WorkspaceSnapshot {
     { createId },
   );
 
+  const document = toV1({
+    ...snapshot.document,
+    elements: [...snapshot.document.elements, actor, useCase],
+    relationships: [relationship],
+  });
+
   return {
     ...snapshot,
-    document: {
-      ...snapshot.document,
-      elements: [...snapshot.document.elements, actor, useCase],
-      relationships: [relationship],
-    },
+    document,
     view: VIEW,
   };
 }
@@ -87,7 +114,7 @@ function expectRejected(input: unknown): void {
 
 describe("serializeDocumentFile / parseDocumentFile", () => {
   it("exporta el envelope público y hace round-trip", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     const json = serializeDocumentFile(snapshot.document, snapshot.view);
     const parsedJson: unknown = JSON.parse(json);
 
@@ -107,7 +134,7 @@ describe("serializeDocumentFile / parseDocumentFile", () => {
   });
 
   it("acepta un envelope válido construido a mano", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     const file = toDocumentFile(snapshot.document, snapshot.view);
     expect(parseDocumentFile(file)).toEqual({ ok: true, value: file });
   });
@@ -124,11 +151,11 @@ describe("rechazo del archivo de usuario", () => {
   });
 
   it("rechaza un WorkspaceSnapshot interno", () => {
-    expectRejected(sampleSnapshot());
+    expectRejected(sampleFileSnapshot());
   });
 
   it("rechaza format distinto de arkuml-usecase-json", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     expectRejected({
       ...toDocumentFile(snapshot.document, snapshot.view),
       format: "application/json",
@@ -136,7 +163,7 @@ describe("rechazo del archivo de usuario", () => {
   });
 
   it("rechaza formatVersion distinto de 1", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     expectRejected({
       ...toDocumentFile(snapshot.document, snapshot.view),
       formatVersion: 2,
@@ -144,7 +171,7 @@ describe("rechazo del archivo de usuario", () => {
   });
 
   it("rechaza schemaVersion distinto de 1", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     expectRejected({
       ...toDocumentFile(snapshot.document, snapshot.view),
       document: { ...snapshot.document, schemaVersion: 2 },
@@ -152,7 +179,7 @@ describe("rechazo del archivo de usuario", () => {
   });
 
   it("rechaza claves de más en el envelope", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     expectRejected({
       ...toDocumentFile(snapshot.document, snapshot.view),
       storageVersion: 1,
@@ -160,7 +187,7 @@ describe("rechazo del archivo de usuario", () => {
   });
 
   it("rechaza claves de más en el documento", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     expectRejected({
       ...toDocumentFile(snapshot.document, snapshot.view),
       document: { ...snapshot.document, selected: true },
@@ -168,7 +195,7 @@ describe("rechazo del archivo de usuario", () => {
   });
 
   it("rechaza un kind de documento desconocido", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     expectRejected({
       ...toDocumentFile(snapshot.document, snapshot.view),
       document: { ...snapshot.document, kind: "class" },
@@ -176,7 +203,7 @@ describe("rechazo del archivo de usuario", () => {
   });
 
   it("rechaza un kind de elemento desconocido", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     const [boundary, ...rest] = snapshot.document.elements;
     expectRejected({
       ...toDocumentFile(snapshot.document, snapshot.view),
@@ -188,7 +215,7 @@ describe("rechazo del archivo de usuario", () => {
   });
 
   it("rechaza un kind de relación desconocido", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     const [relationship] = snapshot.document.relationships;
     expectRejected({
       ...toDocumentFile(snapshot.document, snapshot.view),
@@ -226,7 +253,7 @@ describe("documentFileFilename", () => {
 
 describe("strictObject del envelope", () => {
   it("no admite historial ni selección en el archivo", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     expectRejected({
       ...toDocumentFile(snapshot.document, snapshot.view),
       history: [],
@@ -236,18 +263,18 @@ describe("strictObject del envelope", () => {
   });
 
   it("el payload del documento sigue siendo schema 1", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     const file = toDocumentFile(snapshot.document, VIEW);
     expect(file.document.schemaVersion).toBe(1);
     expect(file.document.kind).toBe("use-case");
-    const asDocument: DiagramDocument = file.document;
+    const asDocument: DiagramDocumentV1 = file.document;
     expect(asDocument.elements.length).toBeGreaterThan(0);
   });
 });
 
 describe("geometría del documento importado", () => {
   it("rechaza geometría no finita", () => {
-    const snapshot = structuredClone(sampleSnapshot());
+    const snapshot = structuredClone(sampleFileSnapshot());
     const boundary = snapshot.document.elements[0];
     if (boundary === undefined) {
       throw new Error("Falta el boundary");
@@ -257,7 +284,7 @@ describe("geometría del documento importado", () => {
   });
 
   it("rechaza claves extra en geometría", () => {
-    const snapshot = sampleSnapshot();
+    const snapshot = sampleFileSnapshot();
     expectRejected({
       ...toDocumentFile(snapshot.document, snapshot.view),
       document: {

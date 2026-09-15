@@ -28,6 +28,10 @@ const EXTEND_CYCLE_MESSAGE = "Participa en un ciclo de Extend.";
 export function collectWarnings(
   document: DiagramDocument,
 ): readonly DiagramWarning[] {
+  if (document.kind === "sequence") {
+    return [];
+  }
+
   const boundary = document.elements.find(
     (element): element is SystemBoundary => element.kind === "system-boundary",
   );

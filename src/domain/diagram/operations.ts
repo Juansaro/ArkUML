@@ -2,27 +2,37 @@ import {
   DUPLICATE_OFFSET,
   MIN_BOUNDARY_HEIGHT,
   MIN_BOUNDARY_WIDTH,
+  MIN_LIFELINE_HEIGHT,
+  MIN_LIFELINE_STEM_LENGTH,
+  MIN_LIFELINE_WIDTH,
   NAME_MAX_LENGTH,
   NAME_MIN_LENGTH,
 } from "./defaults.ts";
 import {
   createActor,
+  createLifeline as buildLifeline,
   createRelationship as buildRelationship,
+  createSequenceMessage as buildSequenceMessage,
   createSystemBoundary,
   createUseCase,
   type DiagramFactoryDeps,
 } from "./factories.ts";
 import {
   err,
+  isLifeline,
+  isSequenceMessage,
+  isUseCaseRelationship,
   ok,
   type Anchor,
   type DiagramDocument,
   type DiagramElement,
   type Geometry,
-  type RelationshipKind,
+  type Lifeline,
   type Result,
+  type SequenceMessageKind,
   type SystemBoundary,
   type UseCase,
+  type UseCaseRelationshipKind,
 } from "./model.ts";
 import { canConnect } from "./rules.ts";
 
@@ -39,34 +49,68 @@ export type ElementMove = {
   y: number;
 };
 
-export type CreateRelationshipInput = {
-  kind: RelationshipKind;
+export type CreateUseCaseRelationshipInput = {
+  kind: UseCaseRelationshipKind;
   sourceId: string;
   targetId: string;
   sourceAnchor: Anchor;
   targetAnchor: Anchor;
 };
 
-export type ReconnectRelationshipInput = CreateRelationshipInput & {
+export type CreateSequenceMessageInput = {
+  kind: SequenceMessageKind;
+  sourceId: string;
+  targetId: string;
+  name?: string;
+  y: number;
+};
+
+export type CreateRelationshipInput =
+  CreateUseCaseRelationshipInput | CreateSequenceMessageInput;
+
+export type ReconnectRelationshipInput = CreateUseCaseRelationshipInput & {
   id: string;
 };
 
 const INVALID_NAME_MESSAGE = "El nombre debe tener entre 1 y 80 caracteres.";
+const INVALID_MESSAGE_NAME_MESSAGE =
+  "El nombre debe tener como máximo 80 caracteres.";
 const BOUNDARY_EXISTS_MESSAGE = "El documento ya tiene un SystemBoundary.";
 const UNKNOWN_ELEMENT_MESSAGE = "No existe el elemento.";
 const INVALID_PARENT_MESSAGE =
   "El padre debe ser un SystemBoundary del documento.";
 const INVALID_GEOMETRY_MESSAGE = "La geometría debe usar números finitos.";
 const BOUNDARY_SIZE_MESSAGE = "El SystemBoundary debe medir al menos 320×240.";
+const LIFELINE_SIZE_MESSAGE =
+  "La cabeza del lifeline debe medir al menos 80×32.";
+const LIFELINE_STEM_MESSAGE = "stemLength debe ser al menos 80.";
+const MESSAGE_Y_MESSAGE =
+  "y no puede quedar dentro de la cabeza de origen ni de destino.";
 const UNKNOWN_RELATIONSHIP_MESSAGE = "No existe la relación.";
 const RESIZE_TARGET_MESSAGE = "Solo se puede redimensionar un SystemBoundary.";
 const REPARENT_TARGET_MESSAGE = "Solo se puede reparentar un caso de uso.";
+const SEQUENCE_ELEMENT_MESSAGE =
+  "El documento de secuencia no admite este elemento.";
+const USE_CASE_LIFELINE_MESSAGE =
+  "El documento de casos de uso no admite lifelines.";
+const RENAME_RELATIONSHIP_MESSAGE =
+  "Solo se puede renombrar un mensaje de secuencia.";
+const MOVE_MESSAGE_TARGET_MESSAGE =
+  "Solo se puede mover un mensaje de secuencia.";
+const RECONNECT_MESSAGE_MESSAGE =
+  "No se puede reconectar un mensaje de secuencia.";
+const SEQUENCE_STEM_TARGET_MESSAGE =
+  "Solo se puede ajustar el stem de un lifeline.";
 
 export function createElement(
   document: DiagramDocument,
   input: CreateElementInput,
   deps?: OperationDeps,
 ): Result<DiagramDocument> {
+  if (document.kind === "sequence") {
+    return err("UNKNOWN_KIND", SEQUENCE_ELEMENT_MESSAGE);
+  }
+
   const name = normalizeName(input.name);
   if (!name.ok) {
     return name;
@@ -138,6 +182,58 @@ export function createElement(
       elements: [
         ...document.elements,
         createUseCase({ name: name.value, geometry: input.geometry }, deps),
+      ],
+    },
+    deps,
+  );
+}
+
+export function createLifeline(
+  document: DiagramDocument,
+  input: { name: string; geometry?: Geometry; stemLength?: number },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  if (document.kind !== "sequence") {
+    return err("UNKNOWN_KIND", USE_CASE_LIFELINE_MESSAGE);
+  }
+
+  const name = normalizeName(input.name);
+  if (!name.ok) {
+    return name;
+  }
+
+  const geometry = input.geometry;
+  if (geometry !== undefined) {
+    if (!isFiniteGeometry(geometry)) {
+      return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+    }
+    const sizeError = lifelineHeadSizeError(geometry);
+    if (sizeError !== undefined) {
+      return sizeError;
+    }
+  }
+
+  const stemLength = input.stemLength;
+  if (stemLength !== undefined) {
+    const stemError = lifelineStemError(stemLength);
+    if (stemError !== undefined) {
+      return stemError;
+    }
+  }
+
+  return commit(
+    document,
+    {
+      elements: [
+        ...document.elements,
+        buildLifeline(
+          {
+            name: name.value,
+            ...(geometry === undefined ? {} : { geometry }),
+            ...(stemLength === undefined ? {} : { stemLength }),
+          },
+          deps,
+        ),
       ],
     },
     deps,
@@ -248,6 +344,39 @@ export function resizeBoundary(
           ? { ...candidate, geometry: copyGeometry(input.geometry) }
           : candidate,
       ),
+    },
+    deps,
+  );
+}
+
+export function resizeLifelineStem(
+  document: DiagramDocument,
+  input: { id: string; stemLength: number },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  const element = findElement(document, input.id);
+  if (element === undefined) {
+    return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
+  }
+  if (!isLifeline(element)) {
+    return err("INVALID_GEOMETRY", SEQUENCE_STEM_TARGET_MESSAGE);
+  }
+  const stemError = lifelineStemError(input.stemLength);
+  if (stemError !== undefined) {
+    return stemError;
+  }
+  if (element.stemLength === input.stemLength) {
+    return ok(document);
+  }
+
+  const next: Lifeline = {
+    ...element,
+    stemLength: input.stemLength,
+  };
+  return commit(
+    document,
+    {
+      elements: replaceElement(document.elements, next),
     },
     deps,
   );
@@ -387,7 +516,8 @@ export function deleteElements(
 
 export type ElementCopy =
   | { kind: "actor"; name: string; geometry: Geometry }
-  | { kind: "use-case"; name: string; geometry: Geometry; parentId?: string };
+  | { kind: "use-case"; name: string; geometry: Geometry; parentId?: string }
+  | { kind: "lifeline"; name: string; geometry: Geometry; stemLength: number };
 
 export function snapshotDuplicableElements(
   document: DiagramDocument,
@@ -415,6 +545,15 @@ export function snapshotDuplicableElements(
     const geometry = copyGeometry(element.geometry);
     if (element.kind === "actor") {
       copies.push({ kind: "actor", name: element.name, geometry });
+      continue;
+    }
+    if (element.kind === "lifeline") {
+      copies.push({
+        kind: "lifeline",
+        name: element.name,
+        geometry,
+        stemLength: element.stemLength,
+      });
       continue;
     }
 
@@ -446,6 +585,12 @@ export function insertElementCopies(
   const created: DiagramElement[] = [];
 
   for (const copy of copies) {
+    if (document.kind === "sequence" && copy.kind !== "lifeline") {
+      return err("UNKNOWN_KIND", SEQUENCE_ELEMENT_MESSAGE);
+    }
+    if (document.kind === "use-case" && copy.kind === "lifeline") {
+      return err("UNKNOWN_KIND", USE_CASE_LIFELINE_MESSAGE);
+    }
     if (!isFiniteGeometry(copy.geometry)) {
       return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
     }
@@ -453,6 +598,15 @@ export function insertElementCopies(
     const geometry = offsetGeometry(copy.geometry, offset);
     if (copy.kind === "actor") {
       created.push(createActor({ name: copy.name, geometry }, deps));
+      continue;
+    }
+    if (copy.kind === "lifeline") {
+      created.push(
+        buildLifeline(
+          { name: copy.name, geometry, stemLength: copy.stemLength },
+          deps,
+        ),
+      );
       continue;
     }
 
@@ -496,6 +650,10 @@ export function createRelationship(
   input: CreateRelationshipInput,
   deps?: OperationDeps,
 ): Result<DiagramDocument> {
+  if (isSequenceMessageInput(input)) {
+    return createSequenceRelationship(document, input, deps);
+  }
+
   const allowed = canConnect(document, input);
   if (!allowed.ok) {
     return allowed;
@@ -514,7 +672,7 @@ export function createRelationship(
         ...document.relationships,
         buildRelationship(
           {
-            kind: allowed.value.kind,
+            kind: input.kind,
             sourceId: allowed.value.sourceId,
             targetId: allowed.value.targetId,
             sourceAnchor,
@@ -538,6 +696,9 @@ export function reconnectRelationship(
   );
   if (existing === undefined) {
     return err("UNKNOWN_RELATIONSHIP", UNKNOWN_RELATIONSHIP_MESSAGE);
+  }
+  if (!isUseCaseRelationship(existing)) {
+    return err("INVALID_CONNECTION", RECONNECT_MESSAGE_MESSAGE);
   }
 
   const withoutCurrent: DiagramDocument = {
@@ -620,10 +781,148 @@ export function deleteRelationships(
   );
 }
 
+export function renameRelationship(
+  document: DiagramDocument,
+  relationshipId: string,
+  name: string,
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  const existing = document.relationships.find(
+    (relationship) => relationship.id === relationshipId,
+  );
+  if (existing === undefined) {
+    return err("UNKNOWN_RELATIONSHIP", UNKNOWN_RELATIONSHIP_MESSAGE);
+  }
+  if (!isSequenceMessage(existing)) {
+    return err("UNKNOWN_KIND", RENAME_RELATIONSHIP_MESSAGE);
+  }
+
+  const normalized = normalizeMessageName(name);
+  if (!normalized.ok) {
+    return normalized;
+  }
+  if (existing.name === normalized.value) {
+    return ok(document);
+  }
+
+  return commit(
+    document,
+    {
+      relationships: document.relationships.map((relationship) =>
+        relationship.id === relationshipId
+          ? { ...existing, name: normalized.value }
+          : relationship,
+      ),
+    },
+    deps,
+  );
+}
+
+export function moveMessage(
+  document: DiagramDocument,
+  input: { id: string; y: number },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  const existing = document.relationships.find(
+    (relationship) => relationship.id === input.id,
+  );
+  if (existing === undefined) {
+    return err("UNKNOWN_RELATIONSHIP", UNKNOWN_RELATIONSHIP_MESSAGE);
+  }
+  if (!isSequenceMessage(existing)) {
+    return err("INVALID_GEOMETRY", MOVE_MESSAGE_TARGET_MESSAGE);
+  }
+
+  const yError = messageYError(
+    document,
+    existing.sourceId,
+    existing.targetId,
+    input.y,
+  );
+  if (yError !== undefined) {
+    return yError;
+  }
+  if (existing.y === input.y) {
+    return ok(document);
+  }
+
+  return commit(
+    document,
+    {
+      relationships: document.relationships.map((relationship) =>
+        relationship.id === input.id
+          ? { ...existing, y: input.y }
+          : relationship,
+      ),
+    },
+    deps,
+  );
+}
+
+function createSequenceRelationship(
+  document: DiagramDocument,
+  input: CreateSequenceMessageInput,
+  deps: OperationDeps | undefined,
+): Result<DiagramDocument> {
+  const name = normalizeMessageName(input.name ?? "");
+  if (!name.ok) {
+    return name;
+  }
+
+  const allowed = canConnect(document, input);
+  if (!allowed.ok) {
+    return allowed;
+  }
+
+  const yError = messageYError(
+    document,
+    allowed.value.sourceId,
+    allowed.value.targetId,
+    input.y,
+  );
+  if (yError !== undefined) {
+    return yError;
+  }
+
+  return commit(
+    document,
+    {
+      relationships: [
+        ...document.relationships,
+        buildSequenceMessage(
+          {
+            kind: input.kind,
+            sourceId: allowed.value.sourceId,
+            targetId: allowed.value.targetId,
+            name: name.value,
+            y: input.y,
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
+}
+
+function isSequenceMessageInput(
+  input: CreateRelationshipInput,
+): input is CreateSequenceMessageInput {
+  return input.kind === "sync-message" || input.kind === "reply-message";
+}
+
 function normalizeName(name: string): Result<string> {
   const trimmed = name.trim();
   if (trimmed.length < NAME_MIN_LENGTH || trimmed.length > NAME_MAX_LENGTH) {
     return err("INVALID_NAME", INVALID_NAME_MESSAGE);
+  }
+  return ok(trimmed);
+}
+
+function normalizeMessageName(name: string): Result<string> {
+  const trimmed = name.trim();
+  if (trimmed.length > NAME_MAX_LENGTH) {
+    return err("INVALID_NAME", INVALID_MESSAGE_NAME_MESSAGE);
   }
   return ok(trimmed);
 }
@@ -745,6 +1044,59 @@ function boundarySizeError(geometry: Geometry): Result<never> | undefined {
     geometry.height < MIN_BOUNDARY_HEIGHT
   ) {
     return err("INVALID_GEOMETRY", BOUNDARY_SIZE_MESSAGE);
+  }
+  return undefined;
+}
+
+function lifelineHeadSizeError(geometry: Geometry): Result<never> | undefined {
+  if (
+    geometry.width < MIN_LIFELINE_WIDTH ||
+    geometry.height < MIN_LIFELINE_HEIGHT
+  ) {
+    return err("INVALID_GEOMETRY", LIFELINE_SIZE_MESSAGE);
+  }
+  return undefined;
+}
+
+function lifelineStemError(stemLength: number): Result<never> | undefined {
+  if (!Number.isFinite(stemLength)) {
+    return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+  }
+  if (stemLength < MIN_LIFELINE_STEM_LENGTH) {
+    return err("INVALID_GEOMETRY", LIFELINE_STEM_MESSAGE);
+  }
+  return undefined;
+}
+
+function messageYError(
+  document: DiagramDocument,
+  sourceId: string,
+  targetId: string,
+  y: number,
+): Result<never> | undefined {
+  if (!Number.isFinite(y)) {
+    return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+  }
+
+  const source = findElement(document, sourceId);
+  const target = findElement(document, targetId);
+  if (source === undefined || target === undefined) {
+    return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
+  }
+  if (!isLifeline(source) || !isLifeline(target)) {
+    return err("INVALID_CONNECTION", SEQUENCE_ELEMENT_MESSAGE);
+  }
+  if (
+    !isFiniteGeometry(source.geometry) ||
+    !isFiniteGeometry(target.geometry)
+  ) {
+    return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+  }
+
+  const sourceBottom = source.geometry.y + source.geometry.height;
+  const targetBottom = target.geometry.y + target.geometry.height;
+  if (y < sourceBottom || y < targetBottom) {
+    return err("INVALID_GEOMETRY", MESSAGE_Y_MESSAGE);
   }
   return undefined;
 }

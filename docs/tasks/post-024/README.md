@@ -30,8 +30,8 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 (W17-01, W17-13). TASK-037 congeló la Wave 2
 (**Intercambio y distribución sobre schema 1**). TASK-038–041 están
 `Hecha`. Wave 2 cerrada. TASK-042–044 son remediación 1.x. TASK-045
-congeló **Release 1** (biblioteca + secuencia, schema 2). El próximo
-contrato ejecutable es TASK-046.
+congeló **Release 1** (biblioteca + secuencia, schema 2). TASK-046 está
+`Hecha`. El próximo contrato ejecutable es TASK-047.
 
 ## Estado
 
@@ -58,7 +58,7 @@ contrato ejecutable es TASK-046.
 | 043 | [`13-editor/TASK-043.md`](13-editor/TASK-043.md) | Hecha | P0 | 042 | 2026-09-14: paleta Selección; crear relación vuelve a ese modo; click de nodo no conserva la relación |
 | 044 | [`13-editor/TASK-044.md`](13-editor/TASK-044.md) | Hecha | P1 | 043 | 2026-09-14: rieles `<<`/`>>` en paleta/inspector ≥1024; drawers compactos intactos |
 | 045 | [`11-governance/TASK-045.md`](11-governance/TASK-045.md) | Hecha | P0 | 036, 037, 044 | 2026-09-14: freeze **Release 1** (schema 2); ADR-007; `sequence-model.md`; TASK-046–050 |
-| 046 | [`12-uml/TASK-046.md`](12-uml/TASK-046.md) | Lista | P0 | 045 | Schema 2 + dominio de secuencia + `migrateDocument` |
+| 046 | [`12-uml/TASK-046.md`](12-uml/TASK-046.md) | Hecha | P0 | 045 | 2026-09-14: schema 2; `migrateDocument` 1→2; secuencia (lifeline, sync/reply); mezclas `UNKNOWN_KIND` |
 | 047 | [`14-persistence/TASK-047.md`](14-persistence/TASK-047.md) | Lista | P0 | 046 | Biblioteca `storageVersion` 2 (ADR-007) |
 | 048 | [`13-editor/TASK-048.md`](13-editor/TASK-048.md) | Lista | P0 | 047 | Combobox + búsqueda (FR-R02) |
 | 049 | [`13-editor/TASK-049.md`](13-editor/TASK-049.md) | Lista | P0 | 046, 048 | Módulo secuencia (FR-R03, FR-P07) |
@@ -128,8 +128,9 @@ no como 94 features pendientes.
 
 Wave 2 (**Intercambio y distribución sobre schema 1**) está `Hecha`
 (TASK-038–041). TASK-042–044 (remediación 1.x) están `Hecha`. TASK-045
-congeló **Release 1**. El próximo contrato es
-[TASK-046](12-uml/TASK-046.md) (schema 2 y dominio de secuencia).
+congeló **Release 1**. TASK-046 (schema 2 y dominio de secuencia) está
+`Hecha`. El próximo contrato es
+[TASK-047](14-persistence/TASK-047.md) (biblioteca `storageVersion` 2).
 W17-13 clases sigue bloqueada. IndexedDB: no elegido (condicional
 C-QUOTA). No implementar Generalization, PDF, temas, fragmentos de
 secuencia ni un class diagram en estos chats.

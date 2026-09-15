@@ -2,9 +2,9 @@ import type {
   Anchor,
   DiagramDocument,
   DiagramElement,
-  RelationshipKind,
   Result,
 } from "../../domain/diagram/model.ts";
+import { isUseCaseRelationship } from "../../domain/diagram/model.ts";
 import { canConnect } from "../../domain/diagram/rules.ts";
 import type {
   CreateRelationshipInput,
@@ -92,7 +92,7 @@ export function relationshipConnectionHelp(
   return undefined;
 }
 
-export function relationshipEndpointFieldLabels(kind: RelationshipKind): {
+export function relationshipEndpointFieldLabels(kind: RelationshipTool): {
   source: string;
   target: string;
 } {
@@ -266,7 +266,7 @@ export function commitRelationship(
   const created = result.value.relationships.find(
     (relationship) => !idsBefore.has(relationship.id),
   );
-  if (created !== undefined) {
+  if (created !== undefined && isUseCaseRelationship(created)) {
     store.getState().setSelection({
       elementIds: [],
       relationshipIds: [created.id],
@@ -295,7 +295,7 @@ export function commitReconnect(
     const updated = result.value.relationships.find(
       (relationship) => relationship.id === input.id,
     );
-    if (updated !== undefined) {
+    if (updated !== undefined && isUseCaseRelationship(updated)) {
       store
         .getState()
         .setMessage(updatedRelationshipAnnouncement(updated.kind));

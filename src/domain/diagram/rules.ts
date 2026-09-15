@@ -1,10 +1,12 @@
 import {
   err,
+  isLifeline,
   ok,
   type DiagramDocument,
   type DiagramElement,
   type RelationshipKind,
   type Result,
+  type SequenceMessageKind,
 } from "./model.ts";
 
 export const INCLUDE_STEREOTYPE = "«include»";
@@ -33,6 +35,11 @@ const ASSOCIATION_TYPES_MESSAGE =
   "Una asociación solo puede unir un actor y un caso de uso.";
 const INCLUDE_EXTEND_TYPES_MESSAGE =
   "Include y extend solo se permiten entre casos de uso.";
+const SEQUENCE_ENDPOINT_MESSAGE = "Un mensaje solo puede unir lifelines.";
+const SEQUENCE_KIND_MESSAGE =
+  "Este documento solo admite mensajes síncronos y reply.";
+const USE_CASE_KIND_MESSAGE =
+  "Este documento solo admite association, include y extend.";
 
 export function relationshipLabel(kind: RelationshipKind): string | undefined {
   if (kind === "include") {
@@ -48,6 +55,47 @@ export function canConnect(
   document: DiagramDocument,
   input: ConnectInput,
 ): Result<AllowedConnection> {
+  if (document.kind === "sequence") {
+    return canConnectSequence(document, input);
+  }
+  return canConnectUseCase(document, input);
+}
+
+function canConnectSequence(
+  document: DiagramDocument,
+  input: ConnectInput,
+): Result<AllowedConnection> {
+  if (!isSequenceMessageKind(input.kind)) {
+    return err("INVALID_CONNECTION", SEQUENCE_KIND_MESSAGE);
+  }
+
+  const byId = indexElements(document);
+  const source = byId.get(input.sourceId);
+  const target = byId.get(input.targetId);
+
+  if (source === undefined || target === undefined) {
+    return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
+  }
+
+  if (!isLifeline(source) || !isLifeline(target)) {
+    return err("INVALID_CONNECTION", SEQUENCE_ENDPOINT_MESSAGE);
+  }
+
+  return ok({
+    kind: input.kind,
+    sourceId: source.id,
+    targetId: target.id,
+  });
+}
+
+function canConnectUseCase(
+  document: DiagramDocument,
+  input: ConnectInput,
+): Result<AllowedConnection> {
+  if (!isUseCaseRelationshipKind(input.kind)) {
+    return err("INVALID_CONNECTION", USE_CASE_KIND_MESSAGE);
+  }
+
   const byId = indexElements(document);
   const source = byId.get(input.sourceId);
   const target = byId.get(input.targetId);
@@ -84,12 +132,24 @@ export function canConnect(
   });
 }
 
+function isSequenceMessageKind(
+  kind: RelationshipKind,
+): kind is SequenceMessageKind {
+  return kind === "sync-message" || kind === "reply-message";
+}
+
+function isUseCaseRelationshipKind(
+  kind: RelationshipKind,
+): kind is "association" | "include" | "extend" {
+  return kind === "association" || kind === "include" || kind === "extend";
+}
+
 function indexElements(document: DiagramDocument): Map<string, DiagramElement> {
   return new Map(document.elements.map((element) => [element.id, element]));
 }
 
 function connectionTypeError(
-  kind: RelationshipKind,
+  kind: "association" | "include" | "extend",
   source: DiagramElement,
   target: DiagramElement,
 ): Result<never> | undefined {
@@ -116,7 +176,7 @@ function connectionTypeError(
 }
 
 function normalizeEndpoints(
-  kind: RelationshipKind,
+  kind: "association" | "include" | "extend",
   source: DiagramElement,
   target: DiagramElement,
 ): { sourceId: string; targetId: string } {

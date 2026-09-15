@@ -7,7 +7,11 @@ import {
   createWorkspaceSnapshot,
   type IdFactory,
 } from "./factories.ts";
-import type { DiagramDocument, RelationshipKind, Result } from "./model.ts";
+import type {
+  DiagramDocument,
+  Result,
+  UseCaseRelationshipKind,
+} from "./model.ts";
 import { createRelationship as connect } from "./operations.ts";
 import { parseWorkspaceSnapshot } from "./schema.ts";
 import { collectWarnings } from "./validation.ts";
@@ -346,7 +350,7 @@ describe("collectWarnings", () => {
     if (!parsed.ok) {
       throw new Error("Expected ok parse");
     }
-    expect(parsed.value.document.schemaVersion).toBe(1);
+    expect(parsed.value.document.schemaVersion).toBe(2);
     expect(parsed.value.storageVersion).toBe(1);
     expect(parsed.value.document).not.toHaveProperty("warnings");
     expect(JSON.stringify(parsed.value)).not.toMatch(/INCLUDE_CYCLE/);
@@ -412,7 +416,7 @@ function namedUseCases(createId: IdFactory, names: readonly string[]) {
 function withEdges(
   document: DiagramDocument,
   createId: IdFactory,
-  edges: readonly [RelationshipKind, string, string][],
+  edges: readonly [UseCaseRelationshipKind, string, string][],
 ): DiagramDocument {
   return {
     ...document,
@@ -424,7 +428,11 @@ function withEdges(
   };
 }
 
-function edge(kind: RelationshipKind, sourceId: string, targetId: string) {
+function edge(
+  kind: UseCaseRelationshipKind,
+  sourceId: string,
+  targetId: string,
+) {
   return {
     kind,
     sourceId,

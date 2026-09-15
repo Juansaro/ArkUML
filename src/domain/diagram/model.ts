@@ -64,18 +64,43 @@ export type SystemBoundary = {
   geometry: Geometry;
 };
 
-export type DiagramElement = Actor | UseCase | SystemBoundary;
-
-export type RelationshipKind = "association" | "include" | "extend";
-
-export type Relationship = {
+export type Lifeline = {
   id: string;
-  kind: RelationshipKind;
+  kind: "lifeline";
+  name: string;
+  geometry: Geometry;
+  stemLength: number;
+};
+
+export type UseCaseElement = Actor | UseCase | SystemBoundary;
+
+export type DiagramElement = UseCaseElement | Lifeline;
+
+export type UseCaseRelationshipKind = "association" | "include" | "extend";
+
+export type SequenceMessageKind = "sync-message" | "reply-message";
+
+export type RelationshipKind = UseCaseRelationshipKind | SequenceMessageKind;
+
+export type UseCaseRelationship = {
+  id: string;
+  kind: UseCaseRelationshipKind;
   sourceId: string;
   targetId: string;
   sourceAnchor: Anchor;
   targetAnchor: Anchor;
 };
+
+export type SequenceMessage = {
+  id: string;
+  kind: SequenceMessageKind;
+  sourceId: string;
+  targetId: string;
+  name: string;
+  y: number;
+};
+
+export type Relationship = UseCaseRelationship | SequenceMessage;
 
 export type DocumentMetadata = {
   title: string;
@@ -83,10 +108,21 @@ export type DocumentMetadata = {
   updatedAt: string;
 };
 
-export type DiagramDocument = {
+export type DocumentKind = "use-case" | "sequence";
+
+export type DiagramDocumentV1 = {
   schemaVersion: 1;
   id: string;
   kind: "use-case";
+  metadata: DocumentMetadata;
+  elements: UseCaseElement[];
+  relationships: UseCaseRelationship[];
+};
+
+export type DiagramDocument = {
+  schemaVersion: 2;
+  id: string;
+  kind: DocumentKind;
   metadata: DocumentMetadata;
   elements: DiagramElement[];
   relationships: Relationship[];
@@ -103,3 +139,26 @@ export type WorkspaceSnapshot = {
   document: DiagramDocument;
   view: Viewport;
 };
+
+export function isLifeline(element: DiagramElement): element is Lifeline {
+  return element.kind === "lifeline";
+}
+
+export function isUseCaseRelationship(
+  relationship: Relationship,
+): relationship is UseCaseRelationship {
+  return (
+    relationship.kind === "association" ||
+    relationship.kind === "include" ||
+    relationship.kind === "extend"
+  );
+}
+
+export function isSequenceMessage(
+  relationship: Relationship,
+): relationship is SequenceMessage {
+  return (
+    relationship.kind === "sync-message" ||
+    relationship.kind === "reply-message"
+  );
+}

@@ -403,6 +403,14 @@ function cloneElementCopy(copy: ElementCopy): ElementCopy {
   if (copy.kind === "actor") {
     return { kind: "actor", name: copy.name, geometry };
   }
+  if (copy.kind === "lifeline") {
+    return {
+      kind: "lifeline",
+      name: copy.name,
+      geometry,
+      stemLength: copy.stemLength,
+    };
+  }
   if (copy.parentId !== undefined) {
     return {
       kind: "use-case",

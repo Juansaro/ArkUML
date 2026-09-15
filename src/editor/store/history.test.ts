@@ -12,7 +12,7 @@ import {
 
 function doc(id: string): DiagramDocument {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     id,
     kind: "use-case",
     metadata: {

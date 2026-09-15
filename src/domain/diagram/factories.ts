@@ -2,9 +2,13 @@ import {
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_BOUNDARY_NAME,
   DEFAULT_DOCUMENT_TITLE,
+  DEFAULT_LIFELINE_GEOMETRY,
+  DEFAULT_LIFELINE_STEM_LENGTH,
+  DEFAULT_SEQUENCE_DOCUMENT_TITLE,
   DEFAULT_VIEWPORT,
   DOCUMENT_KIND,
   SCHEMA_VERSION,
+  SEQUENCE_DOCUMENT_KIND,
   STORAGE_VERSION,
 } from "./defaults.ts";
 import type {
@@ -13,10 +17,13 @@ import type {
   DiagramDocument,
   DocumentMetadata,
   Geometry,
-  Relationship,
-  RelationshipKind,
+  Lifeline,
+  SequenceMessage,
+  SequenceMessageKind,
   SystemBoundary,
   UseCase,
+  UseCaseRelationship,
+  UseCaseRelationshipKind,
   Viewport,
   WorkspaceSnapshot,
 } from "./model.ts";
@@ -93,16 +100,33 @@ export function createSystemBoundary(
   };
 }
 
+export function createLifeline(
+  input: {
+    name: string;
+    geometry?: Geometry;
+    stemLength?: number;
+  },
+  deps?: DiagramFactoryDeps,
+): Lifeline {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "lifeline",
+    name: input.name.trim(),
+    geometry: copyGeometry(input.geometry ?? DEFAULT_LIFELINE_GEOMETRY),
+    stemLength: input.stemLength ?? DEFAULT_LIFELINE_STEM_LENGTH,
+  };
+}
+
 export function createRelationship(
   input: {
-    kind: RelationshipKind;
+    kind: UseCaseRelationshipKind;
     sourceId: string;
     targetId: string;
     sourceAnchor: Anchor;
     targetAnchor: Anchor;
   },
   deps?: DiagramFactoryDeps,
-): Relationship {
+): UseCaseRelationship {
   return {
     id: resolveCreateId(deps)(),
     kind: input.kind,
@@ -110,6 +134,26 @@ export function createRelationship(
     targetId: input.targetId,
     sourceAnchor: input.sourceAnchor,
     targetAnchor: input.targetAnchor,
+  };
+}
+
+export function createSequenceMessage(
+  input: {
+    kind: SequenceMessageKind;
+    sourceId: string;
+    targetId: string;
+    name?: string;
+    y: number;
+  },
+  deps?: DiagramFactoryDeps,
+): SequenceMessage {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: input.kind,
+    sourceId: input.sourceId,
+    targetId: input.targetId,
+    name: input.name?.trim() ?? "",
+    y: input.y,
   };
 }
 
@@ -154,6 +198,24 @@ export function createDiagramDocument(
         { createId },
       ),
     ],
+    relationships: [],
+  };
+}
+
+export function createEmptySequenceDocument(
+  deps?: DiagramFactoryDeps,
+): DiagramDocument {
+  const createId = resolveCreateId(deps);
+
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    id: createId(),
+    kind: SEQUENCE_DOCUMENT_KIND,
+    metadata: createDocumentMetadata(
+      { title: DEFAULT_SEQUENCE_DOCUMENT_TITLE },
+      deps,
+    ),
+    elements: [],
     relationships: [],
   };
 }

@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -82,15 +82,15 @@ rechaza kinds desconocidos y mezclas.
 
 ## Criterios de aceptación
 
-- [ ] `migrateDocument` `1→2` es puro, ordenado, y el resultado pasa Zod 2.
-- [ ] Documento `use-case` schema 2 conserva la matriz del MVP.
-- [ ] Documento `sequence`: create/rename/move/delete de lifelines y
+- [x] `migrateDocument` `1→2` es puro, ordenado, y el resultado pasa Zod 2.
+- [x] Documento `use-case` schema 2 conserva la matriz del MVP.
+- [x] Documento `sequence`: create/rename/move/delete de lifelines y
       mensajes; self-message permitido; cascada al borrar lifeline.
-- [ ] `y` inválido al crear mensaje → `INVALID_GEOMETRY` (o el código
+- [x] `y` inválido al crear mensaje → `INVALID_GEOMETRY` (o el código
       cerrado en `sequence-model.md`).
-- [ ] Mezclar actor en un documento secuencia (o lifeline en use-case)
+- [x] Mezclar actor en un documento secuencia (o lifeline en use-case)
       falla cerrado.
-- [ ] `src/domain` sin imports de UI. `npm run check` de esta TASK no
+- [x] `src/domain` sin imports de UI. `npm run check` de esta TASK no
       reformatea chrome ajeno; los tests nuevos pasan.
 
 ## Tests
@@ -123,4 +123,18 @@ actualizados si la unión quedó escrita.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-14. Dominio schema 2 + secuencia. `migrateDocument` `1→2` puro
+(copia casos de uso, escribe `schemaVersion: 2`, no altera elementos;
+encadenable; sin saltos). Parser 2 rechaza kinds desconocidos y mezclas
+(`UNKNOWN_KIND`). Matriz MVP de casos de uso intacta. Secuencia:
+lifeline / `sync-message` / `reply-message`; self-message; cascada al
+borrar lifeline; `y` en cabeza → `INVALID_GEOMETRY`.
+`createEmptySequenceDocument()`. Envelope de workspace y archivo 2.x
+no tocados (TASK-047/050). `documentFile` 1.x sigue parseando schema 1;
+importación en el shell migra `1→2`.
+
+Comandos: `npx vitest run src/domain` (121 tests) y `npx vitest run`
+(351). `npx tsc -b --pretty false`: app limpia; fallos previos en
+`e2e/document-file.spec.ts` (`canvas` no usada) y
+`e2e/include-extend.spec.ts` (`SVGPathElement` / `DOMPoint` sin DOM
+en `tsconfig.node.json`) — sucio anterior, no tocado (TASK-042).

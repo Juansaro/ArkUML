@@ -3,6 +3,8 @@ import { DEFAULT_BOUNDARY_GEOMETRY } from "./defaults.ts";
 import {
   createActor,
   createDiagramDocument,
+  createEmptySequenceDocument,
+  createLifeline,
   createRelationship,
   createUseCase,
   type IdFactory,
@@ -418,5 +420,47 @@ describe("canConnect matrix", () => {
         targetId: setup.actorA,
       }).ok,
     ).toBe(false);
+  });
+});
+
+describe("canConnect secuencia", () => {
+  it("acepta lifeline con lifeline incluido self, y rechaza association", () => {
+    const createId = sequentialIds();
+    const document = createEmptySequenceDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const a = createLifeline({ name: "A" }, { createId });
+    const b = createLifeline(
+      { name: "B", geometry: { x: 200, y: 0, width: 120, height: 40 } },
+      { createId },
+    );
+    const sequence: DiagramDocument = {
+      ...document,
+      elements: [a, b],
+    };
+
+    expect(
+      canConnect(sequence, {
+        kind: "sync-message",
+        sourceId: a.id,
+        targetId: b.id,
+      }).ok,
+    ).toBe(true);
+    expect(
+      canConnect(sequence, {
+        kind: "reply-message",
+        sourceId: a.id,
+        targetId: a.id,
+      }).ok,
+    ).toBe(true);
+    expectCode(
+      canConnect(sequence, {
+        kind: "association",
+        sourceId: a.id,
+        targetId: b.id,
+      }),
+      "INVALID_CONNECTION",
+    );
   });
 });

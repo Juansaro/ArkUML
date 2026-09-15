@@ -154,7 +154,7 @@ describe("DiagramCanvas", () => {
       "storageVersion",
       "view",
     ]);
-    expect(snapshot.document.schemaVersion).toBe(1);
+    expect(snapshot.document.schemaVersion).toBe(2);
     expect(
       parseWorkspaceSnapshot(JSON.parse(JSON.stringify(snapshot))),
     ).toEqual({

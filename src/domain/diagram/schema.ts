@@ -4,14 +4,16 @@ import {
   NAME_MAX_LENGTH,
   NAME_MIN_LENGTH,
   SCHEMA_VERSION,
+  SCHEMA_VERSION_V1,
   STORAGE_VERSION,
 } from "./defaults.ts";
-import type {
-  DiagramDocument,
-  DomainError,
-  DomainErrorCode,
-  Result,
-  WorkspaceSnapshot,
+import {
+  type DiagramDocument,
+  type DiagramDocumentV1,
+  type DomainError,
+  type DomainErrorCode,
+  type Result,
+  type WorkspaceSnapshot,
 } from "./model.ts";
 
 const uuidSchema = z.uuidv4({
@@ -34,6 +36,12 @@ const nameSchema = z.string({ error: "El nombre debe ser texto." }).refine(
   },
   { error: "El nombre debe tener entre 1 y 80 caracteres." },
 );
+
+const messageNameSchema = z
+  .string({ error: "El nombre debe ser texto." })
+  .refine((value) => value.trim().length <= NAME_MAX_LENGTH, {
+    error: "El nombre debe tener como máximo 80 caracteres.",
+  });
 
 const geometrySchema = z.strictObject({
   x: finiteNumberSchema,
@@ -68,13 +76,27 @@ const systemBoundarySchema = z.strictObject({
   geometry: geometrySchema,
 });
 
-const diagramElementSchema = z.discriminatedUnion(
+const lifelineSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("lifeline"),
+  name: nameSchema,
+  geometry: geometrySchema,
+  stemLength: finiteNumberSchema,
+});
+
+const useCaseElementSchema = z.discriminatedUnion(
   "kind",
   [actorSchema, useCaseSchema, systemBoundarySchema],
   { error: "Tipo de elemento no soportado." },
 );
 
-const relationshipSchema = z.strictObject({
+const diagramElementSchema = z.discriminatedUnion(
+  "kind",
+  [actorSchema, useCaseSchema, systemBoundarySchema, lifelineSchema],
+  { error: "Tipo de elemento no soportado." },
+);
+
+const useCaseRelationshipSchema = z.strictObject({
   id: uuidSchema,
   kind: z.enum(["association", "include", "extend"], {
     error: "Tipo de relación no soportado.",
@@ -85,16 +107,49 @@ const relationshipSchema = z.strictObject({
   targetAnchor: anchorSchema,
 });
 
+const sequenceMessageSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.enum(["sync-message", "reply-message"], {
+    error: "Tipo de relación no soportado.",
+  }),
+  sourceId: uuidSchema,
+  targetId: uuidSchema,
+  name: messageNameSchema,
+  y: finiteNumberSchema,
+});
+
+const relationshipSchema = z.union([
+  useCaseRelationshipSchema,
+  sequenceMessageSchema,
+]);
+
 const metadataSchema = z.strictObject({
   title: nameSchema,
   createdAt: isoTimestampSchema,
   updatedAt: isoTimestampSchema,
 });
 
+const USE_CASE_ELEMENT_KINDS = new Set([
+  "actor",
+  "use-case",
+  "system-boundary",
+]);
+const SEQUENCE_ELEMENT_KINDS = new Set(["lifeline"]);
+const USE_CASE_RELATIONSHIP_KINDS = new Set([
+  "association",
+  "include",
+  "extend",
+]);
+const SEQUENCE_RELATIONSHIP_KINDS = new Set(["sync-message", "reply-message"]);
+
 function addParentIssues(
-  document: DiagramDocument,
-  ctx: z.core.$RefinementCtx<DiagramDocument>,
+  document: DiagramDocument | DiagramDocumentV1,
+  ctx: z.core.$RefinementCtx<DiagramDocument | DiagramDocumentV1>,
 ): void {
+  if (document.kind !== "use-case") {
+    return;
+  }
+
   const elementsById = new Map(
     document.elements.map((element) => [element.id, element]),
   );
@@ -116,8 +171,8 @@ function addParentIssues(
 }
 
 function addUniqueIdIssues(
-  document: DiagramDocument,
-  ctx: z.core.$RefinementCtx<DiagramDocument>,
+  document: DiagramDocument | DiagramDocumentV1,
+  ctx: z.core.$RefinementCtx<DiagramDocument | DiagramDocumentV1>,
 ): void {
   const seen = new Set<string>();
 
@@ -146,13 +201,67 @@ function addUniqueIdIssues(
   });
 }
 
-export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
+function addKindCardinalityIssues(
+  document: DiagramDocument,
+  ctx: z.core.$RefinementCtx<DiagramDocument>,
+): void {
+  const allowedElements =
+    document.kind === "sequence"
+      ? SEQUENCE_ELEMENT_KINDS
+      : USE_CASE_ELEMENT_KINDS;
+  const allowedRelationships =
+    document.kind === "sequence"
+      ? SEQUENCE_RELATIONSHIP_KINDS
+      : USE_CASE_RELATIONSHIP_KINDS;
+
+  document.elements.forEach((element, index) => {
+    if (allowedElements.has(element.kind)) {
+      return;
+    }
+    ctx.addIssue({
+      code: "custom",
+      message: "Tipo de elemento no soportado en este documento.",
+      path: ["elements", index, "kind"],
+    });
+  });
+
+  document.relationships.forEach((relationship, index) => {
+    if (allowedRelationships.has(relationship.kind)) {
+      return;
+    }
+    ctx.addIssue({
+      code: "custom",
+      message: "Tipo de relación no soportado en este documento.",
+      path: ["relationships", index, "kind"],
+    });
+  });
+}
+
+export const diagramDocumentV1Schema: z.ZodType<DiagramDocumentV1> = z
   .strictObject({
-    schemaVersion: z.literal(SCHEMA_VERSION, {
+    schemaVersion: z.literal(SCHEMA_VERSION_V1, {
       error: "schemaVersion debe ser 1.",
     }),
     id: uuidSchema,
     kind: z.literal(DOCUMENT_KIND, {
+      error: "kind de documento no soportado.",
+    }),
+    metadata: metadataSchema,
+    elements: z.array(useCaseElementSchema),
+    relationships: z.array(useCaseRelationshipSchema),
+  })
+  .superRefine((document, ctx) => {
+    addUniqueIdIssues(document, ctx);
+    addParentIssues(document, ctx);
+  });
+
+export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
+  .strictObject({
+    schemaVersion: z.literal(SCHEMA_VERSION, {
+      error: "schemaVersion debe ser 2.",
+    }),
+    id: uuidSchema,
+    kind: z.enum(["use-case", "sequence"], {
       error: "kind de documento no soportado.",
     }),
     metadata: metadataSchema,
@@ -162,6 +271,7 @@ export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
   .superRefine((document, ctx) => {
     addUniqueIdIssues(document, ctx);
     addParentIssues(document, ctx);
+    addKindCardinalityIssues(document, ctx);
   });
 
 export const viewportSchema = z.strictObject({
@@ -226,7 +336,15 @@ function domainCodeForIssue(issue: z.core.$ZodIssue): DomainErrorCode {
     return "INVALID_PARENT";
   }
 
-  if (path.includes("geometry") || path[0] === "view") {
+  if (
+    path.includes("geometry") ||
+    path.includes("stemLength") ||
+    path[0] === "view"
+  ) {
+    return "INVALID_GEOMETRY";
+  }
+
+  if (path.includes("y") && path[0] === "relationships") {
     return "INVALID_GEOMETRY";
   }
 
@@ -262,6 +380,24 @@ function toDomainError(error: z.core.$ZodError): DomainError {
     code: domainCodeForIssue(issue),
     message: error.issues.map(formatIssue).join(" "),
   };
+}
+
+export function parseDiagramDocumentV1(
+  input: unknown,
+): Result<DiagramDocumentV1> {
+  const result = diagramDocumentV1Schema.safeParse(input);
+  if (result.success) {
+    return { ok: true, value: result.data };
+  }
+  return { ok: false, error: toDomainError(result.error) };
+}
+
+export function parseDiagramDocument(input: unknown): Result<DiagramDocument> {
+  const result = diagramDocumentSchema.safeParse(input);
+  if (result.success) {
+    return { ok: true, value: result.data };
+  }
+  return { ok: false, error: toDomainError(result.error) };
 }
 
 export function parseWorkspaceSnapshot(

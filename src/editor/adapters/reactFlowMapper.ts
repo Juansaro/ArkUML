@@ -5,6 +5,7 @@ import type {
   Relationship,
   RelationshipKind,
 } from "../../domain/diagram/model.ts";
+import { isUseCaseRelationship } from "../../domain/diagram/model.ts";
 import {
   elementAccessibleName,
   relationshipAccessibleName,
@@ -83,7 +84,7 @@ function projectDocument(document: DiagramDocument): ProjectionCache {
     return mapElement(element);
   });
 
-  const edges = document.relationships.map((relationship, index) => {
+  const edges = document.relationships.flatMap((relationship, index) => {
     const previousEdge = previous?.edges[index];
     const previousRelationship = previous?.document.relationships[index];
     if (
@@ -98,9 +99,10 @@ function projectDocument(document: DiagramDocument): ProjectionCache {
         nextElements.get(relationship.targetId),
       )
     ) {
-      return previousEdge;
+      return [previousEdge];
     }
-    return mapEdge(relationship, nextElements);
+    const mapped = mapEdge(relationship, nextElements);
+    return mapped === undefined ? [] : [mapped];
   });
 
   const next: ProjectionCache = { document, nodes, edges };
@@ -186,7 +188,11 @@ function mapElement(element: DiagramElement): DiagramNode {
 function mapEdge(
   relationship: Relationship,
   elementsById: ReadonlyMap<string, DiagramElement>,
-): DiagramEdge {
+): DiagramEdge | undefined {
+  if (!isUseCaseRelationship(relationship)) {
+    return undefined;
+  }
+
   return {
     id: relationship.id,
     type: relationship.kind,

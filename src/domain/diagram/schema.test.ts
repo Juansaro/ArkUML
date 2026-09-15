@@ -2,13 +2,16 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_BOUNDARY_GEOMETRY } from "./defaults.ts";
 import {
   createActor,
+  createEmptySequenceDocument,
+  createLifeline,
   createRelationship,
+  createSequenceMessage,
   createUseCase,
   createWorkspaceSnapshot,
   type IdFactory,
 } from "./factories.ts";
 import type { WorkspaceSnapshot } from "./model.ts";
-import { parseWorkspaceSnapshot } from "./schema.ts";
+import { parseDiagramDocument, parseWorkspaceSnapshot } from "./schema.ts";
 
 function sequentialIds(start = 1): IdFactory {
   let next = start;
@@ -294,5 +297,102 @@ describe("parseWorkspaceSnapshot", () => {
       "UNKNOWN_KIND",
       /Claves no permitidas.*measured/,
     );
+  });
+});
+
+describe("parser schema 2 — secuencia y mezclas", () => {
+  it("acepta un documento secuencia con lifeline y mensajes", () => {
+    const createId = sequentialIds();
+    const document = createEmptySequenceDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const a = createLifeline({ name: "A" }, { createId });
+    const b = createLifeline(
+      { name: "B", geometry: { x: 200, y: 0, width: 120, height: 40 } },
+      { createId },
+    );
+    const message = createSequenceMessage(
+      {
+        kind: "sync-message",
+        sourceId: a.id,
+        targetId: b.id,
+        name: "ping",
+        y: 80,
+      },
+      { createId },
+    );
+    const parsed = parseDiagramDocument({
+      ...document,
+      elements: [a, b],
+      relationships: [message],
+    });
+    expect(parsed.ok).toBe(true);
+  });
+
+  it("rechaza un actor en un documento secuencia", () => {
+    const createId = sequentialIds();
+    const document = createEmptySequenceDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const actor = createActor(
+      { name: "Usuario", geometry: { x: 0, y: 0, width: 48, height: 96 } },
+      { createId },
+    );
+    const parsed = parseDiagramDocument({
+      ...document,
+      elements: [actor],
+    });
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) {
+      return;
+    }
+    expect(parsed.error.code).toBe("UNKNOWN_KIND");
+  });
+
+  it("rechaza un lifeline en un documento de casos de uso", () => {
+    const snapshot = sampleSnapshot();
+    const lifeline = createLifeline(
+      { name: "L" },
+      { createId: sequentialIds(80) },
+    );
+    const parsed = parseDiagramDocument({
+      ...snapshot.document,
+      elements: [...snapshot.document.elements, lifeline],
+    });
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) {
+      return;
+    }
+    expect(parsed.error.code).toBe("UNKNOWN_KIND");
+  });
+
+  it("rechaza un kind de mensaje desconocido", () => {
+    const createId = sequentialIds();
+    const document = createEmptySequenceDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const a = createLifeline({ name: "A" }, { createId });
+    const parsed = parseDiagramDocument({
+      ...document,
+      elements: [a],
+      relationships: [
+        {
+          id: createId(),
+          kind: "async-message",
+          sourceId: a.id,
+          targetId: a.id,
+          name: "",
+          y: 80,
+        },
+      ],
+    });
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) {
+      return;
+    }
+    expect(parsed.error.code).toBe("UNKNOWN_KIND");
   });
 });

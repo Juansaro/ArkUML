@@ -4,13 +4,17 @@ El dominio es independiente de React, del DOM y de React Flow. Las pruebas de `s
 
 ## Tipos conceptuales
 
+Release 1 (schema **2**). El árbol v1 del MVP permanece el origen de
+`migrateDocument` `1→2`: misma forma de casos de uso, solo cambia
+`schemaVersion`.
+
 ```text
 WorkspaceSnapshot
-├─ storageVersion: 1
+├─ storageVersion: 1          // envelope 2: TASK-047
 ├─ document: DiagramDocument
-│  ├─ schemaVersion: 1
+│  ├─ schemaVersion: 2
 │  ├─ id: UUID
-│  ├─ kind: "use-case"
+│  ├─ kind: "use-case" | "sequence"
 │  ├─ metadata: { title, createdAt, updatedAt }
 │  ├─ elements: DiagramElement[]
 │  └─ relationships: Relationship[]
@@ -22,8 +26,11 @@ WorkspaceSnapshot
 - `Actor`: `{ id, kind: "actor", name, geometry }`
 - `UseCase`: `{ id, kind: "use-case", name, geometry, parentId? }`
 - `SystemBoundary`: `{ id, kind: "system-boundary", name, geometry }`
+- `Lifeline`: `{ id, kind: "lifeline", name, geometry, stemLength }` (solo `kind: "sequence"`)
 
-`Relationship`:
+`Relationship` es una unión discriminada por `kind`.
+
+Casos de uso (sin cambio semántico respecto al MVP):
 
 ```text
 {
@@ -35,6 +42,24 @@ WorkspaceSnapshot
   targetAnchor: "top" | "right" | "bottom" | "left"
 }
 ```
+
+Secuencia (forma cerrada en [sequence-model.md](sequence-model.md)):
+
+```text
+{
+  id,
+  kind: "sync-message" | "reply-message",
+  sourceId,
+  targetId,
+  name,   // 0–80 tras trim
+  y
+}
+```
+
+Un documento `use-case` no contiene lifelines ni mensajes. Un documento
+`sequence` no contiene actor, caso, boundary ni Association/Include/Extend.
+Violación al validar: `UNKNOWN_KIND` (el loader de persistencia sigue
+mapeando a `PARSE_INVALID`).
 
 `geometry`: `{ x, y, width, height }` con números finitos. Posición relativa al padre si `parentId` existe.
 
@@ -48,7 +73,7 @@ No se persisten: `selected`, `measured`, internals de React Flow, CSS, component
 ## Tiempos y títulos
 
 - `createdAt` / `updatedAt`: ISO-8601.
-- `metadata.title`: string 1–80 tras trim. Default: «Diagrama de casos de uso».
+- `metadata.title`: string 1–80 tras trim. Default casos de uso: «Diagrama de casos de uso». Default secuencia: «Diagrama de secuencia».
 - Nombres de elementos: 1–80 tras trim. Duplicados permitidos.
 
 ## Documento por defecto
@@ -61,6 +86,12 @@ Un documento nuevo contiene:
 4. Viewport `{ x: 0, y: 0, zoom: 1 }` en el snapshot.
 
 El boundary puede eliminarse. Mientras exista uno, la paleta no crea otro. Si no existe, se puede crear exactamente uno.
+
+Un documento secuencia nuevo (`createEmptySequenceDocument`) tiene título
+«Diagrama de secuencia», sin lifelines ni mensajes. Operaciones de
+secuencia: [sequence-model.md](sequence-model.md). `duplicateElements`
+sobre secuencia solo copia lifelines (offset 24, sin mensajes). Self-message
+está permitido; no aplica `SELF_RELATIONSHIP`.
 
 ## Operaciones puras
 
@@ -113,7 +144,12 @@ Usar estos códigos; no strings ad hoc:
 
 Zod 4 valida `WorkspaceSnapshot` al cargar. `z.strictObject` (o equivalente Zod 4) rechaza claves desconocidas en el documento. Datos corruptos **no** se migran en silencio y **no** se sobrescriben hasta que el usuario confirme «comenzar limpio».
 
-`schemaVersion` (documento) y `storageVersion` (snapshot) son independientes. El MVP solo acepta `1` / `1`. Una versión futura usará `migrate` explícito; la política está en [schema-evolution.md](schema-evolution.md).
+`schemaVersion` (documento) y `storageVersion` (snapshot) son independientes.
+El parser actual acepta `schemaVersion` `2`. `migrateDocument` encadena
+`1→2` (copia el documento de casos de uso, escribe `schemaVersion: 2`, no
+altera elementos) y valida con Zod del destino. Política:
+[schema-evolution.md](schema-evolution.md). `storageVersion` sigue en `1`
+hasta TASK-047.
 
 ## Serialización
 
@@ -122,6 +158,6 @@ Zod 4 valida `WorkspaceSnapshot` al cargar. `z.strictObject` (o equivalente Zod 
 ## Compatibilidad futura
 
 - `kind` en documento, elemento y relación permite otros diagramas sin romper el parser si se usa unión exhaustiva y `default` que falle con `UNKNOWN_KIND`. Política de extensión: [diagram-kinds.md](diagram-kinds.md). 1.x solo `use-case`. Release 1 (schema 2): `"use-case" | "sequence"`; forma de secuencia en [sequence-model.md](sequence-model.md). Clases (W17-13) siguen sin forma.
-- Workspace 2.0 (biblioteca): [ADR-007](../decisions/ADR-007-workspace-library.md). El árbol v1 de este archivo permanece el contrato del MVP hasta TASK-046/047.
+- Workspace 2.0 (biblioteca): [ADR-007](../decisions/ADR-007-workspace-library.md). El envelope de storage permanece v1 hasta TASK-047.
 - Generalization será un `kind` de relación nuevo, no un flag en Association.
 - Estilos visuales, si aparecen, vivirán en un mapa opcional versionado, no en el motor gráfico.

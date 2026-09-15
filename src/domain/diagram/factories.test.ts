@@ -3,11 +3,13 @@ import {
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_BOUNDARY_NAME,
   DEFAULT_DOCUMENT_TITLE,
+  DEFAULT_SEQUENCE_DOCUMENT_TITLE,
   DEFAULT_VIEWPORT,
 } from "./defaults.ts";
 import {
   createActor,
   createDiagramDocument,
+  createEmptySequenceDocument,
   createRelationship,
   createSystemBoundary,
   createUseCase,
@@ -39,7 +41,7 @@ describe("createWorkspaceSnapshot", () => {
     });
 
     expect(snapshot.storageVersion).toBe(1);
-    expect(snapshot.document.schemaVersion).toBe(1);
+    expect(snapshot.document.schemaVersion).toBe(2);
     expect(snapshot.document.kind).toBe("use-case");
     expect(snapshot.document.id).toBe("00000000-0000-4000-8000-000000000001");
     expect(snapshot.document.metadata).toEqual({
@@ -129,5 +131,21 @@ describe("element factories", () => {
     expect(useCase.parentId).toBe(boundary.id);
     expect(relationship.kind).toBe("association");
     expect(createDiagramDocument({ createId }).kind).toBe("use-case");
+  });
+});
+
+describe("createEmptySequenceDocument", () => {
+  it("crea un documento secuencia vacío con título por defecto", () => {
+    const createId = sequentialIds();
+    const document = createEmptySequenceDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+
+    expect(document.schemaVersion).toBe(2);
+    expect(document.kind).toBe("sequence");
+    expect(document.metadata.title).toBe(DEFAULT_SEQUENCE_DOCUMENT_TITLE);
+    expect(document.elements).toEqual([]);
+    expect(document.relationships).toEqual([]);
   });
 });
