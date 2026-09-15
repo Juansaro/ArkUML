@@ -82,13 +82,13 @@ describe("migrateWorkspace", () => {
     expect(result.snapshot.activeDocumentId).toBe(document.id);
     expect(result.snapshot.documents).toEqual([
       {
-        document: { ...document, schemaVersion: 2 },
+        document: { ...document, schemaVersion: 3 },
         view: VIEW,
       },
     ]);
   });
 
-  it("envuelve un workspace v1 cuyo documento ya es schema 2", () => {
+  it("envuelve un workspace v1 cuyo documento ya es schema 3", () => {
     const document = createDiagramDocument({
       createId: sequentialIds(),
       now: () => FIXED_NOW,
@@ -183,5 +183,31 @@ describe("migrateWorkspace", () => {
     const result = expectOk(migrateWorkspace(snapshot));
     expect(result.migratedFromV1).toBe(false);
     expect(result.snapshot).toEqual(snapshot);
+  });
+
+  it("sube documentos schema 2 de una biblioteca storageVersion 2 a schema 3", () => {
+    const snapshot = createWorkspaceSnapshot({
+      createId: sequentialIds(),
+      now: () => FIXED_NOW,
+    });
+    const entry = snapshot.documents[0];
+    if (entry === undefined) {
+      throw new Error("Falta la entrada");
+    }
+    const v2 = {
+      ...snapshot,
+      documents: [
+        {
+          document: { ...entry.document, schemaVersion: 2 as const },
+          view: entry.view,
+        },
+      ],
+    };
+    const result = expectOk(migrateWorkspace(v2));
+    expect(result.migratedFromV1).toBe(false);
+    expect(result.snapshot.documents[0]?.document.schemaVersion).toBe(3);
+    expect(result.snapshot.documents[0]?.document.elements).toEqual(
+      entry.document.elements,
+    );
   });
 });

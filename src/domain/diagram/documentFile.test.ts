@@ -4,6 +4,7 @@ import {
   DOCUMENT_FILE_FORMAT_V1,
   DOCUMENT_FILE_FORMAT_VERSION,
   DOCUMENT_FILE_FORMAT_VERSION_V1,
+  DOCUMENT_FILE_FORMAT_VERSION_V2,
   documentFileFilename,
   INVALID_DOCUMENT_FILE_MESSAGE,
   parseDocumentFile,
@@ -14,6 +15,7 @@ import {
 import { DEFAULT_BOUNDARY_GEOMETRY } from "./defaults.ts";
 import {
   createActor,
+  createEmptyClassDocument,
   createEmptySequenceDocument,
   createLifeline,
   createRelationship,
@@ -22,7 +24,12 @@ import {
   createWorkspaceSnapshot,
   type IdFactory,
 } from "./factories.ts";
-import type { DiagramDocument, DiagramDocumentV1, Viewport } from "./model.ts";
+import type {
+  DiagramDocument,
+  DiagramDocumentV1,
+  DiagramDocumentV2,
+  Viewport,
+} from "./model.ts";
 
 function sequentialIds(start = 1): IdFactory {
   let next = start;
@@ -35,6 +42,28 @@ function sequentialIds(start = 1): IdFactory {
 
 const FIXED_NOW = new Date("2026-09-07T12:00:00.000Z");
 const VIEW: Viewport = { x: 40, y: -12, zoom: 1.25 };
+
+function toV2(document: DiagramDocument): DiagramDocumentV2 {
+  return {
+    schemaVersion: 2,
+    id: document.id,
+    kind: document.kind === "sequence" ? "sequence" : "use-case",
+    metadata: document.metadata,
+    elements: document.elements.filter(
+      (element): element is DiagramDocumentV2["elements"][number] =>
+        element.kind !== "class",
+    ),
+    relationships: document.relationships.filter(
+      (
+        relationship,
+      ): relationship is DiagramDocumentV2["relationships"][number] =>
+        relationship.kind !== "class-association" &&
+        relationship.kind !== "aggregation" &&
+        relationship.kind !== "composition" &&
+        relationship.kind !== "generalization",
+    ),
+  };
+}
 
 function toV1(document: DiagramDocument): DiagramDocumentV1 {
   return {
@@ -166,7 +195,7 @@ function expectRejected(input: unknown): void {
 }
 
 describe("serializeDocumentFile / parseDocumentFile", () => {
-  it("exporta el envelope 2.x de un use-case y hace round-trip", () => {
+  it("exporta el envelope 3.x de un use-case y hace round-trip", () => {
     const document = sampleUseCaseDocument();
     const json = serializeDocumentFile(document, VIEW);
     const parsedJson: unknown = JSON.parse(json);
@@ -187,7 +216,7 @@ describe("serializeDocumentFile / parseDocumentFile", () => {
     });
   });
 
-  it("exporta el envelope 2.x de un secuencia y hace round-trip", () => {
+  it("exporta el envelope 3.x de un secuencia y hace round-trip", () => {
     const document = sampleSequenceDocument();
     const json = serializeDocumentFile(document, VIEW);
     const parsedJson: unknown = JSON.parse(json);
@@ -198,14 +227,6 @@ describe("serializeDocumentFile / parseDocumentFile", () => {
       document,
       view: VIEW,
     });
-    expect(parsedJson).toEqual(
-      expect.objectContaining({
-        document: expect.objectContaining({
-          schemaVersion: 2,
-          kind: "sequence",
-        }),
-      }),
-    );
 
     const parsed = parseDocumentFileText(json);
     expect(parsed).toEqual({
@@ -214,7 +235,7 @@ describe("serializeDocumentFile / parseDocumentFile", () => {
     });
   });
 
-  it("migra un envelope 1.x arkuml-usecase-json a schema 2 y lo añade como 2.x", () => {
+  it("migra un envelope 1.x arkuml-usecase-json a schema 3 y lo añade como 3.x", () => {
     const document = sampleUseCaseDocument();
     const v1 = toV1(document);
     const parsed = parseDocumentFile(legacyV1File(v1, VIEW));
@@ -225,11 +246,48 @@ describe("serializeDocumentFile / parseDocumentFile", () => {
     if (!parsed.ok) {
       return;
     }
-    expect(parsed.value.document.schemaVersion).toBe(2);
+    expect(parsed.value.document.schemaVersion).toBe(3);
     expect(parsed.value.format).toBe(DOCUMENT_FILE_FORMAT);
   });
 
-  it("acepta un envelope 2.x válido construido a mano", () => {
+  it("migra un envelope 2.x a schema 3 y lo añade como 3.x", () => {
+    const document = sampleUseCaseDocument();
+    const parsed = parseDocumentFile({
+      format: DOCUMENT_FILE_FORMAT,
+      formatVersion: DOCUMENT_FILE_FORMAT_VERSION_V2,
+      document: toV2(document),
+      view: VIEW,
+    });
+    expect(parsed).toEqual({
+      ok: true,
+      value: toDocumentFile(document, VIEW),
+    });
+    if (!parsed.ok) {
+      return;
+    }
+    expect(parsed.value.document.schemaVersion).toBe(3);
+    expect(parsed.value.formatVersion).toBe(DOCUMENT_FILE_FORMAT_VERSION);
+  });
+
+  it("hace round-trip de un documento class en formatVersion 3", () => {
+    const document = createEmptyClassDocument({
+      createId: sequentialIds(40),
+      now: () => FIXED_NOW,
+    });
+    const json = serializeDocumentFile(document, VIEW);
+    const parsed = parseDocumentFileText(json);
+    expect(parsed).toEqual({
+      ok: true,
+      value: toDocumentFile(document, VIEW),
+    });
+    if (!parsed.ok) {
+      return;
+    }
+    expect(parsed.value.document.kind).toBe("class");
+    expect(parsed.value.formatVersion).toBe(3);
+  });
+
+  it("acepta un envelope 3.x válido construido a mano", () => {
     const file = toDocumentFile(sampleUseCaseDocument(), VIEW);
     expect(parseDocumentFile(file)).toEqual({ ok: true, value: file });
   });
@@ -259,7 +317,7 @@ describe("rechazo del archivo de usuario", () => {
   it("rechaza formatVersion no soportado", () => {
     expectRejected({
       ...toDocumentFile(sampleUseCaseDocument(), VIEW),
-      formatVersion: 3,
+      formatVersion: 4,
     });
     expectRejected({
       ...legacyV1File(toV1(sampleUseCaseDocument()), VIEW),
@@ -271,7 +329,7 @@ describe("rechazo del archivo de usuario", () => {
     });
   });
 
-  it("rechaza schemaVersion 1 dentro del envelope 2.x", () => {
+  it("rechaza schemaVersion 1 dentro del envelope 3.x", () => {
     const document = sampleUseCaseDocument();
     expectRejected({
       ...toDocumentFile(document, VIEW),
@@ -306,7 +364,7 @@ describe("rechazo del archivo de usuario", () => {
     const document = sampleUseCaseDocument();
     expectRejected({
       ...toDocumentFile(document, VIEW),
-      document: { ...document, kind: "class" },
+      document: { ...document, kind: "component" },
     });
   });
 
@@ -334,7 +392,7 @@ describe("rechazo del archivo de usuario", () => {
     });
   });
 
-  it("rechaza mezcla de kinds en un use-case 2.x", () => {
+  it("rechaza mezcla de kinds en un use-case 3.x", () => {
     const document = sampleUseCaseDocument();
     const lifeline = createLifeline(
       { name: "Huésped" },
@@ -349,7 +407,7 @@ describe("rechazo del archivo de usuario", () => {
     });
   });
 
-  it("rechaza mezcla de kinds en un secuencia 2.x", () => {
+  it("rechaza mezcla de kinds en un secuencia 3.x", () => {
     const document = sampleSequenceDocument();
     const actor = createActor(
       { name: "Usuario", geometry: { x: 8, y: 40, width: 48, height: 96 } },
@@ -419,10 +477,10 @@ describe("strictObject del envelope", () => {
     });
   });
 
-  it("el payload del documento exportado es schema 2", () => {
+  it("el payload del documento exportado es schema 3", () => {
     const document = sampleUseCaseDocument();
     const file = toDocumentFile(document, VIEW);
-    expect(file.document.schemaVersion).toBe(2);
+    expect(file.document.schemaVersion).toBe(3);
     expect(file.document.kind).toBe("use-case");
     expect(file.format).toBe(DOCUMENT_FILE_FORMAT);
     expect(file.formatVersion).toBe(DOCUMENT_FILE_FORMAT_VERSION);

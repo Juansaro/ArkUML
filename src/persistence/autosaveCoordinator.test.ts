@@ -404,7 +404,7 @@ describe("createAutosaveCoordinator", () => {
     expect(loaded.ok).toBe(true);
     expect(coordinator.isStorageUpgradePending()).toBe(false);
     expect(store.getState().document.id).toBe(document.id);
-    expect(store.getState().document.schemaVersion).toBe(2);
+    expect(store.getState().document.schemaVersion).toBe(3);
     expect(store.getState().ui.dialogMode).toBe("none");
     expect(selectSaveStatus(store.getState())).toBe("saved");
 
@@ -418,7 +418,7 @@ describe("createAutosaveCoordinator", () => {
     expect(saved.value.storageVersion).toBe(2);
     expect(saved.value.activeDocumentId).toBe(document.id);
     expect(saved.value.documents).toHaveLength(1);
-    expect(saved.value.documents[0]?.document.schemaVersion).toBe(2);
+    expect(saved.value.documents[0]?.document.schemaVersion).toBe(3);
 
     expect(store.getState().addNewDocument("sequence")).toBe(true);
     const flushed = await coordinator.flush();

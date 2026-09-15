@@ -15,9 +15,9 @@ Tres números distintos. No se sustituyen entre sí.
 
 | Número | Identifica | Valor actual | Dónde vive |
 | --- | --- | --- | --- |
-| Producto | Promesa al usuario (SemVer de distribución) | MVP 1.x shipped; Release 1 = línea 2.0 (tag **2.0.0**) | `post-mvp-spec.md` |
-| `schemaVersion` | Forma de `DiagramDocument` | `1` en `src/` hasta TASK-046; Release 1 autoriza `2` | Documento |
-| `storageVersion` | Envelope de `WorkspaceSnapshot` | `1` en `src/` hasta TASK-047; Release 1 autoriza `2` | Snapshot de workspace |
+| Producto | Promesa al usuario (SemVer de distribución) | MVP 1.x; Release 1 = 2.0 (tag **2.0.0**); Release 2 = 3.0 (tag **3.0.0**) | `post-mvp-spec.md` |
+| `schemaVersion` | Forma de `DiagramDocument` | `2` en `src/` (Release 1). Release 2 autoriza `3` | Documento |
+| `storageVersion` | Envelope de `WorkspaceSnapshot` | `2` (ADR-007). Release 2 no lo sube | Snapshot de workspace |
 
 Clave de workspace: `arkuml:workspace:v1` ([ADR-004](../decisions/ADR-004-persistence.md)).
 En 1.x: un único documento. En 2.0: biblioteca
@@ -42,16 +42,16 @@ Sube **antes** de persistir cualquier cambio de forma de
 - Cambiar el tipo o el significado de un campo existente.
 - Nuevo `kind` de elemento o relación (Generalization, notas persistidas,
   extension points, actores con `kind` nuevo).
-- `document.kind` distinto de `use-case` (primer extra: secuencia,
-  W17-14; clases W17-13 siguen sin forma).
+- `document.kind` distinto de `use-case` (Release 1: secuencia,
+  W17-14; Release 2: FR-R04–R09, schema 3).
 - Geometría persistida que hoy no existe (waypoints en el documento).
 - Cambiar la matriz de conexión de forma incompatible.
 
 No sube por chrome, copy, avisos no persistidos ni export raster.
 
 Consecuencia de producto ([post-mvp-spec.md](../product/post-mvp-spec.md)):
-un bump de `schemaVersion` es línea **2.0**. La línea **1.x** permanece
-en schema `1`.
+un bump de `schemaVersion` a 2 es línea **2.0**; a 3 es línea **3.0**.
+La línea **1.x** permanece en schema `1`.
 
 `strictObject` impide el atajo «campo opcional con default en 1.x»: un
 documento con claves nuevas es rechazado por el parser 1.0. Esa adición
@@ -71,13 +71,14 @@ sea `1`. Un bump de envelope o bien migra in-place en esa clave, o bien
 usa clave nueva y borra la anterior **después** de un save exitoso. Nunca
 dos workspaces vivos.
 
-### Producto 1.x vs 2.0
+### Producto 1.x vs 2.0 vs 3.0
 
 | Línea | Persistencia |
 | --- | --- |
 | Patch `1.0.x` | Schema `1` / storage `1`. Defectos, copy, a11y ya especificada. |
 | Minor `1.x.0` | Schema `1`. FR aditivos **no persistidos** (chrome, warnings) o I/O de archivo sobre el mismo documento. `storageVersion` solo sube si cambia el envelope, no el documento. |
-| Major `2.0.0` | `schemaVersion >= 2` y `migrate()` implementado **antes** del primer save de esa forma. Release 1: schema `2`, storage `2`, kind `sequence`, biblioteca (ADR-007). |
+| Major `2.0.0` | `schemaVersion` 2, `storageVersion` 2. Release 1: secuencia, biblioteca. |
+| Major `3.0.0` | `schemaVersion` 3; `storageVersion` 2. Release 2: FR-R04–R09; `formatVersion` 3. `migrateDocument` `2→3` antes del primer save 3. |
 
 ## Qué es breaking
 
@@ -103,16 +104,15 @@ No es breaking:
 - Fallo de cuota o storage bloqueado: el trabajo sigue en memoria
   (NFR-07).
 
-Waypoints, estilos, extension points, notas, Generalization y el
-diagrama de clases **no** tienen forma persistida aquí. Secuencia
-Release 1 sí: [`sequence-model.md`](sequence-model.md). Cuando una TASK
-futura desbloquee el resto con fuente canónica, bumpan `schemaVersion` y
-siguen esta política. Inventar esa forma en una TASK de implementación
-es stop.
+Waypoints, estilos, extension points, notas y Generalization **en casos
+de uso** no tienen forma persistida aquí. Secuencia Release 1:
+[`sequence-model.md`](sequence-model.md). Release 2: cada kind tiene
+`*-model.md`. Inventar esa forma en una TASK de implementación es stop.
 
 FR-P07 (plataforma por `kind`) no bumpa solo: el host vacío no se
 persiste. El primer `document.kind` extra (secuencia) es el bump de
-Release 1, junto con la biblioteca (`storageVersion` 2).
+Release 1. Los seis de Release 2 son el bump a schema 3 (unión aditiva;
+ver [`diagram-kinds.md`](diagram-kinds.md)).
 
 ## Envelope público (FR-P03)
 
@@ -157,6 +157,24 @@ ArkUmlDocumentFile
   desconocido; `formatVersion` no soportado; claves de más; `kind`
   desconocido; secuencia dentro de `arkuml-usecase-json`.
 
+### 3.x (Release 2, `formatVersion` 3)
+
+```text
+ArkUmlDocumentFile
+├─ format: "arkuml-document-json"
+├─ formatVersion: 3
+├─ document: DiagramDocument   (schemaVersion 3, kind de la unión 3.0)
+└─ view: { x, y, zoom }
+```
+
+- Mismo `format` que 2.x; **no** se reutiliza `arkuml-usecase-json`.
+- La unión de `kind` crece con cada TASK de dominio. Un archivo 3.x con
+  un kind aún no en la unión es `UNKNOWN_KIND`.
+- Importar 1.x: `migrate` `1→2→3`. Importar 2.x: `2→3`. Añadir a la
+  biblioteca (ADR-007).
+- Implementación: TASK-052 introduce `formatVersion` 3 con `"class"`;
+  TASK-054+ solo amplían la unión.
+
 Implementación (TASK-050): `src/domain/diagram/documentFile.ts` serializa
 el envelope 2.x del documento activo y su viewport. Importar valida con
 Zod estricto, llama `migrateDocument` si el archivo es 1.x, y **añade**
@@ -170,8 +188,8 @@ ADR-007 para la cardinalidad de la lista).
 ## `migrate()`
 
 Infraestructura, no FR de usuario. Obligatorio **antes** del primer bump
-que se persista. Release 1 lo implementa (TASK-046 documento, TASK-047
-workspace). Hasta entonces el producto escribe schema `1`.
+que se persista. Release 1 implementa `1→2`. Release 2 implementa
+`2→3` (TASK-052). Encadenar: `1→2`, luego `2→3`. Nunca `3→1`.
 
 Orden:
 
@@ -218,8 +236,8 @@ El blob dañado no se pisa hasta que el usuario confirma «Comenzar
 limpio». Continuar en memoria no desbloquea el overwrite.
 
 Una app 1.0 que encuentra schema `2` en la clave lo trata como corrupto.
-Eso es correcto: 2.0 es major. No se parchea el parser 1.0 para aceptar
-claves futuras.
+Una app 2.0 que encuentra schema `3` igual. Eso es correcto: cada major
+es ruptura. No se parchea el parser anterior para aceptar claves futuras.
 
 ## Cuota y localStorage lleno
 
@@ -261,7 +279,8 @@ reabrir ADR-004 **antes** de código.
 | [ADR-003](../decisions/ADR-003-state-management.md) | **Sí, antes de código**, si el historial deja de ser RAM-only, se persiste, o undo debe restaurar viewport/selección. Addendum Release 1: pila por `document.id` (ADR-007). | Hoy: pila 100 en RAM; undo no restaura viewport. |
 | ADR-003 | **No** para FR-P01/P02/P04 ni para FR-P03. | Warnings, guías y minimap no entran al historial; el JSON de usuario no serializa la pila. |
 | [ADR-006](../decisions/ADR-006-export.md) | **No** en esta política. | Export de imagen. Se reabre solo por C-EXPORT o W15-01/02. |
-| ADR-001 / ADR-002 | **No** por persistencia. | Toolchain y motor gráfico. Waypoints persistidos (W13-01) exigirían addendum de ADR-002 **además** del bump de schema. W17-13 (clases) puede exigir addendum de ADR-002 y de marca **antes** de código; no se reabre en Release 1. |
+| ADR-001 / ADR-002 | **Addendum TASK-051** (proyección). **Sí, antes de código** si segundo motor o W13-01. | Release 2 no cambia de motor. |
+| [ADR-008](../decisions/ADR-008-chen-er.md) | Aceptada. | ER Chen; no Crow’s foot. |
 | ADR-004 | **No** para W17-01/14 como «lista = remoto». | Un documento, un kind. La lista es ADR-007. |
 
 Quien toque `src/persistence` por IndexedDB **para** y reabre ADR-004.
@@ -275,13 +294,13 @@ diagrama».
 | --- | --- |
 | W14-01 IndexedDB | Condicional C-QUOTA. Backend no elegido. ADR-004 primero. |
 | W14-02 Multi-documento | In-scope Release 1. ADR-007. No es IndexedDB. |
-| W14-03 JSON de usuario | Autorizado. 1.x: envelope arriba. 2.x: `arkuml-document-json`. |
-| W14-04 `migrate()` | Política publicada. Código autorizado en Release 1 (046/047). |
+| W14-03 JSON de usuario | Autorizado. 1.x / 2.x / 3.x: envelopes arriba. |
+| W14-04 `migrate()` | Política publicada. `1→2` en Release 1; `2→3` en TASK-052. |
 | W14-05 Sync multi-tab | Exclusión vigente. Last-write-wins. |
 
 ## Fuera de esta política
 
-- Código en `src/` (TASK-046, 047, 050).
-- Forma persistida de Generalization, notas, waypoints, estilos o clases.
-- Fragmentos de secuencia.
-- Reabrir ADR-002/006.
+- Código en `src/` (TASK-046, 047, 050, 052+).
+- Forma persistida fuera de cada `*-model.md`.
+- Fragmentos de secuencia, Crow’s foot, Interaction inline.
+- Reabrir ADR-006. Segundo motor (ADR-002).

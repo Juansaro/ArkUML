@@ -430,15 +430,17 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Paleta ≥1024 | Texto `<<` / `>>` | Ghost arriba a la derecha del título, sin fondo ni borde. Al ocultar, `>>` arriba del riel residual | Paleta | Cerrado: «Abrir paleta.» Abierto: «Cerrar paleta.» según `aria-expanded` | — |
 | Inspector ≥1024 | Texto `>>` / `<<` | Ghost arriba a la izquierda del título, sin fondo ni borde. Al ocultar, `<<` arriba del riel residual | Inspector | Cerrado: «Abrir inspector.» Abierto: «Cerrar inspector.» | — |
 
-No migrar a iconos: título del documento, tagline «Editor de diagramas de
-casos de uso», «Cerrar paneles», campos del inspector, acciones de diálogos.
+No migrar a iconos: título del documento, tagline **por kind** (abajo),
+«Cerrar paneles», campos del inspector, acciones de diálogos.
 Esos controles conservan etiqueta visible y no reciben la primitiva Tooltip.
 
 ## Composición por superficie
 
 - **Top bar:** grupo de marca (isotipo 24 px + `h1` «ArkUML», `display: flex`,
   `align-items: center`, gap `--space-2`) + **combobox del diagrama
-  activo** (Release 1; sustituye el título estático) + tagline.
+  activo** (Release 1; sustituye el título estático) + tagline **según
+  el `document.kind` activo** (Release 2; ya no es un literal global de
+  casos de uso).
   `.identity` conserva `flex: 1 1 12rem`, `min-width: 0`, gap `--space-3`
   entre el grupo de marca y el combobox. Las
   acciones son icon-only 32×32 px (`box-sizing: border-box`, padding
@@ -532,7 +534,9 @@ Chrome de FR-R02. No es notación UML. Sin paquete de combobox, sin
 - **Trigger:** superficie `--color-surface`, borde 1 px
   `--color-control-border`, radio `--radius-sm`, altura 32 px. Título del
   activo (`--font-size-sm`, ellipsis) y kind secundario en `--color-muted`
-  («Casos de uso» / «Secuencia»). Caret de texto `▾` (no SVG de kit),
+  («Casos de uso» / «Secuencia» / «Clases» / «Componentes» /
+  «Despliegue» / «Entidad relación» / «Actividades» /
+  «Interacción general» — solo kinds con módulo). Caret de texto `▾` (no SVG de kit),
   tinta `--color-muted`. Foco: anillo global `:focus-visible`.
 - **Listbox:** portal o anclado bajo el trigger, `z-index` del chrome
   (sobre el lienzo, bajo diálogos). Fondo `--color-surface`, borde 1 px
@@ -549,9 +553,29 @@ Chrome de FR-R02. No es notación UML. Sin paquete de combobox, sin
   fila, nombre «Eliminar diagrama». Indisponible (último): «El workspace
   debe conservar al menos un diagrama.» (`aria-disabled`, tooltip).
 
-Los iconos de paleta de secuencia (`lifeline`, `syncMessage`,
-`replyMessage`) usan el mismo contrato SVG que el resto de esta matriz.
-No hay kit externo. El combobox no ofrece un kind sin módulo.
+Los iconos de paleta de secuencia y de Release 2 se cierran en el
+addendum de cada TASK de chrome (053, 055, 057, 059, 061, 063), mismo
+contrato SVG. No hay kit externo. El combobox no ofrece un kind sin
+módulo.
+
+## Tagline por kind (Release 2)
+
+La línea de ayuda de la top bar deja de ser el literal único «Editor de
+diagramas de casos de uso». Se resuelve por el documento activo:
+
+| `document.kind` | Tagline |
+| --- | --- |
+| `use-case` | Editor de diagramas de casos de uso |
+| `sequence` | Editor de diagramas de secuencia |
+| `class` | Editor de diagramas de clases |
+| `component` | Editor de diagramas de componentes |
+| `deployment` | Editor de diagramas de despliegue |
+| `entity-relationship` | Editor de diagramas entidad-relación |
+| `activity` | Editor de diagramas de actividades |
+| `interaction-overview` | Editor de diagramas de interacción general |
+
+Copy, no icono. TASK-053 introduce el switch; los kinds posteriores
+reutilizan la tabla. No hay webfont ni color extra.
 
 ## Límites
 
@@ -559,6 +583,6 @@ Este sistema no incluye dark mode, temas, personalización, ilustraciones,
 animación de marca, elección de licencia, webfonts, librerías de iconos,
 cambios al documento persistidos desde este archivo ni alteraciones de
 exportación. Los assets de marca forman parte del chrome y se excluyen del
-raster del diagrama como el resto del shell. La notación UML del lienzo
-(casos de uso y, en Release 1, el subconjunto de secuencia) no se redefine
-aquí: `mvp-spec.md` y `sequence-model.md`.
+raster del diagrama como el resto del shell. La notación del lienzo no
+se redefine aquí: `mvp-spec.md`, `sequence-model.md` y los `*-model.md`
+de Release 2. ER Chen es ADR-008, no UML.

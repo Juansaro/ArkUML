@@ -4,7 +4,7 @@ Editor web de diagramas UML. El MVP cubre únicamente **diagramas de casos de us
 
 Este repositorio es el **release candidate** estático del MVP: un único documento local, sin backend ni autenticación. El código es **Open Source** bajo [Apache License 2.0](LICENSE).
 
-**Gate de salida (TASK-030, 2026-09-09): ship.** El RC es honesto y reproducible. Checklist firmado post-identidad (TASK-026). Licencia Apache-2.0 (TASK-027). Contratos reconciliados (TASK-028). Riesgos técnicos medidos o aceptados (TASK-029). La identidad (fase 9) no bloqueó el RC de TASK-020; TASK-024 está cerrada. El contrato Post-MVP está en [post-mvp-spec.md](docs/product/post-mvp-spec.md); la política de schema/storage en [schema-evolution.md](docs/architecture/schema-evolution.md). Wave 1 y Wave 2 están `Hecha`. **Release 1** (línea 2.0: biblioteca + secuencia) está congelada; el próximo contrato es [TASK-046](docs/tasks/post-024/12-uml/TASK-046.md).
+**Gate de salida (TASK-030, 2026-09-09): ship.** El RC es honesto y reproducible. Checklist firmado post-identidad (TASK-026). Licencia Apache-2.0 (TASK-027). Contratos reconciliados (TASK-028). Riesgos técnicos medidos o aceptados (TASK-029). La identidad (fase 9) no bloqueó el RC de TASK-020; TASK-024 está cerrada. El contrato Post-MVP está en [post-mvp-spec.md](docs/product/post-mvp-spec.md); la política de schema/storage en [schema-evolution.md](docs/architecture/schema-evolution.md). Wave 1 y Wave 2 están `Hecha`. **Release 1** (línea 2.0: biblioteca + secuencia) está `Hecha`. **Release 2** (línea 3.0: seis kinds) está congelada; el próximo contrato es [TASK-052](docs/tasks/post-024/12-uml/TASK-052.md).
 
 ## Requisitos
 
@@ -138,7 +138,7 @@ Las reglas de Cursor viven en [`.cursor/rules/`](.cursor/rules/). No hay `AGENTS
 
 ## Después del MVP (no implementado)
 
-Siguientes pasos explícitamente **fuera** de este RC: generalization, IndexedDB / multi-documento, otros tipos de diagrama, PDF/SVG persistido, edición táctil, a11y avanzada del lienzo, hosting y analytics.
+Siguientes pasos explícitamente **fuera** de este RC: IndexedDB, PDF/SVG persistido, edición táctil, a11y avanzada del lienzo, analytics. Los kinds de Release 2 están congelados en [TASK-051](docs/tasks/post-024/11-governance/TASK-051.md); el código empieza en [TASK-052](docs/tasks/post-024/12-uml/TASK-052.md).
 
 ## Implementación
 

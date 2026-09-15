@@ -40,6 +40,26 @@ Comerciales (GoJS desde ~USD 3 995 individual, yFiles cotizado, tldraw con cla
 
 SVG propio maximiza control y minimiza lock-in a costa de reconstruir el editor.
 
+## Addendum Release 2 (TASK-051)
+
+Vigente para la línea **3.0**. No cambia la decisión: el motor sigue
+siendo React Flow 12. No se abre X6 ni Konva.
+
+Los kinds de Release 2 se proyectan con **nodos y edges custom** en el
+adapter existente:
+
+- Clases: rectángulo de tres compartimentos.
+- Componentes: caja con icono de componente; ensamblaje = bola-zócalo
+  en el edge (no un clasificador Interface).
+- Despliegue: prisma 3D para `node`; icono de documento para `artifact`.
+- ER Chen: elipse (`attribute`) y rombo (`er-relationship`).
+- Actividades e interacción general: nodos de control (círculo, rombo,
+  barra) y marco `ref`.
+
+Eso no persiste `Node` / `Edge` de xyflow. Waypoints persistidos
+(W13-01) siguen exigiendo **otro** addendum más un bump de schema.
+W17-08/09 siguen solo por C-PERF.
+
 ## Consequences
 
 - Exportación raster **no** es nativa: depende de html-to-image y foreignObject (ADR-006). El riesgo se mitiga con spike en TASK-008.

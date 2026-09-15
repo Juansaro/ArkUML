@@ -32,7 +32,8 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 `Hecha`. Wave 2 cerrada. TASK-042–044 son remediación 1.x. TASK-045
 congeló **Release 1** (biblioteca + secuencia, schema 2). TASK-046,
 TASK-047, TASK-048, TASK-049 y TASK-050 están `Hecha`. Release 1
-cerrada a nivel de TASKs ejecutables.
+cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
+(seis kinds, schema 3). TASK-052 está `Hecha`.
 
 ## Estado
 
@@ -64,6 +65,19 @@ cerrada a nivel de TASKs ejecutables.
 | 048 | [`13-editor/TASK-048.md`](13-editor/TASK-048.md) | Hecha | P0 | 047 | 2026-09-14: combobox + búsqueda (FR-R02); Nuevo añade; borrar el último indisponible |
 | 049 | [`13-editor/TASK-049.md`](13-editor/TASK-049.md) | Hecha | P0 | 046, 048 | 2026-09-14: módulo secuencia (paleta, lienzo, inspector, Nuevo kind); use-case intacto |
 | 050 | [`14-persistence/TASK-050.md`](14-persistence/TASK-050.md) | Hecha | P0 | 049 | 2026-09-14: envelope `arkuml-document-json` v2; 1.x `arkuml-usecase-json` migra y añade |
+| 051 | [`11-governance/TASK-051.md`](11-governance/TASK-051.md) | Hecha | P0 | 045, 050 | 2026-09-14: freeze **Release 2** (schema 3); ADR-008; seis metamodelos; TASK-052–063 |
+| 052 | [`12-uml/TASK-052.md`](12-uml/TASK-052.md) | Hecha | P0 | 051 | 2026-09-14: schema 3; `migrateDocument` 2→3; clases (class, asociación/agregación/composición/generalization); mezclas `UNKNOWN_KIND`; envelope formatVersion 3 |
+| 053 | [`13-editor/TASK-053.md`](13-editor/TASK-053.md) | Lista | P0 | 052 | Módulo clases |
+| 054 | [`12-uml/TASK-054.md`](12-uml/TASK-054.md) | Lista | P0 | 053 | Dominio componentes |
+| 055 | [`13-editor/TASK-055.md`](13-editor/TASK-055.md) | Lista | P0 | 054 | Módulo componentes |
+| 056 | [`12-uml/TASK-056.md`](12-uml/TASK-056.md) | Lista | P0 | 055 | Dominio despliegue |
+| 057 | [`13-editor/TASK-057.md`](13-editor/TASK-057.md) | Lista | P0 | 056 | Módulo despliegue |
+| 058 | [`12-uml/TASK-058.md`](12-uml/TASK-058.md) | Lista | P0 | 057 | Dominio ER Chen |
+| 059 | [`13-editor/TASK-059.md`](13-editor/TASK-059.md) | Lista | P0 | 058 | Módulo ER |
+| 060 | [`12-uml/TASK-060.md`](12-uml/TASK-060.md) | Lista | P0 | 059 | Dominio actividades |
+| 061 | [`13-editor/TASK-061.md`](13-editor/TASK-061.md) | Lista | P0 | 060 | Módulo actividades |
+| 062 | [`12-uml/TASK-062.md`](12-uml/TASK-062.md) | Lista | P0 | 061 | Dominio interacción general |
+| 063 | [`13-editor/TASK-063.md`](13-editor/TASK-063.md) | Lista | P0 | 062 | Módulo interacción general |
 
 ## Fases y gates
 
@@ -88,29 +102,33 @@ TASK-033 congeló la Wave 1 y creó TASK-034 y TASK-035. TASK-036 publicó
 [`diagram-kinds.md`](../../architecture/diagram-kinds.md) y enmendó
 W17-01/W17-13. TASK-037 congeló la Wave 2 y creó TASK-038–041. TASK-045
 congeló **Release 1** (ADR-007, `sequence-model.md`, TASK-046–050).
+TASK-051 congeló **Release 2** (ADR-008, seis metamodelos, TASK-052–063).
 
-Gate (cumplido 2026-09-09; Release 1 2026-09-14):
+Gate (cumplido 2026-09-09; Release 1 2026-09-14; Release 2 2026-09-14):
 
 - FR, non-goals y versión objetivo aprobados (TASK-031).
 - Compatibilidad y migración publicadas (TASK-032).
 - Primera wave acotada: **Editor local sobre schema 1** (TASK-033).
 - Catálogo multi-kind: plataforma (W17-01) y clases (W17-13) (TASK-036);
-  Release 1 desbloquea W17-01 con secuencia (W17-14); clases siguen
-  bloqueadas.
+  Release 1 desbloquea W17-01 con secuencia (W17-14); Release 2
+  desbloquea W17-13 y W17-15–19.
 - Segunda wave acotada: **Intercambio y distribución sobre schema 1**
   (TASK-037).
 - Release 1 acotada: **Biblioteca local y diagrama de secuencia
   (schema 2)** (TASK-045).
+- Release 2 acotada: **Seis kinds (schema 3)** (TASK-051).
 
 ### Fases 12–17 — Catálogo salvo las waves congeladas
 
 El inventario completo vive en [roadmap.md](roadmap.md), alineado con
 [`post-mvp-spec.md`](../../product/post-mvp-spec.md). Existen
-`12-uml/` (TASK-034, TASK-046), `13-editor/` (TASK-035, TASK-039,
-TASK-042, TASK-043, TASK-044, TASK-048, TASK-049),
+`12-uml/` (TASK-034, TASK-046, TASK-052, TASK-054, TASK-056, TASK-058,
+TASK-060, TASK-062), `13-editor/` (TASK-035, TASK-039,
+TASK-042, TASK-043, TASK-044, TASK-048, TASK-049, TASK-053, TASK-055,
+TASK-057, TASK-059, TASK-061, TASK-063),
 `14-persistence/` (TASK-038, TASK-047, TASK-050), `15-export/` (TASK-040) y
-`17-ecosystem/` (TASK-041). No hay `16-a11y/`. W17-13 y el resto del
-catálogo no congelado no son ejecutables.
+`17-ecosystem/` (TASK-041). No hay `16-a11y/`. El resto del
+catálogo no congelado no es ejecutable.
 
 ## Registro de auditoría
 
@@ -127,13 +145,9 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-Wave 2 (**Intercambio y distribución sobre schema 1**) está `Hecha`
-(TASK-038–041). TASK-042–044 (remediación 1.x) están `Hecha`. TASK-045
-congeló **Release 1**. TASK-046 (schema 2 y dominio de secuencia),
-TASK-047 (biblioteca `storageVersion` 2) y TASK-048 (combobox + búsqueda)
-están `Hecha`. TASK-049 (módulo secuencia) y TASK-050 (envelope
-`arkuml-document-json` v2) están `Hecha`. Release 1 de TASKs
-ejecutables está cerrada.
-W17-13 clases sigue bloqueada. IndexedDB: no elegido (condicional
-C-QUOTA). No implementar Generalization, PDF, temas, fragmentos de
-secuencia ni un class diagram en estos chats.
+TASK-052 está `Hecha` (schema 3 + dominio de clases). El próximo contrato
+ejecutable es [TASK-053](13-editor/TASK-053.md) (módulo chrome de clases).
+Una TASK por chat. IndexedDB: no elegido (condicional C-QUOTA). No
+implementar Generalization en casos de uso, PDF, temas, fragmentos de
+secuencia, Crow’s foot, Interaction inline ni un kind cuyo dominio no
+esté `Hecha`.

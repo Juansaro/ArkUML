@@ -65,8 +65,8 @@ function typicalUseCaseV1(): DiagramDocumentV1 {
   };
 }
 
-describe("migrateDocument 1→2", () => {
-  it("copia un documento MVP, escribe schemaVersion 2 y no altera elementos", () => {
+describe("migrateDocument 1→2→3", () => {
+  it("copia un documento MVP, escribe schemaVersion 3 y no altera elementos", () => {
     const v1 = typicalUseCaseV1();
     const migrated = migrateDocument(v1);
 
@@ -75,7 +75,7 @@ describe("migrateDocument 1→2", () => {
       return;
     }
 
-    expect(migrated.value.schemaVersion).toBe(2);
+    expect(migrated.value.schemaVersion).toBe(3);
     expect(migrated.value.kind).toBe("use-case");
     expect(migrated.value.id).toBe(v1.id);
     expect(migrated.value.metadata).toEqual(v1.metadata);
@@ -88,7 +88,7 @@ describe("migrateDocument 1→2", () => {
     });
   });
 
-  it("encadena: un documento ya en 2 valida sin mutar", () => {
+  it("encadena: un documento ya en 3 valida sin mutar", () => {
     const first = migrateDocument(typicalUseCaseV1());
     expect(first.ok).toBe(true);
     if (!first.ok) {
@@ -100,7 +100,7 @@ describe("migrateDocument 1→2", () => {
 
   it("rechaza saltos y versiones desconocidas", () => {
     const v1 = typicalUseCaseV1();
-    const skipped = migrateDocument({ ...v1, schemaVersion: 3 });
+    const skipped = migrateDocument({ ...v1, schemaVersion: 4 });
     expect(skipped.ok).toBe(false);
     if (skipped.ok) {
       return;
@@ -128,5 +128,44 @@ describe("migrateDocument 1→2", () => {
     });
     const result = migrateDocument({ ...sequence, schemaVersion: 1 });
     expect(result.ok).toBe(false);
+  });
+});
+
+describe("migrateDocument 2→3", () => {
+  it("copia un use-case schema 2, escribe schemaVersion 3 y no altera elementos", () => {
+    const v1 = typicalUseCaseV1();
+    const v2 = {
+      ...v1,
+      schemaVersion: 2 as const,
+    };
+    const migrated = migrateDocument(v2);
+
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) {
+      return;
+    }
+    expect(migrated.value.schemaVersion).toBe(3);
+    expect(migrated.value.kind).toBe("use-case");
+    expect(migrated.value.elements).toEqual(v2.elements);
+    expect(migrated.value.relationships).toEqual(v2.relationships);
+    expect(parseDiagramDocument(migrated.value).ok).toBe(true);
+  });
+
+  it("migra un documento secuencia schema 2 sin alterar lifelines ni mensajes", () => {
+    const createId = sequentialIds();
+    const sequence = createEmptySequenceDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const v2 = { ...sequence, schemaVersion: 2 as const };
+    const migrated = migrateDocument(v2);
+    expect(migrated.ok).toBe(true);
+    if (!migrated.ok) {
+      return;
+    }
+    expect(migrated.value.schemaVersion).toBe(3);
+    expect(migrated.value.kind).toBe("sequence");
+    expect(migrated.value.elements).toEqual(sequence.elements);
+    expect(migrated.value.relationships).toEqual(sequence.relationships);
   });
 });

@@ -105,16 +105,17 @@ visibilidad de paleta e inspector.
 
 ## Evolución
 
-**Persistencia:** [schema-evolution.md](schema-evolution.md). Schema `1`
-cerrado en el árbol `src/` hasta TASK-046. Release 1 autoriza schema `2`
-/ storage `2` y `migrate()` `1→2`. IndexedDB solo con C-QUOTA y ADR-004
-reabierto. Biblioteca: [ADR-007](../decisions/ADR-007-workspace-library.md).
+**Persistencia:** [schema-evolution.md](schema-evolution.md). Schema `2`
+y storage `2` vigentes en `src/` (Release 1). Release 2 autoriza schema
+`3` (TASK-052+); `storageVersion` permanece 2. IndexedDB solo con
+C-QUOTA y ADR-004 reabierto. Biblioteca:
+[ADR-007](../decisions/ADR-007-workspace-library.md).
 `src/domain` no importa storage.
 
-**Tipos de diagrama:** [diagram-kinds.md](diagram-kinds.md). 1.x solo
-`use-case`. Release 1: secuencia ([sequence-model.md](sequence-model.md)).
-Extraer un registry/plugin **solo** cuando dos implementaciones revelen
-el contrato real (TASK-049 puede el mínimo). Clases siguen bloqueadas.
+**Tipos de diagrama:** [diagram-kinds.md](diagram-kinds.md). 1.x
+`use-case`. Release 1: secuencia. Release 2: FR-R04–R09 (metamodelos
+listados allí). El registry de TASK-049 se reutiliza. Host vacío
+prohibido.
 
 **Backend futuro:** sustituir la implementación de `DiagramRepository`. Auth, sync y multi-usuario no entran en dominio.
 
@@ -133,9 +134,9 @@ el contrato real (TASK-049 puede el mínimo). Clases siguen bloqueadas.
 ```text
 docs/
   product/{mvp-spec,brand-system,post-mvp-spec}.md
-  architecture/{architecture,domain-model,schema-evolution,diagram-kinds,sequence-model,rendering-and-export,testing-strategy,performance}.md
+  architecture/{architecture,domain-model,schema-evolution,diagram-kinds,sequence-model,class-model,component-model,deployment-model,er-model,activity-model,interaction-overview-model,rendering-and-export,testing-strategy,performance}.md
   operations/static-hosting.md
-  decisions/ADR-001 … ADR-007
+  decisions/ADR-001 … ADR-008
   development/{agent-workflow,task-template}.md
   tasks/TASK-001 … TASK-025
   tasks/post-024/          índice, registro, roadmap y TASK-026+

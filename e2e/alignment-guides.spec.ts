@@ -120,7 +120,7 @@ type SeedOptions = {
 
 async function seedWorkspace(page: Page, options: SeedOptions): Promise<void> {
   const document = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     id: "aaaaaaaa-0000-4000-8000-000000000000",
     kind: "use-case",
     metadata: {

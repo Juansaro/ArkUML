@@ -31,6 +31,10 @@ export function migrateWorkspace(
     if (recovered.ok) {
       return recovered;
     }
+    const upgraded = upgradeStorageV2Documents(input);
+    if (upgraded !== undefined) {
+      return upgraded;
+    }
     return persistenceErr("PARSE_INVALID", parsed.error.message);
   }
 
@@ -102,6 +106,66 @@ function wrapSingleDocumentWorkspace(
   }
 
   return persistenceOk({ snapshot: parsedV2.value, migratedFromV1: true });
+}
+
+function upgradeStorageV2Documents(
+  input: unknown,
+): PersistenceResult<MigratedWorkspace> | undefined {
+  if (typeof input !== "object" || input === null) {
+    return undefined;
+  }
+  const record = input as Record<string, unknown>;
+  if (!Array.isArray(record.documents)) {
+    return undefined;
+  }
+
+  const documents: WorkspaceSnapshot["documents"] = [];
+  for (const entry of record.documents) {
+    if (typeof entry !== "object" || entry === null) {
+      return undefined;
+    }
+    const row = entry as Record<string, unknown>;
+    const migrated = migrateDocument(row.document);
+    if (!migrated.ok) {
+      return persistenceErr("PARSE_INVALID", migrated.error.message);
+    }
+    if (
+      typeof row.view !== "object" ||
+      row.view === null ||
+      !("x" in row.view) ||
+      !("y" in row.view) ||
+      !("zoom" in row.view)
+    ) {
+      return undefined;
+    }
+    const view = row.view as Record<string, unknown>;
+    if (
+      typeof view.x !== "number" ||
+      typeof view.y !== "number" ||
+      typeof view.zoom !== "number"
+    ) {
+      return undefined;
+    }
+    documents.push({
+      document: migrated.value,
+      view: { x: view.x, y: view.y, zoom: view.zoom },
+    });
+  }
+
+  if (typeof record.activeDocumentId !== "string") {
+    return undefined;
+  }
+
+  const wrapped: WorkspaceSnapshot = {
+    storageVersion: STORAGE_VERSION,
+    activeDocumentId: record.activeDocumentId,
+    documents,
+  };
+  const parsed = parseWorkspaceSnapshot(wrapped);
+  if (!parsed.ok) {
+    return persistenceErr("PARSE_INVALID", parsed.error.message);
+  }
+  return persistenceOk({ snapshot: parsed.value, migratedFromV1: false });
 }
 
 function inspectStorageVersion(input: unknown): number | undefined {

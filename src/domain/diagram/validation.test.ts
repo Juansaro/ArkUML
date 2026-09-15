@@ -356,7 +356,7 @@ describe("collectWarnings", () => {
     if (!parsed.ok) {
       throw new Error("Expected ok parse");
     }
-    expect(parsed.value.documents[0]?.document.schemaVersion).toBe(2);
+    expect(parsed.value.documents[0]?.document.schemaVersion).toBe(3);
     expect(parsed.value.storageVersion).toBe(2);
     expect(parsed.value.documents[0]?.document).not.toHaveProperty("warnings");
     expect(JSON.stringify(parsed.value)).not.toMatch(/INCLUDE_CYCLE/);

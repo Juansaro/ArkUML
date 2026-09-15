@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_BOUNDARY_GEOMETRY } from "./defaults.ts";
 import {
   createActor,
+  createClass,
   createDiagramDocument,
+  createEmptyClassDocument,
   createEmptySequenceDocument,
   createLifeline,
   createRelationship,
@@ -459,6 +461,56 @@ describe("canConnect secuencia", () => {
         kind: "association",
         sourceId: a.id,
         targetId: b.id,
+      }),
+      "INVALID_CONNECTION",
+    );
+  });
+});
+
+describe("canConnect class", () => {
+  it("acepta clase con clase, rechaza self y kinds ajenos", () => {
+    const createId = sequentialIds();
+    const document = createEmptyClassDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const pedido = createClass({ name: "Pedido" }, { createId });
+    const cliente = createClass(
+      { name: "Cliente", geometry: { x: 200, y: 0, width: 180, height: 96 } },
+      { createId },
+    );
+    const classDocument: DiagramDocument = {
+      ...document,
+      elements: [pedido, cliente],
+    };
+
+    expect(
+      canConnect(classDocument, {
+        kind: "class-association",
+        sourceId: pedido.id,
+        targetId: cliente.id,
+      }).ok,
+    ).toBe(true);
+    expect(
+      canConnect(classDocument, {
+        kind: "generalization",
+        sourceId: pedido.id,
+        targetId: cliente.id,
+      }).ok,
+    ).toBe(true);
+    expectCode(
+      canConnect(classDocument, {
+        kind: "class-association",
+        sourceId: pedido.id,
+        targetId: pedido.id,
+      }),
+      "SELF_RELATIONSHIP",
+    );
+    expectCode(
+      canConnect(classDocument, {
+        kind: "association",
+        sourceId: pedido.id,
+        targetId: cliente.id,
       }),
       "INVALID_CONNECTION",
     );

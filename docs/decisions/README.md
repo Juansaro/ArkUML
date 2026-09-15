@@ -9,6 +9,7 @@
 | [ADR-005](ADR-005-testing.md) | Vitest + Testing Library + Playwright |
 | [ADR-006](ADR-006-export.md) | `html-to-image@1.11.11` → `toBlob` |
 | [ADR-007](ADR-007-workspace-library.md) | Biblioteca local (storage 2); Release 1 |
+| [ADR-008](ADR-008-chen-er.md) | ER Chen como `document.kind`; Release 2 |
 
 No reabrir estas decisiones en una TASK de implementación salvo el
 addendum que la TASK nombre.
@@ -17,7 +18,8 @@ El spike de export (TASK-008) **ya se ejecutó** (2026-09-07): Chromium y Firefo
 
 ## Reaperturas futuras (no en este árbol)
 
-ADR-007 está aceptada (TASK-045). La política de migraciones está en
+ADR-007 está aceptada (TASK-045). ADR-008 está aceptada (TASK-051). La
+política de migraciones está en
 [`schema-evolution.md`](../architecture/schema-evolution.md).
 
 | ADR | Abrir **antes** de tocar código si… | No abrir si… |
@@ -26,4 +28,5 @@ ADR-007 está aceptada (TASK-045). La política de migraciones está en
 | ADR-007 | (Cerrada.) Lista local | IndexedDB, sync, una clave por diagrama |
 | ADR-003 | El historial deja de ser RAM-only o undo restaura viewport/selección | Pila por `document.id` ya addendum; warnings, guías, minimap |
 | ADR-006 | C-EXPORT, fallo nuevo de raster, o W15-01/02 | Clipboard de imagen que reutiliza `exportDiagram` |
-| ADR-002 | Addendum cuando se desbloquee W17-13 (clases) o waypoints persistidos | Plataforma por `kind` (FR-P07) y secuencia (W17-14) sin segundo motor |
+| ADR-002 | Segundo motor (X6/Konva) o waypoints persistidos | Addendum TASK-051 (proyección custom). Plataforma por `kind` y kinds R2 sin segundo motor |
+| ADR-008 | (Cerrada.) ER Chen | Crow’s foot; class-as-ER |

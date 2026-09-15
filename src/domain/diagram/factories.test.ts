@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_BOUNDARY_NAME,
+  DEFAULT_CLASS_DOCUMENT_TITLE,
   DEFAULT_DOCUMENT_TITLE,
   DEFAULT_SEQUENCE_DOCUMENT_TITLE,
   DEFAULT_VIEWPORT,
@@ -9,6 +10,7 @@ import {
 import {
   createActor,
   createDiagramDocument,
+  createEmptyClassDocument,
   createEmptySequenceDocument,
   createRelationship,
   createSystemBoundary,
@@ -47,7 +49,7 @@ describe("createWorkspaceSnapshot", () => {
     expect(snapshot.storageVersion).toBe(2);
     expect(snapshot.activeDocumentId).toBe(entry.document.id);
     expect(snapshot.documents).toHaveLength(1);
-    expect(entry.document.schemaVersion).toBe(2);
+    expect(entry.document.schemaVersion).toBe(3);
     expect(entry.document.kind).toBe("use-case");
     expect(entry.document.id).toBe("00000000-0000-4000-8000-000000000001");
     expect(entry.document.metadata).toEqual({
@@ -149,9 +151,25 @@ describe("createEmptySequenceDocument", () => {
       now: () => FIXED_NOW,
     });
 
-    expect(document.schemaVersion).toBe(2);
+    expect(document.schemaVersion).toBe(3);
     expect(document.kind).toBe("sequence");
     expect(document.metadata.title).toBe(DEFAULT_SEQUENCE_DOCUMENT_TITLE);
+    expect(document.elements).toEqual([]);
+    expect(document.relationships).toEqual([]);
+  });
+});
+
+describe("createEmptyClassDocument", () => {
+  it("crea un documento class vacío con título por defecto", () => {
+    const createId = sequentialIds();
+    const document = createEmptyClassDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+
+    expect(document.schemaVersion).toBe(3);
+    expect(document.kind).toBe("class");
+    expect(document.metadata.title).toBe(DEFAULT_CLASS_DOCUMENT_TITLE);
     expect(document.elements).toEqual([]);
     expect(document.relationships).toEqual([]);
   });

@@ -218,5 +218,6 @@ Prioridades, FR futuros, non-goals y versionado:
 [post-mvp-spec.md](post-mvp-spec.md). No copia ni sustituye este
 documento. Un ítem allí no autoriza código hasta que una TASK de freeze
 congele una wave. El MVP (1.x) no gana un segundo tipo: solo casos de
-uso. El ciclo **Release 1** es línea **2.0** (biblioteca + secuencia) y
-vive en TASK-046–050; no se implementa desde este archivo.
+uso. El ciclo **Release 1** es línea **2.0** (biblioteca + secuencia;
+TASK-046–050). El ciclo **Release 2** es línea **3.0** (seis kinds;
+TASK-052–063). No se implementan desde este archivo.

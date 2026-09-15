@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_BOUNDARY_GEOMETRY } from "./defaults.ts";
 import {
   createActor,
+  createEmptyClassDocument,
   createEmptySequenceDocument,
   createLifeline,
   createRelationship,
@@ -146,7 +147,7 @@ describe("parseWorkspaceSnapshot", () => {
     expectRejected(
       withActiveDocument(snapshot, {
         ...activeDocument(snapshot),
-        kind: "class",
+        kind: "component",
       }),
       "UNKNOWN_KIND",
       /kind|no soportado/i,
@@ -422,6 +423,80 @@ describe("parser schema 2 — secuencia y mezclas", () => {
           y: 80,
         },
       ],
+    });
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) {
+      return;
+    }
+    expect(parsed.error.code).toBe("UNKNOWN_KIND");
+  });
+});
+
+describe("parser schema 3 — clases y kinds futuros", () => {
+  it("acepta un documento class vacío", () => {
+    const document = createEmptyClassDocument({
+      createId: sequentialIds(),
+      now: () => FIXED_NOW,
+    });
+    expect(parseDiagramDocument(document)).toEqual({
+      ok: true,
+      value: document,
+    });
+  });
+
+  it("rechaza un actor en un documento class", () => {
+    const createId = sequentialIds();
+    const document = createEmptyClassDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const actor = createActor(
+      { name: "Usuario", geometry: { x: 0, y: 0, width: 48, height: 96 } },
+      { createId },
+    );
+    const parsed = parseDiagramDocument({
+      ...document,
+      elements: [actor],
+    });
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) {
+      return;
+    }
+    expect(parsed.error.code).toBe("UNKNOWN_KIND");
+  });
+
+  it("rechaza kind class en un documento de casos de uso", () => {
+    const snapshot = sampleSnapshot();
+    const document = activeDocument(snapshot);
+    const parsed = parseDiagramDocument({
+      ...document,
+      elements: [
+        ...document.elements,
+        {
+          id: "00000000-0000-4000-8000-0000000000c1",
+          kind: "class",
+          name: "Pedido",
+          geometry: { x: 0, y: 0, width: 180, height: 96 },
+          attributes: [],
+          operations: [],
+        },
+      ],
+    });
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) {
+      return;
+    }
+    expect(parsed.error.code).toBe("UNKNOWN_KIND");
+  });
+
+  it("rechaza un kind de documento aún no en la unión", () => {
+    const document = createEmptyClassDocument({
+      createId: sequentialIds(),
+      now: () => FIXED_NOW,
+    });
+    const parsed = parseDiagramDocument({
+      ...document,
+      kind: "component",
     });
     expect(parsed.ok).toBe(false);
     if (parsed.ok) {

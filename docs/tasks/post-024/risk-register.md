@@ -78,7 +78,7 @@ código.
 
 | ID | Grupo | Fuente | Tratamiento |
 | --- | --- | --- | --- |
-| O-01 | Generalization, ciclos, extension points, notas, paquetes, multiplicidad, actores especializados y otros diagramas | `docs/product/mvp-spec.md:66-70,192-205`; `post-mvp-spec.md` (TASK-036, TASK-045) | Se parte: ciclos in-scope; secuencia (W17-14) y plataforma (W17-01) Release 1; Generalization/notas/extension points/actores más tarde y bloqueados; clases (W17-13) más tarde / bloqueada; paquetes y multiplicidad permanecen exclusión |
+| O-01 | Generalization, ciclos, extension points, notas, paquetes, multiplicidad, actores especializados y otros diagramas | `docs/product/mvp-spec.md:66-70,192-205`; `post-mvp-spec.md` (TASK-036, TASK-045, TASK-051) | Se parte: ciclos in-scope; secuencia y plataforma Release 1; clases/componentes/despliegue/ER Chen/actividades/IOD Release 2; Generalization/multiplicidad solo en clases/ER; paquetes y Crow’s foot exclusión; notas/extension points/actores más tarde |
 | O-02 | Minimap, auto-layout, alignment guides, waypoints y routing | `docs/product/mvp-spec.md:50,192-205` | Entra: guides P0 y minimap P1 in-scope; waypoints y auto-layout más tarde / bloqueados |
 | O-03 | Multi-documento, IndexedDB, sync y workspace remoto | `docs/product/mvp-spec.md:192-205`; `ADR-004`; `ADR-007` | Se parte: biblioteca local in-scope (W14-02, Release 1); IndexedDB condicional (C-QUOTA); sync y remoto permanecen exclusión |
 | O-04 | PDF, SVG persistido, clipboard e import/export JSON | `docs/product/mvp-spec.md:192-205` | Se parte: JSON de usuario y clipboard in-scope; SVG/PDF más tarde / bloqueados |
@@ -101,5 +101,6 @@ al catálogo (in-scope, más tarde o condicional) y otras permanecen
 exclusión vigente. TASK-036 (2026-09-09) revisó O-01: W17-01 y W17-13
 entran bloqueadas; paquetes y multiplicidad siguen exclusión. TASK-045
 (2026-09-14) revisó O-01/O-03: secuencia y biblioteca local entran a
-Release 1; clases e IndexedDB no. Eso no autoriza código fuera de
-TASK-046–050.
+Release 1; clases e IndexedDB no. TASK-051 (2026-09-14) revisó O-01:
+W17-13 y W17-15–19 entran a Release 2; Crow’s foot y paquetes no. Eso
+no autoriza código fuera de TASK-052–063.

@@ -6,9 +6,10 @@ entrada **no** es una TASK. La spec decide destinos y prioridades; este
 archivo proyecta el estado operativo. TASK-032 publicó
 [`schema-evolution.md`](../../architecture/schema-evolution.md).
 TASK-033 congeló la Wave 1; TASK-037 congeló la Wave 2; TASK-045 congeló
-**Release 1**. Solo esas filas tienen archivo TASK. TASK-036 revisó
-W17-01/W17-13; TASK-045 sustituye el primer tipo extra por secuencia
-(W17-14) y levanta W14-02.
+**Release 1**; TASK-051 congeló **Release 2**. Solo esas filas tienen
+archivo TASK. TASK-036 revisó W17-01/W17-13; TASK-045 sustituye el primer
+tipo extra por secuencia (W17-14) y levanta W14-02. TASK-051 desbloquea
+W17-13 y añade W17-15–19.
 
 ## Estados de catálogo
 
@@ -67,16 +68,32 @@ Nombre: **Biblioteca local y diagrama de secuencia (schema 2)**. Línea
 
 W17-13 sigue bloqueada. IndexedDB no. Sin `16-a11y/`.
 
+## Release 2 congelada (TASK-051, 2026-09-14)
+
+Nombre: **Seis kinds (schema 3)**. Línea **3.0**. ADR-008 (ER Chen).
+`storageVersion` 2.
+
+| ID catálogo | TASK | FR |
+| --- | --- | --- |
+| W17-13 | [`12-uml/TASK-052.md`](12-uml/TASK-052.md), [`13-editor/TASK-053.md`](13-editor/TASK-053.md) | FR-R04 |
+| W17-15 | [`12-uml/TASK-054.md`](12-uml/TASK-054.md), [`13-editor/TASK-055.md`](13-editor/TASK-055.md) | FR-R05 |
+| W17-16 | [`12-uml/TASK-056.md`](12-uml/TASK-056.md), [`13-editor/TASK-057.md`](13-editor/TASK-057.md) | FR-R06 |
+| W17-17 | [`12-uml/TASK-058.md`](12-uml/TASK-058.md), [`13-editor/TASK-059.md`](13-editor/TASK-059.md) | FR-R07 |
+| W17-18 | [`12-uml/TASK-060.md`](12-uml/TASK-060.md), [`13-editor/TASK-061.md`](13-editor/TASK-061.md) | FR-R08 |
+| W17-19 | [`12-uml/TASK-062.md`](12-uml/TASK-062.md), [`13-editor/TASK-063.md`](13-editor/TASK-063.md) | FR-R09 |
+
+IndexedDB no. Crow’s foot no. Fragmentos de secuencia no. Sin `16-a11y/`.
+
 ## Fase 12 — Semántica UML
 
 | ID | Capacidad | Pri. | Fuente | Valor / riesgo | Decisiones | ADR | Depende | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | W12-01 | Detección de ciclos Include/Extend (warning no bloqueante) | P0 | `post-mvp-spec.md` FR-P01; `mvp-spec.md` avisos geométricos | Consistencia; no rechaza documentos válidos hoy | Cerrada: aviso, no bloqueo | Addendum de códigos en `domain-model.md` (TASK-034); sin ADR | TASK-034 | Congelada |
-| W12-02 | Generalization | P1 | `mvp-spec.md`; `domain-model.md` (`kind` nuevo) | Relación nueva, no un flag | ¿Actores, casos o ambos? Matriz `canConnect`. Sin fuente UML acordada | Bump `schemaVersion` (`schema-evolution.md`) | TASK-033 | Bloqueada |
-| W12-03 | Extension points y condiciones de extend | P2 | `mvp-spec.md`; `TASK-014.md` | Semántica UML más rica | Forma persistida; copy de UI | Bump `schemaVersion` (`schema-evolution.md`) | W12-02 | Bloqueada |
-| W12-04 | Notas | P1 | `mvp-spec.md` | Comentario visual | ¿Elemento o overlay? Relación con export | Bump si se persisten (`schema-evolution.md`) | TASK-033 | Bloqueada |
+| W12-02 | Generalization | P1 | `class-model.md` (clases); `mvp-spec.md` (use-case) | Relación nueva | Cerrada en clases (TASK-051). Use-case: actores, casos o ambos — sin fuente | Bump schema 3 para clases | TASK-052 | Congelada (clases) / Bloqueada (use-case) |
+| W12-03 | Extension points y condiciones de extend | P2 | `mvp-spec.md`; `TASK-014.md` | Semántica UML más rica | Forma persistida; copy de UI | Bump `schemaVersion` | W12-02 use-case | Bloqueada |
+| W12-04 | Notas | P1 | `mvp-spec.md` | Comentario visual | ¿Elemento o overlay? Relación con export | Bump si se persisten | TASK-033 | Bloqueada |
 | W12-05 | Paquetes | — | `mvp-spec.md`; `post-mvp-spec.md` | Agrupación vs boundary único | No se reabre aquí | — | — | Fuera de alcance vigente |
-| W12-06 | Multiplicidad | — | `mvp-spec.md`; `post-mvp-spec.md` | Anotación de extremos | Sin fuente UML acordada | — | — | Fuera de alcance vigente |
+| W12-06 | Multiplicidad | — | `class-model.md`; `er-model.md`; `mvp-spec.md` | Extremos | Cerrada en clases y Chen. Use-case: exclusión | Schema 3 | TASK-052, TASK-058 | Congelada (clases/ER) / Fuera (use-case) |
 | W12-07 | Actores no humanos especializados | P2 | `mvp-spec.md` | Variante visual/semántica | ¿Nuevo `kind` o estereotipo? | Bump si hay `kind` nuevo (`schema-evolution.md`) | TASK-033 | Bloqueada |
 
 ## Fase 13 — Potencia del editor
@@ -122,8 +139,13 @@ W17-13 sigue bloqueada. IndexedDB no. Sin `16-a11y/`.
 | ID | Capacidad | Pri. | Fuente | Valor / riesgo | Decisiones | ADR | Depende | Estado |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | W17-01 | Plataforma por `document.kind` (FR-P07) | P0 | `post-mvp-spec.md` FR-P07; `diagram-kinds.md` | Shell por módulo; un documento, un kind | Cerrada: Release 1 acoplada a W17-14; host vacío prohibido | ADR-002 sin segundo motor | TASK-049 | Congelada |
-| W17-13 | Diagrama de clases | P1 | `post-mvp-spec.md`; `diagram-kinds.md` | Tipo extra posterior | Abiertas: fuente UML; forma persistida; iconos de marca. Ya no es el primer extra | Bump `schemaVersion`; posible addendum ADR-002 y `brand-system.md` | TASK-036 | Bloqueada |
+| W17-13 | Diagrama de clases | P0 | `class-model.md` (UML 2.5.1 §9/§11); `post-mvp-spec.md` FR-R04 | Tipo extra Release 2 | Cerrada: subconjunto de `class-model.md` | Schema `3`; addendum ADR-002 | TASK-052, TASK-053 | Congelada |
 | W17-14 | Diagrama de secuencia | P0 | `sequence-model.md` (UML 2.5.1 §17); `post-mvp-spec.md` FR-R03 | Primer `document.kind` ≠ `use-case` | Cerrada: lifeline + synchCall + reply; sin fragmentos | Schema `2`; addendum de marca en TASK-049 | TASK-046, TASK-049 | Congelada |
+| W17-15 | Diagrama de componentes | P0 | `component-model.md`; FR-R05 | Release 2 | Cerrada: component + usage + assembly | Schema `3` | TASK-054, TASK-055 | Congelada |
+| W17-16 | Diagrama de despliegue | P0 | `deployment-model.md`; FR-R06 | Release 2 | Cerrada: node + artifact + path + deploy | Schema `3` | TASK-056, TASK-057 | Congelada |
+| W17-17 | Entidad-relación Chen | P0 | `er-model.md`; ADR-008; FR-R07 | Release 2; no UML | Cerrada: Chen 1976; no Crow’s foot | Schema `3`; ADR-008 | TASK-058, TASK-059 | Congelada |
+| W17-18 | Diagrama de actividades | P0 | `activity-model.md`; FR-R08 | Release 2 | Cerrada: action + control nodes + control-flow | Schema `3` | TASK-060, TASK-061 | Congelada |
+| W17-19 | Interacción general | P0 | `interaction-overview-model.md` (UML 2.5.1 §17.9); FR-R09 | Release 2 | Cerrada: `ref` por nombre; sin inline | Schema `3` | TASK-062, TASK-063 | Congelada |
 | W17-02 | Backend / auth / collab | — | `mvp-spec.md`; `post-mvp-spec.md` | SaaS | Excluido | No en dominio | — | Fuera de alcance vigente |
 | W17-03 | Remote `DiagramRepository` | — | `architecture.md`; `post-mvp-spec.md` | Sync | Excluido | ADR-004 | W17-02 | Fuera de alcance vigente |
 | W17-04 | PWA | — | `mvp-spec.md`; `post-mvp-spec.md` | Offline/install | Excluido | — | — | Fuera de alcance vigente |
@@ -152,7 +174,12 @@ temas = no enmendar `brand-system.md`; IndexedDB no elegido
 (condicional). TASK-036 sustituyó «segundo tipo = exclusión» por
 plataforma + clases bloqueadas. TASK-045 cierra: multi-documento =
 biblioteca ADR-007; primer tipo extra = secuencia (W17-14); clases
-siguen bloqueadas; envelope 2.x = `arkuml-document-json`.
+siguen bloqueadas en R1; envelope 2.x = `arkuml-document-json`.
+
+Cerradas en TASK-051 (2026-09-14): Release 2 = línea 3.0 / schema 3;
+W17-13 y W17-15–19 in-scope; ER = Chen (ADR-008); IOD `ref` = string;
+W12-02/06 solo en clases/ER; unión Zod aditiva; envelope
+`formatVersion` 3.
 
 Cerradas en TASK-036
 ([`diagram-kinds.md`](../../architecture/diagram-kinds.md)): un
@@ -166,16 +193,16 @@ TASK-046/047.
 
 Siguen siendo stop conditions, no copy de implementación:
 
-- Generalization: actores, casos o ambos (hace falta fuente UML).
+- Generalization **en casos de uso**: actores, casos o ambos (hace falta
+  fuente UML). En clases está cerrada (`class-model.md`).
 - Forma persistida de waypoints, estilos y extension points: bump de
   schema; sigue stop por decisión de producto/UML, no por falta de
   política de migración.
 - PDF: SVG-print vs PNG embebido.
 - Notas: elemento vs overlay.
 - Actores no humanos: `kind` vs estereotipo.
-- Clases (W17-13): fuente UML citada y forma persistida. Sin eso no hay
-  FR.
 - Secuencia fuera de `sequence-model.md` (fragmentos, async, activaciones).
+- Crow’s foot; Interaction inline; `ref` a otro documento.
 
 ## Relación con el registro
 
@@ -183,5 +210,6 @@ Los grupos O-01–O-10 de [risk-register.md](risk-register.md) están
 dispuestos en `post-mvp-spec.md`. TASK-033 congeló W12-01 y W13-02.
 TASK-037 congeló W14-03, W13-03, W15-03 y W17-05. TASK-036 revisó
 W17-01/13. TASK-045 congeló W14-02, W14-04, W17-01, W17-14 y el envelope
-2.x. El resto permanece catálogo hasta un freeze posterior. Nadie pinta
-un class diagram «porque está en el backlog».
+2.x. TASK-051 congeló W17-13 y W17-15–19. El resto permanece catálogo
+hasta un freeze posterior. Nadie pinta un kind «porque está en el
+backlog» sin su TASK `Lista` y dependencias `Hecha`.

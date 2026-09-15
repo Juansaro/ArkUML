@@ -372,7 +372,9 @@ export function createEditorActions(
     setTool: (tool) => {
       const state = get();
       set({
-        tool: isToolForDocumentKind(state.document.kind, tool) ? tool : "select",
+        tool: isToolForDocumentKind(state.document.kind, tool)
+          ? tool
+          : "select",
       });
     },
     setHover: (hover) => {
@@ -639,6 +641,15 @@ function cloneElementCopy(copy: ElementCopy): ElementCopy {
       name: copy.name,
       geometry,
       stemLength: copy.stemLength,
+    };
+  }
+  if (copy.kind === "class") {
+    return {
+      kind: "class",
+      name: copy.name,
+      geometry,
+      attributes: [...copy.attributes],
+      operations: [...copy.operations],
     };
   }
   if (copy.parentId !== undefined) {

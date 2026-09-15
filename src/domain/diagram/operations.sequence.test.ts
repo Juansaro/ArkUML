@@ -91,9 +91,9 @@ function twoLifelines(createId: IdFactory = sequentialIds()): {
 }
 
 describe("createEmptySequenceDocument", () => {
-  it("crea un documento secuencia vacío schema 2", () => {
+  it("crea un documento secuencia vacío schema 3", () => {
     const document = emptySequence();
-    expect(document.schemaVersion).toBe(2);
+    expect(document.schemaVersion).toBe(3);
     expect(document.kind).toBe("sequence");
     expect(document.metadata.title).toBe(DEFAULT_SEQUENCE_DOCUMENT_TITLE);
     expect(document.elements).toEqual([]);
@@ -348,7 +348,7 @@ describe("operaciones de secuencia", () => {
     );
 
     const useCaseDocument = {
-      schemaVersion: 2 as const,
+      schemaVersion: 3 as const,
       id: "00000000-0000-4000-8000-000000000001",
       kind: "use-case" as const,
       metadata: {

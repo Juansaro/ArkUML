@@ -1,7 +1,9 @@
 import {
   err,
   isLifeline,
+  isUmlClass,
   ok,
+  type ClassRelationshipKind,
   type DiagramDocument,
   type DiagramElement,
   type RelationshipKind,
@@ -40,6 +42,9 @@ const SEQUENCE_KIND_MESSAGE =
   "Este documento solo admite mensajes síncronos y reply.";
 const USE_CASE_KIND_MESSAGE =
   "Este documento solo admite association, include y extend.";
+const CLASS_KIND_MESSAGE =
+  "Este documento solo admite asociación, agregación, composición y generalization.";
+const CLASS_ENDPOINT_MESSAGE = "Una relación de clases solo puede unir clases.";
 
 export function relationshipLabel(kind: RelationshipKind): string | undefined {
   if (kind === "include") {
@@ -57,6 +62,9 @@ export function canConnect(
 ): Result<AllowedConnection> {
   if (document.kind === "sequence") {
     return canConnectSequence(document, input);
+  }
+  if (document.kind === "class") {
+    return canConnectClass(document, input);
   }
   return canConnectUseCase(document, input);
 }
@@ -79,6 +87,37 @@ function canConnectSequence(
 
   if (!isLifeline(source) || !isLifeline(target)) {
     return err("INVALID_CONNECTION", SEQUENCE_ENDPOINT_MESSAGE);
+  }
+
+  return ok({
+    kind: input.kind,
+    sourceId: source.id,
+    targetId: target.id,
+  });
+}
+
+function canConnectClass(
+  document: DiagramDocument,
+  input: ConnectInput,
+): Result<AllowedConnection> {
+  if (!isClassRelationshipKind(input.kind)) {
+    return err("INVALID_CONNECTION", CLASS_KIND_MESSAGE);
+  }
+
+  const byId = indexElements(document);
+  const source = byId.get(input.sourceId);
+  const target = byId.get(input.targetId);
+
+  if (source === undefined || target === undefined) {
+    return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
+  }
+
+  if (source.id === target.id) {
+    return err("SELF_RELATIONSHIP", SELF_RELATIONSHIP_MESSAGE);
+  }
+
+  if (!isUmlClass(source) || !isUmlClass(target)) {
+    return err("INVALID_CONNECTION", CLASS_ENDPOINT_MESSAGE);
   }
 
   return ok({
@@ -142,6 +181,17 @@ function isUseCaseRelationshipKind(
   kind: RelationshipKind,
 ): kind is "association" | "include" | "extend" {
   return kind === "association" || kind === "include" || kind === "extend";
+}
+
+function isClassRelationshipKind(
+  kind: RelationshipKind,
+): kind is ClassRelationshipKind {
+  return (
+    kind === "class-association" ||
+    kind === "aggregation" ||
+    kind === "composition" ||
+    kind === "generalization"
+  );
 }
 
 function indexElements(document: DiagramDocument): Map<string, DiagramElement> {

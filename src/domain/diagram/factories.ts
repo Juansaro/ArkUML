@@ -1,6 +1,10 @@
 import {
+  CLASS_DOCUMENT_KIND,
+  DEFAULT_ASSOCIATION_MULTIPLICITY,
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_BOUNDARY_NAME,
+  DEFAULT_CLASS_DOCUMENT_TITLE,
+  DEFAULT_CLASS_GEOMETRY,
   DEFAULT_DOCUMENT_TITLE,
   DEFAULT_LIFELINE_GEOMETRY,
   DEFAULT_LIFELINE_STEM_LENGTH,
@@ -14,6 +18,9 @@ import {
 import type {
   Actor,
   Anchor,
+  AssociationMultiplicity,
+  ClassRelationship,
+  ClassRelationshipKind,
   DiagramDocument,
   DocumentMetadata,
   Geometry,
@@ -21,6 +28,7 @@ import type {
   SequenceMessage,
   SequenceMessageKind,
   SystemBoundary,
+  UmlClass,
   UseCase,
   UseCaseRelationship,
   UseCaseRelationshipKind,
@@ -56,6 +64,15 @@ function copyGeometry(geometry: Geometry): Geometry {
     width: geometry.width,
     height: geometry.height,
   };
+}
+
+function copyMembers(members: readonly string[] | undefined): string[] {
+  if (members === undefined) {
+    return [];
+  }
+  return members
+    .map((member) => member.trim())
+    .filter((member) => member.length > 0);
 }
 
 export function createActor(
@@ -157,6 +174,60 @@ export function createSequenceMessage(
   };
 }
 
+export function createClass(
+  input: {
+    name: string;
+    geometry?: Geometry;
+    attributes?: readonly string[];
+    operations?: readonly string[];
+  },
+  deps?: DiagramFactoryDeps,
+): UmlClass {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "class",
+    name: input.name.trim(),
+    geometry: copyGeometry(input.geometry ?? DEFAULT_CLASS_GEOMETRY),
+    attributes: copyMembers(input.attributes),
+    operations: copyMembers(input.operations),
+  };
+}
+
+export function createClassRelationship(
+  input: {
+    kind: ClassRelationshipKind;
+    sourceId: string;
+    targetId: string;
+    name?: string;
+    sourceMultiplicity?: AssociationMultiplicity;
+    targetMultiplicity?: AssociationMultiplicity;
+  },
+  deps?: DiagramFactoryDeps,
+): ClassRelationship {
+  const shared = {
+    id: resolveCreateId(deps)(),
+    sourceId: input.sourceId,
+    targetId: input.targetId,
+    name: input.name?.trim() ?? "",
+  };
+
+  if (input.kind === "generalization") {
+    return {
+      ...shared,
+      kind: "generalization",
+    };
+  }
+
+  return {
+    ...shared,
+    kind: input.kind,
+    sourceMultiplicity:
+      input.sourceMultiplicity ?? DEFAULT_ASSOCIATION_MULTIPLICITY,
+    targetMultiplicity:
+      input.targetMultiplicity ?? DEFAULT_ASSOCIATION_MULTIPLICITY,
+  };
+}
+
 export function createDocumentMetadata(
   input: { title?: string } = {},
   deps?: DiagramFactoryDeps,
@@ -213,6 +284,24 @@ export function createEmptySequenceDocument(
     kind: SEQUENCE_DOCUMENT_KIND,
     metadata: createDocumentMetadata(
       { title: DEFAULT_SEQUENCE_DOCUMENT_TITLE },
+      deps,
+    ),
+    elements: [],
+    relationships: [],
+  };
+}
+
+export function createEmptyClassDocument(
+  deps?: DiagramFactoryDeps,
+): DiagramDocument {
+  const createId = resolveCreateId(deps);
+
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    id: createId(),
+    kind: CLASS_DOCUMENT_KIND,
+    metadata: createDocumentMetadata(
+      { title: DEFAULT_CLASS_DOCUMENT_TITLE },
       deps,
     ),
     elements: [],

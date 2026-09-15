@@ -77,6 +77,7 @@ Gobierno y estado: [post-024/README.md](post-024/README.md). Roadmap
 
 Wave 1 congelada (**Editor local sobre schema 1**). Wave 2 congelada
 (**Intercambio y distribución sobre schema 1**). Remediación 1.x
-TASK-042–044 `Hecha`. **Release 1** congelada (TASK-045): biblioteca
-local y diagrama de secuencia (schema 2). Próximo contrato:
-[TASK-046](post-024/12-uml/TASK-046.md). No duplicar aquí los contratos.
+TASK-042–044 `Hecha`. **Release 1** congelada y ejecutada (TASK-045–050):
+biblioteca y secuencia (schema 2). **Release 2** congelada (TASK-051):
+seis kinds (schema 3). Próximo contrato:
+[TASK-052](post-024/12-uml/TASK-052.md). No duplicar aquí los contratos.

@@ -253,7 +253,7 @@ describe("createLocalStorageDiagramRepository", () => {
     expect(loaded?.snapshot.storageVersion).toBe(2);
     expect(loaded?.snapshot.activeDocumentId).toBe(document.id);
     expect(loaded?.snapshot.documents).toHaveLength(1);
-    expect(loaded?.snapshot.documents[0]?.document.schemaVersion).toBe(2);
+    expect(loaded?.snapshot.documents[0]?.document.schemaVersion).toBe(3);
     expect(loaded?.snapshot.documents[0]?.view).toEqual(v1.view);
 
     expectOk(await repository.save(loaded!.snapshot));

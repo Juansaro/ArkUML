@@ -5,12 +5,15 @@ import {
   NAME_MIN_LENGTH,
   SCHEMA_VERSION,
   SCHEMA_VERSION_V1,
+  SCHEMA_VERSION_V2,
   STORAGE_VERSION,
   STORAGE_VERSION_V1,
 } from "./defaults.ts";
 import {
+  ASSOCIATION_MULTIPLICITIES,
   type DiagramDocument,
   type DiagramDocumentV1,
+  type DiagramDocumentV2,
   type DomainError,
   type DomainErrorCode,
   type Result,
@@ -86,15 +89,42 @@ const lifelineSchema = z.strictObject({
   stemLength: finiteNumberSchema,
 });
 
+const classMemberSchema = z
+  .string({ error: "El miembro debe ser texto." })
+  .refine((value) => value.trim().length <= NAME_MAX_LENGTH, {
+    error: "El miembro debe tener como máximo 80 caracteres.",
+  });
+
+const umlClassSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("class"),
+  name: nameSchema,
+  geometry: geometrySchema,
+  attributes: z.array(classMemberSchema),
+  operations: z.array(classMemberSchema),
+});
+
 const useCaseElementSchema = z.discriminatedUnion(
   "kind",
   [actorSchema, useCaseSchema, systemBoundarySchema],
   { error: "Tipo de elemento no soportado." },
 );
 
-const diagramElementSchema = z.discriminatedUnion(
+const diagramElementSchemaV2 = z.discriminatedUnion(
   "kind",
   [actorSchema, useCaseSchema, systemBoundarySchema, lifelineSchema],
+  { error: "Tipo de elemento no soportado." },
+);
+
+const diagramElementSchema = z.discriminatedUnion(
+  "kind",
+  [
+    actorSchema,
+    useCaseSchema,
+    systemBoundarySchema,
+    lifelineSchema,
+    umlClassSchema,
+  ],
   { error: "Tipo de elemento no soportado." },
 );
 
@@ -120,9 +150,40 @@ const sequenceMessageSchema = z.strictObject({
   y: finiteNumberSchema,
 });
 
+const multiplicitySchema = z.enum(ASSOCIATION_MULTIPLICITIES, {
+  error: "La multiplicidad no es un valor soportado.",
+});
+
+const classAssociationSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.enum(["class-association", "aggregation", "composition"], {
+    error: "Tipo de relación no soportado.",
+  }),
+  sourceId: uuidSchema,
+  targetId: uuidSchema,
+  name: messageNameSchema,
+  sourceMultiplicity: multiplicitySchema,
+  targetMultiplicity: multiplicitySchema,
+});
+
+const generalizationSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("generalization"),
+  sourceId: uuidSchema,
+  targetId: uuidSchema,
+  name: messageNameSchema,
+});
+
+const relationshipSchemaV2 = z.union([
+  useCaseRelationshipSchema,
+  sequenceMessageSchema,
+]);
+
 const relationshipSchema = z.union([
   useCaseRelationshipSchema,
   sequenceMessageSchema,
+  classAssociationSchema,
+  generalizationSchema,
 ]);
 
 const metadataSchema = z.strictObject({
@@ -137,16 +198,31 @@ const USE_CASE_ELEMENT_KINDS = new Set([
   "system-boundary",
 ]);
 const SEQUENCE_ELEMENT_KINDS = new Set(["lifeline"]);
+const CLASS_ELEMENT_KINDS = new Set(["class"]);
 const USE_CASE_RELATIONSHIP_KINDS = new Set([
   "association",
   "include",
   "extend",
 ]);
 const SEQUENCE_RELATIONSHIP_KINDS = new Set(["sync-message", "reply-message"]);
+const CLASS_RELATIONSHIP_KINDS = new Set([
+  "class-association",
+  "aggregation",
+  "composition",
+  "generalization",
+]);
+
+type KindCardinalityDocument = {
+  kind: "use-case" | "sequence" | "class";
+  elements: readonly { kind: string }[];
+  relationships: readonly { kind: string }[];
+};
 
 function addParentIssues(
-  document: DiagramDocument | DiagramDocumentV1,
-  ctx: z.core.$RefinementCtx<DiagramDocument | DiagramDocumentV1>,
+  document: DiagramDocument | DiagramDocumentV2 | DiagramDocumentV1,
+  ctx: z.core.$RefinementCtx<
+    DiagramDocument | DiagramDocumentV2 | DiagramDocumentV1
+  >,
 ): void {
   if (document.kind !== "use-case") {
     return;
@@ -173,8 +249,10 @@ function addParentIssues(
 }
 
 function addUniqueIdIssues(
-  document: DiagramDocument | DiagramDocumentV1,
-  ctx: z.core.$RefinementCtx<DiagramDocument | DiagramDocumentV1>,
+  document: DiagramDocument | DiagramDocumentV2 | DiagramDocumentV1,
+  ctx: z.core.$RefinementCtx<
+    DiagramDocument | DiagramDocumentV2 | DiagramDocumentV1
+  >,
 ): void {
   const seen = new Set<string>();
 
@@ -204,17 +282,21 @@ function addUniqueIdIssues(
 }
 
 function addKindCardinalityIssues(
-  document: DiagramDocument,
-  ctx: z.core.$RefinementCtx<DiagramDocument>,
+  document: KindCardinalityDocument,
+  ctx: z.core.$RefinementCtx<KindCardinalityDocument>,
 ): void {
   const allowedElements =
     document.kind === "sequence"
       ? SEQUENCE_ELEMENT_KINDS
-      : USE_CASE_ELEMENT_KINDS;
+      : document.kind === "class"
+        ? CLASS_ELEMENT_KINDS
+        : USE_CASE_ELEMENT_KINDS;
   const allowedRelationships =
     document.kind === "sequence"
       ? SEQUENCE_RELATIONSHIP_KINDS
-      : USE_CASE_RELATIONSHIP_KINDS;
+      : document.kind === "class"
+        ? CLASS_RELATIONSHIP_KINDS
+        : USE_CASE_RELATIONSHIP_KINDS;
 
   document.elements.forEach((element, index) => {
     if (allowedElements.has(element.kind)) {
@@ -257,13 +339,32 @@ export const diagramDocumentV1Schema: z.ZodType<DiagramDocumentV1> = z
     addParentIssues(document, ctx);
   });
 
-export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
+export const diagramDocumentV2Schema: z.ZodType<DiagramDocumentV2> = z
   .strictObject({
-    schemaVersion: z.literal(SCHEMA_VERSION, {
+    schemaVersion: z.literal(SCHEMA_VERSION_V2, {
       error: "schemaVersion debe ser 2.",
     }),
     id: uuidSchema,
     kind: z.enum(["use-case", "sequence"], {
+      error: "kind de documento no soportado.",
+    }),
+    metadata: metadataSchema,
+    elements: z.array(diagramElementSchemaV2),
+    relationships: z.array(relationshipSchemaV2),
+  })
+  .superRefine((document, ctx) => {
+    addUniqueIdIssues(document, ctx);
+    addParentIssues(document, ctx);
+    addKindCardinalityIssues(document, ctx);
+  });
+
+export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
+  .strictObject({
+    schemaVersion: z.literal(SCHEMA_VERSION, {
+      error: "schemaVersion debe ser 3.",
+    }),
+    id: uuidSchema,
+    kind: z.enum(["use-case", "sequence", "class"], {
       error: "kind de documento no soportado.",
     }),
     metadata: metadataSchema,
@@ -292,7 +393,11 @@ export const workspaceSnapshotV1Schema: z.ZodType<WorkspaceSnapshotV1> =
     storageVersion: z.literal(STORAGE_VERSION_V1, {
       error: "storageVersion debe ser 1.",
     }),
-    document: z.union([diagramDocumentSchema, diagramDocumentV1Schema]),
+    document: z.union([
+      diagramDocumentSchema,
+      diagramDocumentV2Schema,
+      diagramDocumentV1Schema,
+    ]),
     view: viewportSchema,
   });
 
@@ -399,7 +504,12 @@ function domainCodeForIssue(issue: z.core.$ZodIssue): DomainErrorCode {
     return "INVALID_GEOMETRY";
   }
 
-  if (path.includes("name") || path.includes("title")) {
+  if (
+    path.includes("name") ||
+    path.includes("title") ||
+    path.includes("attributes") ||
+    path.includes("operations")
+  ) {
     return "INVALID_NAME";
   }
 
@@ -433,6 +543,16 @@ export function parseDiagramDocumentV1(
   input: unknown,
 ): Result<DiagramDocumentV1> {
   const result = diagramDocumentV1Schema.safeParse(input);
+  if (result.success) {
+    return { ok: true, value: result.data };
+  }
+  return { ok: false, error: toDomainError(result.error) };
+}
+
+export function parseDiagramDocumentV2(
+  input: unknown,
+): Result<DiagramDocumentV2> {
+  const result = diagramDocumentV2Schema.safeParse(input);
   if (result.success) {
     return { ok: true, value: result.data };
   }

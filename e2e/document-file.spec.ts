@@ -42,7 +42,7 @@ const LEGACY_V1_FILE = {
 };
 
 test.describe("archivo JSON de usuario", () => {
-  test("exportar e importar 2.x use-case añade, restaura actor y viewport e historial vacío", async ({
+  test("exportar e importar 3.x use-case añade, restaura actor y viewport e historial vacío", async ({
     page,
   }) => {
     await page.goto("/");
@@ -82,9 +82,9 @@ test.describe("archivo JSON de usuario", () => {
     expect(parsed).toEqual(
       expect.objectContaining({
         format: "arkuml-document-json",
-        formatVersion: 2,
+        formatVersion: 3,
         document: expect.objectContaining({
-          schemaVersion: 2,
+          schemaVersion: 3,
           kind: "use-case",
         }),
         view: expect.objectContaining({
@@ -145,7 +145,7 @@ test.describe("archivo JSON de usuario", () => {
       .toBe(true);
   });
 
-  test("exportar e importar 2.x secuencia añade y deja el diagrama editable", async ({
+  test("exportar e importar 3.x secuencia añade y deja el diagrama editable", async ({
     page,
   }) => {
     await page.goto("/");
@@ -169,9 +169,9 @@ test.describe("archivo JSON de usuario", () => {
     expect(parsed).toEqual(
       expect.objectContaining({
         format: "arkuml-document-json",
-        formatVersion: 2,
+        formatVersion: 3,
         document: expect.objectContaining({
-          schemaVersion: 2,
+          schemaVersion: 3,
           kind: "sequence",
         }),
       }),
@@ -212,7 +212,10 @@ test.describe("archivo JSON de usuario", () => {
     const switcher = page.getByRole("combobox", { name: "Diagrama activo" });
     await switcher.click();
     await expect(page.getByRole("option")).toHaveCount(2);
-    await page.getByRole("option").nth(0).click({ position: { x: 12, y: 16 } });
+    await page
+      .getByRole("option")
+      .nth(0)
+      .click({ position: { x: 12, y: 16 } });
     await expect(canvasElementName(page, "Actor")).toBeVisible();
   });
 
@@ -288,7 +291,10 @@ test.describe("archivo JSON de usuario", () => {
     const switcher = page.getByRole("combobox", { name: "Diagrama activo" });
     await switcher.click();
     await expect(page.getByRole("option")).toHaveCount(2);
-    await page.getByRole("option").nth(0).click({ position: { x: 12, y: 16 } });
+    await page
+      .getByRole("option")
+      .nth(0)
+      .click({ position: { x: 12, y: 16 } });
     await expect(canvasElementName(page, "Actor")).toBeVisible();
     await expect(canvasElementName(page, "Caso de uso")).toBeVisible();
   });

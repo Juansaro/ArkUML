@@ -28,7 +28,7 @@ const EXTEND_CYCLE_MESSAGE = "Participa en un ciclo de Extend.";
 export function collectWarnings(
   document: DiagramDocument,
 ): readonly DiagramWarning[] {
-  if (document.kind === "sequence") {
+  if (document.kind !== "use-case") {
     return [];
   }
 

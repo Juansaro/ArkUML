@@ -72,15 +72,44 @@ export type Lifeline = {
   stemLength: number;
 };
 
+export type UmlClass = {
+  id: string;
+  kind: "class";
+  name: string;
+  geometry: Geometry;
+  attributes: string[];
+  operations: string[];
+};
+
 export type UseCaseElement = Actor | UseCase | SystemBoundary;
 
-export type DiagramElement = UseCaseElement | Lifeline;
+export type SequenceElement = Lifeline;
+
+export type ClassElement = UmlClass;
+
+export type DiagramElement = UseCaseElement | SequenceElement | ClassElement;
 
 export type UseCaseRelationshipKind = "association" | "include" | "extend";
 
 export type SequenceMessageKind = "sync-message" | "reply-message";
 
-export type RelationshipKind = UseCaseRelationshipKind | SequenceMessageKind;
+export type ClassAssociationKind =
+  "class-association" | "aggregation" | "composition";
+
+export type ClassRelationshipKind = ClassAssociationKind | "generalization";
+
+export type RelationshipKind =
+  UseCaseRelationshipKind | SequenceMessageKind | ClassRelationshipKind;
+
+export const ASSOCIATION_MULTIPLICITIES = [
+  "0..1",
+  "1",
+  "0..*",
+  "1..*",
+] as const;
+
+export type AssociationMultiplicity =
+  (typeof ASSOCIATION_MULTIPLICITIES)[number];
 
 export type UseCaseRelationship = {
   id: string;
@@ -100,7 +129,28 @@ export type SequenceMessage = {
   y: number;
 };
 
-export type Relationship = UseCaseRelationship | SequenceMessage;
+export type ClassAssociation = {
+  id: string;
+  kind: ClassAssociationKind;
+  sourceId: string;
+  targetId: string;
+  name: string;
+  sourceMultiplicity: AssociationMultiplicity;
+  targetMultiplicity: AssociationMultiplicity;
+};
+
+export type Generalization = {
+  id: string;
+  kind: "generalization";
+  sourceId: string;
+  targetId: string;
+  name: string;
+};
+
+export type ClassRelationship = ClassAssociation | Generalization;
+
+export type Relationship =
+  UseCaseRelationship | SequenceMessage | ClassRelationship;
 
 export type DocumentMetadata = {
   title: string;
@@ -108,7 +158,9 @@ export type DocumentMetadata = {
   updatedAt: string;
 };
 
-export type DocumentKind = "use-case" | "sequence";
+export type DocumentKindV2 = "use-case" | "sequence";
+
+export type DocumentKind = DocumentKindV2 | "class";
 
 export type DiagramDocumentV1 = {
   schemaVersion: 1;
@@ -119,8 +171,17 @@ export type DiagramDocumentV1 = {
   relationships: UseCaseRelationship[];
 };
 
-export type DiagramDocument = {
+export type DiagramDocumentV2 = {
   schemaVersion: 2;
+  id: string;
+  kind: DocumentKindV2;
+  metadata: DocumentMetadata;
+  elements: Array<UseCaseElement | Lifeline>;
+  relationships: Array<UseCaseRelationship | SequenceMessage>;
+};
+
+export type DiagramDocument = {
+  schemaVersion: 3;
   id: string;
   kind: DocumentKind;
   metadata: DocumentMetadata;
@@ -141,7 +202,7 @@ export type WorkspaceDocumentEntry = {
 
 export type WorkspaceSnapshotV1 = {
   storageVersion: 1;
-  document: DiagramDocument | DiagramDocumentV1;
+  document: DiagramDocument | DiagramDocumentV2 | DiagramDocumentV1;
   view: Viewport;
 };
 
@@ -180,4 +241,41 @@ export function isSequenceMessage(
     relationship.kind === "sync-message" ||
     relationship.kind === "reply-message"
   );
+}
+
+export function isUmlClass(element: DiagramElement): element is UmlClass {
+  return element.kind === "class";
+}
+
+export function isClassRelationship(
+  relationship: Relationship,
+): relationship is ClassRelationship {
+  return (
+    relationship.kind === "class-association" ||
+    relationship.kind === "aggregation" ||
+    relationship.kind === "composition" ||
+    relationship.kind === "generalization"
+  );
+}
+
+export function isClassAssociation(
+  relationship: Relationship,
+): relationship is ClassAssociation {
+  return (
+    relationship.kind === "class-association" ||
+    relationship.kind === "aggregation" ||
+    relationship.kind === "composition"
+  );
+}
+
+export function isGeneralization(
+  relationship: Relationship,
+): relationship is Generalization {
+  return relationship.kind === "generalization";
+}
+
+export function isAssociationMultiplicity(
+  value: string,
+): value is AssociationMultiplicity {
+  return (ASSOCIATION_MULTIPLICITIES as readonly string[]).includes(value);
 }
