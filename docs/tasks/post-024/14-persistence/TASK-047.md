@@ -86,16 +86,16 @@ Un cliente no puede quedar con dos claves.
 
 ## Criterios de aceptación
 
-- [ ] Snapshot Zod v2; lista vacía o `activeDocumentId` huérfano →
+- [x] Snapshot Zod v2; lista vacía o `activeDocumentId` huérfano →
       `PARSE_INVALID`.
-- [ ] Migración `1→2` envuelve un documento y sube schema si hace falta.
-- [ ] Confirmación antes del primer overwrite 2.0; cancelar no pisa el
+- [x] Migración `1→2` envuelve un documento y sube schema si hace falta.
+- [x] Confirmación antes del primer overwrite 2.0; cancelar no pisa el
       blob 1.
-- [ ] Añadir / activar / borrar (último no se borra) cubierto por tests
+- [x] Añadir / activar / borrar (último no se borra) cubierto por tests
       de store.
-- [ ] Historial: mutar A, activar B, mutar B, volver a A: undo de A no
+- [x] Historial: mutar A, activar B, mutar B, volver a A: undo de A no
       aplica edits de B.
-- [ ] Cuota y corrupto: mismos códigos; no se borra el último save bueno.
+- [x] Cuota y corrupto: mismos códigos; no se borra el último save bueno.
 
 ## Tests
 
@@ -124,4 +124,23 @@ Biblioteca persistida y store listo; sin chrome del selector.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-14. Biblioteca local `storageVersion` 2 (ADR-007). Clave
+`arkuml:workspace:v1` in-place. Envelope: `activeDocumentId` +
+`documents[]` (`document` + `view`); lista no vacía; ids únicos;
+`activeDocumentId` resuelve a uno. `migrateWorkspace` `1→2` envuelve el
+snapshot v1 y llama `migrateDocument` si el payload sigue en schema 1.
+Load no escribe; el primer save 2.0 pide confirmación (copy: workspace
+único; irreversible para 1.0). Cancelar deja el blob 1 y el trabajo en
+memoria. Store: documento activo, lista, historial por `document.id`
+(tope 100, RAM). APIs internas añadir / activar / borrar (el último no
+se borra). Sin combobox (TASK-048). Debounce 750 ms y last-write-wins
+intactos. Cuota/corrupto: mismos códigos NFR-07.
+
+Comandos: `npx vitest run src/persistence src/editor/store src/domain`
+(173 tests). `npx tsc -b --pretty false`: app limpia; fallos previos en
+`e2e/document-file.spec.ts` (`canvas` no usada) y
+`e2e/include-extend.spec.ts` (`SVGPathElement` / `DOMPoint` sin DOM
+en `tsconfig.node.json`) — sucio anterior, no tocado.
+
+Desviación: diálogo de confirmación 2.0 cableado en el shell (no es el
+selector) para que el overwrite no quede inalcanzable.
