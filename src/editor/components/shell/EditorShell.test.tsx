@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { act } from "react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_DOCUMENT_TITLE } from "../../../domain/diagram/defaults.ts";
 import {
   INVALID_DOCUMENT_FILE_MESSAGE,
@@ -21,6 +21,23 @@ import { createEditorStore } from "../../store/editorStore.ts";
 import { EditorStoreProvider } from "../../store/EditorStoreProvider.tsx";
 import { EditorShell } from "./EditorShell.tsx";
 import { PALETTE_RELATIONSHIP_TOOLS } from "./paletteTools.ts";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+function stubCompactLayout(compact: boolean): void {
+  vi.stubGlobal("matchMedia", (query: string): MediaQueryList => ({
+    matches: query === "(max-width: 1023px)" ? compact : false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }));
+}
 
 function sequentialIds(start = 1): IdFactory {
   let next = start;
@@ -277,7 +294,109 @@ describe("EditorShell", () => {
     );
   });
 
+  it("oculta y restaura paleta e inspector de forma independiente en desktop", async () => {
+    const user = userEvent.setup();
+    const store = createEditorStore();
+    const workspaceDocument = store.getState().document;
+    render(
+      <EditorStoreProvider store={store}>
+        <EditorShell />
+      </EditorStoreProvider>,
+    );
+
+    const paletteToggle = screen.getByRole("button", { name: "Paleta" });
+    const inspectorToggle = screen.getByRole("button", { name: "Inspector" });
+    expect(paletteToggle).toHaveAttribute("aria-expanded", "true");
+    expect(inspectorToggle).toHaveAttribute("aria-expanded", "true");
+    expect(paletteToggle).toHaveTextContent("<<");
+    expect(inspectorToggle).toHaveTextContent(">>");
+    expect(
+      within(screen.getByRole("banner")).queryByRole("button", {
+        name: "Paleta",
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: "Paleta" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("complementary", { name: "Inspector" }),
+    ).toBeInTheDocument();
+
+    await user.click(paletteToggle);
+    expect(paletteToggle).toHaveAttribute("aria-expanded", "false");
+    expect(paletteToggle).toHaveTextContent(">>");
+    expect(
+      screen.queryByRole("navigation", { name: "Paleta" }),
+    ).not.toBeInTheDocument();
+    expect(document.getElementById("editor-palette")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    expect(document.getElementById("editor-palette")).toHaveAttribute("inert");
+    expect(
+      screen.getByRole("complementary", { name: "Inspector" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Cerrar paneles" }),
+    ).not.toBeInTheDocument();
+    expect(store.getState().document).toBe(workspaceDocument);
+    expect(store.getState().history.past).toHaveLength(0);
+
+    await user.click(inspectorToggle);
+    expect(inspectorToggle).toHaveAttribute("aria-expanded", "false");
+    expect(inspectorToggle).toHaveTextContent("<<");
+    expect(
+      screen.queryByRole("complementary", { name: "Inspector" }),
+    ).not.toBeInTheDocument();
+    expect(document.getElementById("editor-inspector")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    expect(document.getElementById("editor-inspector")).toHaveAttribute(
+      "inert",
+    );
+    expect(
+      screen.queryByRole("navigation", { name: "Paleta" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(paletteToggle);
+    expect(paletteToggle).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.getByRole("navigation", { name: "Paleta" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("complementary", { name: "Inspector" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(inspectorToggle);
+    expect(
+      screen.getByRole("complementary", { name: "Inspector" }),
+    ).toBeInTheDocument();
+  });
+
+  it("Escape no oculta los paneles en desktop", async () => {
+    const user = userEvent.setup();
+    render(<EditorShell />);
+
+    await user.keyboard("{Escape}");
+    expect(screen.getByRole("button", { name: "Paleta" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Inspector" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    expect(
+      screen.getByRole("navigation", { name: "Paleta" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("complementary", { name: "Inspector" }),
+    ).toBeInTheDocument();
+  });
+
   it("abre y cierra el drawer de paleta", async () => {
+    stubCompactLayout(true);
     const user = userEvent.setup();
     render(<EditorShell />);
 
@@ -298,6 +417,7 @@ describe("EditorShell", () => {
   });
 
   it("cierra drawers con Escape", async () => {
+    stubCompactLayout(true);
     const user = userEvent.setup();
     render(<EditorShell />);
 

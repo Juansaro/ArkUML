@@ -38,6 +38,9 @@ test.describe("tooltips del chrome", () => {
     await expect(page.getByRole("button", { name: "Nuevo" })).toBeFocused();
     await expect(page.getByRole("dialog")).toHaveCount(0);
 
+    await expectTooltipCopy(page, "Paleta", "Cerrar paleta.");
+    await expectTooltipCopy(page, "Inspector", "Cerrar inspector.");
+
     await page.getByRole("button", { name: "Exportar" }).focus();
     await expect(page.getByTestId("editor-tooltip")).toBeVisible();
     await page.getByRole("button", { name: "Ayuda" }).focus();
@@ -106,11 +109,7 @@ for (const viewport of viewports) {
 
     test("tooltip y trigger caben en el viewport", async ({ page }) => {
       await page.goto("/");
-      if (viewport.width <= 1023) {
-        await page.getByRole("button", { name: "Paleta" }).focus();
-      } else {
-        await page.getByRole("button", { name: "Nuevo" }).focus();
-      }
+      await page.getByRole("button", { name: "Paleta" }).focus();
       const tooltip = page.getByTestId("editor-tooltip");
       await expect(tooltip).toBeVisible();
       await expectWithinViewport(page, tooltip);

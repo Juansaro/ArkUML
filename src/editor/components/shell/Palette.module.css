@@ -7,10 +7,17 @@
 }
 
 .heading {
+  margin: 0;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+@media (min-width: 1024px) {
+  .heading {
+    padding-right: 1.5rem;
+  }
 }
 
 .group {

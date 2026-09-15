@@ -30,7 +30,8 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 (W17-01, W17-13); no congeló implementación. TASK-037 congeló la Wave 2
 (**Intercambio y distribución sobre schema 1**). TASK-038–041 están
 `Hecha`. Wave 2 cerrada. TASK-042 y TASK-043 son remediación 1.x
-(defectos de selección; no son freeze de catálogo).
+(defectos de selección; no son freeze de catálogo). TASK-044 es
+remediación 1.x (ocultar paleta/inspector en desktop).
 
 ## Estado
 
@@ -55,6 +56,7 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 | 041 | [`17-ecosystem/TASK-041.md`](17-ecosystem/TASK-041.md) | Hecha | P1 | 037 | 2026-09-14: FR-P06; `docs/operations/static-hosting.md`; README enlaza; sin secrets ni workflow |
 | 042 | [`13-editor/TASK-042.md`](13-editor/TASK-042.md) | Hecha | P0 | 014, 041 | 2026-09-14: click selecciona Association/Include/Extend; inspector y reconnect retargetean; interior del boundary pasante |
 | 043 | [`13-editor/TASK-043.md`](13-editor/TASK-043.md) | Hecha | P0 | 042 | 2026-09-14: paleta Selección; crear relación vuelve a ese modo; click de nodo no conserva la relación |
+| 044 | [`13-editor/TASK-044.md`](13-editor/TASK-044.md) | Hecha | P1 | 043 | 2026-09-14: rieles `<<`/`>>` en paleta/inspector ≥1024; drawers compactos intactos |
 
 ## Fases y gates
 
@@ -93,7 +95,7 @@ Gate (cumplido 2026-09-09):
 
 El inventario completo vive en [roadmap.md](roadmap.md), alineado con
 [`post-mvp-spec.md`](../../product/post-mvp-spec.md). Existen
-`12-uml/` (TASK-034), `13-editor/` (TASK-035, TASK-039, TASK-042 y TASK-043),
+`12-uml/` (TASK-034), `13-editor/` (TASK-035, TASK-039, TASK-042, TASK-043 y TASK-044),
 `14-persistence/` (TASK-038), `15-export/` (TASK-040) y
 `17-ecosystem/` (TASK-041). No hay `16-a11y/`. W17-01/13 y el resto del
 catálogo no son ejecutables.
@@ -115,7 +117,8 @@ no como 94 features pendientes.
 
 Wave 2 (**Intercambio y distribución sobre schema 1**) está `Hecha`
 (TASK-038–041). TASK-042 y TASK-043 (remediación 1.x, selección)
-están `Hecha`. W17-01/13 siguen bloqueadas.
+están `Hecha`. TASK-044 (ocultar paleta/inspector en desktop) está
+`Hecha`. W17-01/13 siguen bloqueadas.
 Multi-documento: no. IndexedDB: no elegido (condicional C-QUOTA). No
 implementar Generalization, PDF, temas ni un class diagram en estos
 chats.

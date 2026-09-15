@@ -17,6 +17,97 @@
   color: var(--color-fg);
 }
 
+.shell.paletteCollapsed {
+  grid-template-columns: var(--shell-panel-rail-width) minmax(0, 1fr) var(
+      --shell-inspector-width
+    );
+}
+
+.shell.inspectorCollapsed {
+  grid-template-columns: var(--shell-palette-width) minmax(0, 1fr) var(
+      --shell-panel-rail-width
+    );
+}
+
+.shell.paletteCollapsed.inspectorCollapsed {
+  grid-template-columns: var(--shell-panel-rail-width) minmax(0, 1fr) var(
+      --shell-panel-rail-width
+    );
+}
+
+.paletteSlot,
+.inspectorSlot {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  background-color: var(--color-surface);
+}
+
+.paletteSlot {
+  grid-area: palette;
+  grid-template-columns: minmax(0, 1fr);
+  border-right: 1px solid var(--color-border);
+}
+
+.inspectorSlot {
+  grid-area: inspector;
+  grid-template-columns: minmax(0, 1fr);
+  border-left: 1px solid var(--color-border);
+}
+
+.paletteSlot.collapsed,
+.inspectorSlot.collapsed {
+  grid-template-columns: var(--shell-panel-rail-width);
+}
+
+.paletteSlot.collapsed .panel,
+.inspectorSlot.collapsed .panel {
+  display: none;
+}
+
+.chevron {
+  position: absolute;
+  top: var(--space-3);
+  z-index: 1;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--color-brand);
+  font: inherit;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.12em;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.paletteSlot .chevron {
+  right: var(--space-3);
+}
+
+.inspectorSlot .chevron {
+  left: var(--space-3);
+}
+
+.paletteSlot.collapsed .chevron,
+.inspectorSlot.collapsed .chevron {
+  right: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+
+.chevron:hover {
+  color: var(--color-brand-deep);
+}
+
+.chevron:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
 .topbar {
   grid-area: topbar;
   display: flex;
@@ -39,13 +130,13 @@
 }
 
 .palette {
-  grid-area: palette;
-  border-right: 1px solid var(--color-border);
+  min-height: 0;
+  overflow: auto;
 }
 
 .inspector {
-  grid-area: inspector;
-  border-left: 1px solid var(--color-border);
+  min-height: 0;
+  overflow: auto;
 }
 
 .canvas {
@@ -108,6 +199,11 @@
       "canvas"
       "statusbar";
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .paletteSlot,
+  .inspectorSlot {
+    display: contents;
   }
 
   .palette,

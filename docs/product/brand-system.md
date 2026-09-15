@@ -371,7 +371,7 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 
 | Superficie | Icono | Composición | Nombre accesible | Descripción (tooltip) | Indisponible |
 | --- | --- | --- | --- | --- | --- |
-| Top bar | `palette` | Icon-only. Solo visible a `max-width: 1023px`, como hoy | Paleta | Cerrado: «Abrir paleta.» Abierto: «Cerrar paleta.» según `aria-expanded` | — |
+| Top bar | `palette` | Icon-only. Solo visible a `max-width: 1023px` (drawers) | Paleta | Cerrado: «Abrir paleta.» Abierto: «Cerrar paleta.» según `aria-expanded` | — |
 | Top bar | `inspector` | Icon-only. Mismo breakpoint | Inspector | Cerrado: «Abrir inspector.» Abierto: «Cerrar inspector.» | — |
 | Top bar | `newDiagram` | Icon-only | Nuevo | «Crear un diagrama nuevo.» | — |
 | Top bar | `openFile` | Icon-only | Abrir | «Abrir un archivo ArkUML.» | — |
@@ -391,6 +391,8 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Lienzo | `zoomOut` | Icon-only | Alejar | «Alejar.» | «El zoom ya está en el mínimo (50%).» cuando `zoom <= 0.5` |
 | Lienzo | `fitView` | Icon-only | Ajustar vista | «Ajustar todo el diagrama (Ctrl/Cmd+0).» | — |
 | Lienzo | `fitView` / `collapseView` | Icon-only. Visible al hover o foco del minimapa | Ampliar mapa / Reducir mapa | «Ver el mapa al doble de tamaño.» / «Volver el mapa al tamaño normal.» | — |
+| Paleta ≥1024 | Texto `<<` / `>>` | Ghost arriba a la derecha del título, sin fondo ni borde. Al ocultar, `>>` arriba del riel residual | Paleta | Cerrado: «Abrir paleta.» Abierto: «Cerrar paleta.» según `aria-expanded` | — |
+| Inspector ≥1024 | Texto `>>` / `<<` | Ghost arriba a la izquierda del título, sin fondo ni borde. Al ocultar, `<<` arriba del riel residual | Inspector | Cerrado: «Abrir inspector.» Abierto: «Cerrar inspector.» | — |
 
 No migrar a iconos: título del documento, tagline «Editor de diagramas de
 casos de uso», «Cerrar paneles», campos del inspector, acciones de diálogos.
@@ -403,12 +405,18 @@ Esos controles conservan etiqueta visible y no reciben la primitiva Tooltip.
   `.identity` conserva `flex: 1 1 12rem`, `min-width: 0`, gap `--space-3`
   entre el grupo de marca y el título, ellipsis en el título, y pasa a
   `align-items: center` (el isotipo de 24 px no se alinea por baseline). Las
-  acciones y toggles son icon-only 32×32 px (`box-sizing: border-box`, padding
+  acciones son icon-only 32×32 px (`box-sizing: border-box`, padding
   6 px, icono 20 px). Conservan `aria-haspopup` / `aria-expanded` /
-  `aria-controls` actuales en Exportar, Ayuda y drawers.
+  `aria-controls` actuales en Exportar, Ayuda y drawers (Paleta /
+  Inspector, solo `max-width: 1023px`).
 - **Paleta:** fila icono 20 px + gap 8 px + etiqueta; botón a ancho completo,
   `min-height` 32 px, `text-align: start`. El tooltip no repite la etiqueta
   como única información.
+- **Rieles de panel (≥1024 px):** letras `<<` / `>>` en el encabezado
+  (arriba), tinta `--color-brand`, sin fondo, sin borde, sin icono SVG.
+  Tooltip a la derecha (paleta) o a la izquierda (inspector). Al
+  colapsar, el riel residual (`--shell-panel-rail-width`) muestra la
+  letra invertida arriba.
 - **Controles del lienzo:** sustituyen `<Controls>` de React Flow. Icon-only
   32×32, pila vertical (`flex-direction: column`, gap `--space-1`), esquina
   inferior izquierda `left: 15px; bottom: 15px`. Panel: fondo

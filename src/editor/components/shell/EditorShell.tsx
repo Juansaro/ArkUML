@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  type Ref,
 } from "react";
 import { workspaceNeedsNewDiagramConfirmation } from "../../../app/bootstrap.ts";
 import { useOptionalWorkspaceSession } from "../../../app/WorkspaceSessionProvider.tsx";
@@ -34,7 +35,7 @@ import {
   selectMessage,
   selectViewport,
 } from "../../store/selectors.ts";
-import { TooltipProvider } from "../common/Tooltip.tsx";
+import { TooltipProvider, useTooltipTrigger } from "../common/Tooltip.tsx";
 import { ExportDialog } from "../ExportDialog.tsx";
 import { Inspector } from "../Inspector/Inspector.tsx";
 import { InvalidDocumentFileDialog } from "../InvalidDocumentFileDialog.tsx";
@@ -82,19 +83,27 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   const inspectorHeadingId = useId();
   const canvasHeadingId = useId();
   const helpTitleId = useId();
-  const [paletteOpen, setPaletteOpen] = useState(false);
-  const [inspectorOpen, setInspectorOpen] = useState(false);
+  const compact = useCompactLayout();
+  const [paletteOpen, setPaletteOpen] = useState(!compact);
+  const [inspectorOpen, setInspectorOpen] = useState(!compact);
+  const [compactLayout, setCompactLayout] = useState(compact);
+  if (compactLayout !== compact) {
+    setCompactLayout(compact);
+    setPaletteOpen(!compact);
+    setInspectorOpen(!compact);
+  }
   const [canvasNonce, setCanvasNonce] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingFileRef = useRef<ArkUmlDocumentFile | undefined>(undefined);
-  const compact = useCompactLayout();
   const paletteRef = useRef<HTMLElement>(null);
   const inspectorPanelRef = useRef<HTMLElement>(null);
   const paletteButtonRef = useRef<HTMLButtonElement>(null);
   const inspectorButtonRef = useRef<HTMLButtonElement>(null);
-  const drawerOpen = paletteOpen || inspectorOpen;
-  const paletteHidden = compact && !paletteOpen;
-  const inspectorHidden = compact && !inspectorOpen;
+  const drawerOpen = compact && (paletteOpen || inspectorOpen);
+  const paletteHidden = !paletteOpen;
+  const inspectorHidden = !inspectorOpen;
+  const paletteCollapsed = !compact && paletteHidden;
+  const inspectorCollapsed = !compact && inspectorHidden;
   const fitViewRef = useRef<() => void>(() => {
     /* registered by the canvas */
   });
@@ -115,7 +124,7 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
       if (event.key !== "Escape") {
         return;
       }
-      if (!paletteOpen && !inspectorOpen) {
+      if (!compact || (!paletteOpen && !inspectorOpen)) {
         return;
       }
 
@@ -124,9 +133,7 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
         : inspectorButtonRef.current;
       setPaletteOpen(false);
       setInspectorOpen(false);
-      if (compact) {
-        returnTo?.focus();
-      }
+      returnTo?.focus();
     }
 
     window.addEventListener("keydown", onKeyDown);
@@ -159,7 +166,9 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
       }
       return;
     }
-    setInspectorOpen(false);
+    if (compact) {
+      setInspectorOpen(false);
+    }
     setPaletteOpen(true);
   }
 
@@ -171,7 +180,9 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
       }
       return;
     }
-    setPaletteOpen(false);
+    if (compact) {
+      setPaletteOpen(false);
+    }
     setInspectorOpen(true);
   }
 
@@ -304,7 +315,9 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
 
   return (
     <TooltipProvider>
-      <div className={styles.shell}>
+      <div
+        className={`${styles.shell}${paletteCollapsed ? ` ${styles.paletteCollapsed}` : ""}${inspectorCollapsed ? ` ${styles.inspectorCollapsed}` : ""}`}
+      >
         <header className={styles.topbar}>
           <TopBar
             documentTitle={title}
@@ -321,38 +334,73 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
             onExport={toggleExport}
             paletteButtonRef={paletteButtonRef}
             inspectorButtonRef={inspectorButtonRef}
+            showDrawerToggles={compact}
           />
         </header>
         <div className={styles.narrowNotice} role="alert">
           Esta ventana es más estrecha que 768 px. La edición no está soportada;
           el diagrama no se borra.
         </div>
-        <nav
-          id="editor-palette"
-          ref={paletteRef}
-          className={`${styles.panel} ${styles.palette} ${paletteOpen ? styles.drawerOpen : ""}`}
-          aria-labelledby={paletteHeadingId}
-          aria-hidden={paletteHidden || undefined}
-          inert={paletteHidden || undefined}
+        <div
+          className={`${styles.paletteSlot}${paletteCollapsed ? ` ${styles.collapsed}` : ""}`}
         >
-          <Palette headingId={paletteHeadingId} />
-        </nav>
+          <nav
+            id="editor-palette"
+            ref={paletteRef}
+            className={`${styles.panel} ${styles.palette}${paletteOpen ? ` ${styles.drawerOpen}` : ""}`}
+            aria-labelledby={paletteHeadingId}
+            aria-hidden={paletteHidden || undefined}
+            inert={paletteHidden || undefined}
+          >
+            <Palette headingId={paletteHeadingId} />
+          </nav>
+          {compact ? null : (
+            <PanelChevron
+              ref={paletteButtonRef}
+              glyph={paletteOpen ? "<<" : ">>"}
+              label="Paleta"
+              description={paletteOpen ? "Cerrar paleta." : "Abrir paleta."}
+              placement="right"
+              expanded={paletteOpen}
+              controls="editor-palette"
+              onClick={togglePalette}
+            />
+          )}
+        </div>
         <main className={styles.canvas} aria-labelledby={canvasHeadingId}>
           <h2 id={canvasHeadingId} className={styles.canvasHeading}>
             Lienzo
           </h2>
           <DiagramCanvas key={canvasNonce} onFitViewReady={registerFitView} />
         </main>
-        <aside
-          id="editor-inspector"
-          ref={inspectorPanelRef}
-          className={`${styles.panel} ${styles.inspector} ${inspectorOpen ? styles.drawerOpen : ""}`}
-          aria-labelledby={inspectorHeadingId}
-          aria-hidden={inspectorHidden || undefined}
-          inert={inspectorHidden || undefined}
+        <div
+          className={`${styles.inspectorSlot}${inspectorCollapsed ? ` ${styles.collapsed}` : ""}`}
         >
-          <Inspector headingId={inspectorHeadingId} />
-        </aside>
+          {compact ? null : (
+            <PanelChevron
+              ref={inspectorButtonRef}
+              glyph={inspectorOpen ? ">>" : "<<"}
+              label="Inspector"
+              description={
+                inspectorOpen ? "Cerrar inspector." : "Abrir inspector."
+              }
+              placement="left"
+              expanded={inspectorOpen}
+              controls="editor-inspector"
+              onClick={toggleInspector}
+            />
+          )}
+          <aside
+            id="editor-inspector"
+            ref={inspectorPanelRef}
+            className={`${styles.panel} ${styles.inspector}${inspectorOpen ? ` ${styles.drawerOpen}` : ""}`}
+            aria-labelledby={inspectorHeadingId}
+            aria-hidden={inspectorHidden || undefined}
+            inert={inspectorHidden || undefined}
+          >
+            <Inspector headingId={inspectorHeadingId} />
+          </aside>
+        </div>
         <div
           className={styles.statusbar}
           role="status"
@@ -424,6 +472,56 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
         />
       </div>
     </TooltipProvider>
+  );
+}
+
+function PanelChevron({
+  ref,
+  glyph,
+  label,
+  description,
+  placement,
+  expanded,
+  controls,
+  onClick,
+}: {
+  ref?: Ref<HTMLButtonElement>;
+  glyph: "<<" | ">>";
+  label: string;
+  description: string;
+  placement: "left" | "right";
+  expanded: boolean;
+  controls: string;
+  onClick: () => void;
+}) {
+  const tooltip = useTooltipTrigger(description, placement);
+
+  return (
+    <button
+      ref={(node) => {
+        tooltip.ref(node);
+        if (typeof ref === "function") {
+          ref(node);
+        } else if (ref) {
+          ref.current = node;
+        }
+      }}
+      type="button"
+      className={styles.chevron}
+      aria-label={label}
+      aria-expanded={expanded}
+      aria-controls={controls}
+      {...(tooltip["aria-describedby"] === undefined
+        ? {}
+        : { "aria-describedby": tooltip["aria-describedby"] })}
+      onMouseEnter={tooltip.onMouseEnter}
+      onMouseLeave={tooltip.onMouseLeave}
+      onFocus={tooltip.onFocus}
+      onBlur={tooltip.onBlur}
+      onClick={onClick}
+    >
+      {glyph}
+    </button>
   );
 }
 

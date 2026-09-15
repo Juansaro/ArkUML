@@ -24,6 +24,7 @@ type TopBarProps = {
   onExport: () => void;
   paletteButtonRef?: Ref<HTMLButtonElement>;
   inspectorButtonRef?: Ref<HTMLButtonElement>;
+  showDrawerToggles?: boolean;
 };
 
 export function TopBar({
@@ -41,6 +42,7 @@ export function TopBar({
   onExport,
   paletteButtonRef,
   inspectorButtonRef,
+  showDrawerToggles = false,
 }: TopBarProps) {
   const store = useEditorStoreApi();
   const { canUndo, canRedo } = useEditorStore(
@@ -62,28 +64,32 @@ export function TopBar({
         <p className={styles.documentTitle}>{documentTitle}</p>
       </div>
       <p className={styles.help}>Editor de diagramas de casos de uso</p>
-      <div className={styles.drawerToggles}>
-        <ToolButton
-          ref={paletteButtonRef}
-          icon="palette"
-          label="Paleta"
-          description={paletteOpen ? "Cerrar paleta." : "Abrir paleta."}
-          placement="bottom"
-          aria-expanded={paletteOpen}
-          aria-controls="editor-palette"
-          onClick={onTogglePalette}
-        />
-        <ToolButton
-          ref={inspectorButtonRef}
-          icon="inspector"
-          label="Inspector"
-          description={inspectorOpen ? "Cerrar inspector." : "Abrir inspector."}
-          placement="bottom"
-          aria-expanded={inspectorOpen}
-          aria-controls="editor-inspector"
-          onClick={onToggleInspector}
-        />
-      </div>
+      {showDrawerToggles ? (
+        <div className={styles.drawerToggles}>
+          <ToolButton
+            ref={paletteButtonRef}
+            icon="palette"
+            label="Paleta"
+            description={paletteOpen ? "Cerrar paleta." : "Abrir paleta."}
+            placement="bottom"
+            aria-expanded={paletteOpen}
+            aria-controls="editor-palette"
+            onClick={onTogglePalette}
+          />
+          <ToolButton
+            ref={inspectorButtonRef}
+            icon="inspector"
+            label="Inspector"
+            description={
+              inspectorOpen ? "Cerrar inspector." : "Abrir inspector."
+            }
+            placement="bottom"
+            aria-expanded={inspectorOpen}
+            aria-controls="editor-inspector"
+            onClick={onToggleInspector}
+          />
+        </div>
+      ) : null}
       <div className={styles.actions}>
         <ToolButton
           icon="newDiagram"

@@ -42,6 +42,7 @@
   --shell-palette-width: 13.75rem;
   --shell-inspector-width: 17.5rem;
   --shell-drawer-max: 18rem;
+  --shell-panel-rail-width: 2rem;
 
   --z-drawer: 20;
   --z-backdrop: 15;

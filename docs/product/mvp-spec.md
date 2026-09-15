@@ -45,7 +45,8 @@ Los ítems «MVP recomendado» **sí se implementan** en este MVP. «Post-MVP» 
 | Inspector derecho | Nombre, tipo, endpoints, errores; alternativa de relación por teclado | MVP recomendado |
 | Status bar | Zoom y Guardando / Guardado / Error. Workspace vacío: «—» hasta el primer autosave o restore. Sin toast de éxito de autosave | MVP recomendado |
 | Atajos listados más abajo | Teclado de alta frecuencia | MVP recomendado |
-| Drawers 768–1023 px | Paleta e inspector colapsables | MVP recomendado |
+| Drawers 768–1023 px | Paleta e inspector colapsables (overlay, exclusión mutua) | MVP recomendado |
+| Paneles ≥1024 px | Paleta e inspector ocultables con letras `<<` / `>>` arriba (ghost); al ocultar, letra invertida en el riel residual; chrome de sesión, no persistido | MVP recomendado |
 | Aviso `<768` px | Edición no soportada; datos intactos | MVP recomendado |
 | Identidad visual | Marca ArkUML fija, iconos SVG locales y tooltips accesibles. Contrato: `docs/product/brand-system.md` | Pulido post-RC (fase 9) |
 | Minimap, auto-layout, alignment guides, waypoints | — | Post-MVP |
@@ -171,7 +172,7 @@ Incluido:
 - Orden de tabulación lógico y foco visible. No se ocultan controles enfocados.
 - Región `aria-live` única para creación, borrado, errores de conexión y estado de guardado. Los avisos geométricos viven en el inspector, no en esa región.
 - Operaciones esenciales por teclado: paleta + inspector para colocar elementos; inspector para elegir extremos de relación sin arrastrar handles.
-- Focus trap y retorno de foco en diálogos; drawers 768–1023 px operables (inert / fuera de tabulación al cerrar).
+- Focus trap y retorno de foco en diálogos; drawers 768–1023 px operables; paleta e inspector ocultos en ≥1024 px también `inert` / fuera de tabulación.
 - Contraste de notación que no dependa solo del color (sólida vs discontinua, presencia de flecha y estereotipo).
 - Scan axe del shell y estados principales; cero violaciones critical/serious en lo cubierto.
 

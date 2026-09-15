@@ -92,7 +92,8 @@ Slices del store:
 
 Persistido: `document` + `viewport` dentro de `WorkspaceSnapshot`.
 
-No persistido: selección, historial, herramienta, hover, mensajes.
+No persistido: selección, historial, herramienta, hover, mensajes,
+visibilidad de paleta e inspector.
 
 ## Historial
 

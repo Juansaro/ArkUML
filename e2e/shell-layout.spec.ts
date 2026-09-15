@@ -54,6 +54,69 @@ test("drawers de paleta e inspector entre 768 y 1023 px", async ({ page }) => {
   ).not.toBeInViewport();
 });
 
+test("oculta paleta e inspector de forma independiente en desktop", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const paletteToggle = page.getByRole("button", { name: "Paleta" });
+  const inspectorToggle = page.getByRole("button", { name: "Inspector" });
+  const palette = page.getByRole("navigation", { name: "Paleta" });
+  const inspector = page.getByRole("complementary", { name: "Inspector" });
+  const canvas = page.getByRole("main", { name: "Lienzo" });
+
+  await expect(paletteToggle).toBeVisible();
+  await expect(inspectorToggle).toBeVisible();
+  await expect(
+    page.getByRole("banner").getByRole("button", { name: "Paleta" }),
+  ).toHaveCount(0);
+  await expect(paletteToggle).toHaveAttribute("aria-expanded", "true");
+  await expect(inspectorToggle).toHaveAttribute("aria-expanded", "true");
+  await expect(palette).toBeVisible();
+  await expect(inspector).toBeVisible();
+
+  const canvasBefore = await canvas.boundingBox();
+
+  await paletteToggle.click();
+  await expect(paletteToggle).toHaveAttribute("aria-expanded", "false");
+  await expect(
+    page.getByRole("navigation", { name: "Paleta", includeHidden: true }),
+  ).toBeHidden();
+  await expect(inspector).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Cerrar paneles" }),
+  ).toHaveCount(0);
+
+  const canvasAfterHidePalette = await canvas.boundingBox();
+  expect(canvasAfterHidePalette?.width ?? 0).toBeGreaterThan(
+    canvasBefore?.width ?? 0,
+  );
+  const hiddenPaletteRail = await paletteToggle.boundingBox();
+  expect(hiddenPaletteRail?.x ?? 80).toBeLessThan(40);
+
+  await inspectorToggle.click();
+  await expect(inspectorToggle).toHaveAttribute("aria-expanded", "false");
+  await expect(
+    page.getByRole("complementary", { name: "Inspector", includeHidden: true }),
+  ).toBeHidden();
+  await expect(
+    page.getByRole("navigation", { name: "Paleta", includeHidden: true }),
+  ).toBeHidden();
+
+  await paletteToggle.click();
+  await expect(page.getByRole("navigation", { name: "Paleta" })).toBeVisible();
+  await expect(
+    page.getByRole("complementary", { name: "Inspector", includeHidden: true }),
+  ).toBeHidden();
+
+  await inspectorToggle.click();
+  await expect(
+    page.getByRole("complementary", { name: "Inspector" }),
+  ).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Paleta" })).toBeVisible();
+});
+
 test("aviso bajo 768 px sin desmontar el shell", async ({ page }) => {
   await page.setViewportSize({ width: 500, height: 720 });
   await page.goto("/");
