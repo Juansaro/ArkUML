@@ -101,7 +101,7 @@ test.describe("accesibilidad", { tag: "@a11y" }, () => {
     await paletteToggle.press("Enter");
     const palette = page.getByRole("navigation", { name: "Paleta" });
     await expect(palette).toBeInViewport();
-    await expect(page.getByRole("button", { name: "Actor" })).toBeFocused();
+    await expect(page.getByRole("button", { name: "Selección" })).toBeFocused();
     await page.keyboard.press("Escape");
     await page.keyboard.press("Escape");
     await expect(paletteToggle).toBeFocused();

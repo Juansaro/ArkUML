@@ -23,6 +23,9 @@ describe("excludeExportChrome", () => {
       false,
     );
     expect(
+      excludeExportChrome(node({ class: "react-flow__edgeupdater" })),
+    ).toBe(false);
+    expect(
       excludeExportChrome(node({ class: "react-flow__edge-interaction" })),
     ).toBe(false);
     expect(excludeExportChrome(node({ class: "react-flow__background" }))).toBe(

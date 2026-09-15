@@ -403,10 +403,12 @@ describe("Inspector", () => {
     expect(screen.getByTestId("inspector-type")).toHaveTextContent(
       "Asociación",
     );
-    expect(screen.getByTestId("inspector-source")).toHaveTextContent(
+    expect(screen.getByTestId("inspector-source")).toHaveValue(actor.id);
+    expect(screen.getByTestId("inspector-source")).toHaveDisplayValue(
       "Actor Usuario",
     );
-    expect(screen.getByTestId("inspector-target")).toHaveTextContent(
+    expect(screen.getByTestId("inspector-target")).toHaveValue(useCase.id);
+    expect(screen.getByTestId("inspector-target")).toHaveDisplayValue(
       "Caso de uso Login",
     );
     expect(screen.queryByLabelText("Nombre")).not.toBeInTheDocument();
@@ -483,14 +485,99 @@ describe("Inspector", () => {
     expect(screen.getByTestId("inspector-type")).toHaveTextContent("Include");
     expect(screen.getByText("Origen (incluye)")).toBeInTheDocument();
     expect(screen.getByText("Destino (incluido)")).toBeInTheDocument();
-    expect(screen.getByTestId("inspector-source")).toHaveTextContent(
+    expect(screen.getByTestId("inspector-source")).toHaveValue(logout.id);
+    expect(screen.getByTestId("inspector-source")).toHaveDisplayValue(
       "Caso de uso Logout",
     );
-    expect(screen.getByTestId("inspector-target")).toHaveTextContent(
+    expect(screen.getByTestId("inspector-target")).toHaveValue(login.id);
+    expect(screen.getByTestId("inspector-target")).toHaveDisplayValue(
       "Caso de uso Login",
     );
     expect(screen.getByTestId("connection-help")).toBeInTheDocument();
     expect(screen.queryByLabelText("Nombre")).not.toBeInTheDocument();
+  });
+
+  it("cambia el destino de include desde el inspector y rechaza duplicado", async () => {
+    const user = userEvent.setup();
+    const store = createStore();
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Logout",
+        geometry: { ...USE_CASE_GEOMETRY, x: 280 },
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Pago",
+        geometry: { ...USE_CASE_GEOMETRY, y: 200 },
+      }),
+    );
+    const login = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Login",
+      );
+    const logout = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Logout",
+      );
+    const pago = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Pago",
+      );
+    if (login === undefined || logout === undefined || pago === undefined) {
+      throw new Error("Faltan casos de uso");
+    }
+    expectOk(
+      store.getState().connect({
+        kind: "include",
+        sourceId: login.id,
+        targetId: logout.id,
+        sourceAnchor: "right",
+        targetAnchor: "left",
+      }),
+    );
+    expectOk(
+      store.getState().connect({
+        kind: "include",
+        sourceId: login.id,
+        targetId: pago.id,
+        sourceAnchor: "bottom",
+        targetAnchor: "top",
+      }),
+    );
+    const first = store.getState().document.relationships[0];
+    if (first === undefined) {
+      throw new Error("Falta include");
+    }
+    store.getState().setSelection({
+      elementIds: [],
+      relationshipIds: [first.id],
+    });
+
+    renderInspector(store);
+
+    await user.selectOptions(screen.getByTestId("inspector-target"), pago.id);
+    expect(store.getState().document.relationships[0]?.targetId).toBe(
+      logout.id,
+    );
+    expect(store.getState().ui.message).toMatch(/ya existe una relación/i);
+
+    await user.selectOptions(screen.getByTestId("inspector-source"), pago.id);
+    expect(store.getState().document.relationships[0]).toMatchObject({
+      id: first.id,
+      sourceId: pago.id,
+      targetId: logout.id,
+    });
+    expect(store.getState().ui.message).toBe("Se actualizó include.");
   });
 
   it("coloca un actor desde el inspector y enfoca el nombre", async () => {

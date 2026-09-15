@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { canvasElementName } from "./support.ts";
+import { canvasElementName, selectedEndpoint } from "./support.ts";
 
 async function connectHandles(
   page: Page,
@@ -76,14 +76,29 @@ test("include conserva el sentido del drag, anuncia y deshace", async ({
     "marker-end",
   );
   await expect(page.getByTestId("editor-live")).toHaveText("Se creó include.");
+  await expect(page.getByRole("button", { name: "Selección" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.getByRole("button", { name: "Include" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await expect(canvas).toHaveAttribute("data-show-handles", "false");
   await expect(inspector.getByTestId("inspector-type")).toHaveText("Include");
   await expect(inspector.getByText("Origen (incluye)")).toBeVisible();
-  await expect(inspector.getByTestId("inspector-source")).toHaveText(
+  await expect(selectedEndpoint(inspector, "inspector-source")).toHaveText(
     "Caso de uso Caso de uso",
   );
-  await expect(inspector.getByTestId("inspector-target")).toHaveText(
+  await expect(selectedEndpoint(inspector, "inspector-target")).toHaveText(
     "Caso de uso Caso de uso 2",
   );
+
+  await included.click();
+  await expect(inspector.getByTestId("inspector-type")).toHaveText(
+    "Caso de uso",
+  );
+  await expect(inspector.getByLabel("Nombre")).toHaveValue("Caso de uso 2");
 
   await edge.click();
   await page.keyboard.press("Delete");
@@ -113,16 +128,17 @@ test("el drag inverso de include no se reescribe como el sentido contrario", asy
     "Include entre Caso de uso 2 y Caso de uso",
   );
   await expect(reverseEdge).toBeVisible();
-  await expect(inspector.getByTestId("inspector-source")).toHaveText(
+  await expect(selectedEndpoint(inspector, "inspector-source")).toHaveText(
     "Caso de uso Caso de uso 2",
   );
-  await expect(inspector.getByTestId("inspector-target")).toHaveText(
+  await expect(selectedEndpoint(inspector, "inspector-target")).toHaveText(
     "Caso de uso Caso de uso",
   );
   await expect(
     canvas.getByLabel("Include entre Caso de uso y Caso de uso 2"),
   ).toHaveCount(0);
 
+  await page.getByRole("button", { name: "Include" }).click();
   await connectHandles(
     page,
     included.locator(".react-flow__handle-left").last(),
@@ -164,13 +180,14 @@ test("extend apunta al caso base y rechaza self o actor", async ({ page }) => {
   await expect(page.getByTestId("editor-live")).toHaveText("Se creó extend.");
   await expect(inspector.getByText("Origen (extiende)")).toBeVisible();
   await expect(inspector.getByText("Destino (caso base)")).toBeVisible();
-  await expect(inspector.getByTestId("inspector-source")).toHaveText(
+  await expect(selectedEndpoint(inspector, "inspector-source")).toHaveText(
     "Caso de uso Caso de uso 2",
   );
-  await expect(inspector.getByTestId("inspector-target")).toHaveText(
+  await expect(selectedEndpoint(inspector, "inspector-target")).toHaveText(
     "Caso de uso Caso de uso",
   );
 
+  await page.getByRole("button", { name: "Extend" }).click();
   await connectHandles(
     page,
     including.locator(".react-flow__handle-top").last(),
@@ -210,6 +227,7 @@ test("un ciclo include avisa en el inspector y no bloquea la edición", async ({
     canvas.getByLabel("Include entre Caso de uso y Caso de uso 2"),
   ).toBeVisible();
 
+  await page.getByRole("button", { name: "Include" }).click();
   await connectHandles(
     page,
     included.locator(".react-flow__handle-left").last(),
@@ -250,4 +268,69 @@ test("un ciclo include avisa en el inspector y no bloquea la edición", async ({
   await expect(warnings).toContainText(
     "Login: Participa en un ciclo de Include.",
   );
+});
+
+test("click en include interno selecciona, cambia destino y borra solo la relación", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const inspector = page.getByRole("complementary", { name: "Inspector" });
+  const { canvas, including, included } = await createTwoUseCases(page);
+
+  await page.getByRole("button", { name: "Caso de uso" }).click();
+  await canvas.click({ position: { x: 220, y: 280 } });
+  await expect(canvasElementName(page, "Caso de uso 3")).toBeVisible();
+
+  await page.getByRole("button", { name: "Include" }).click();
+  await connectHandles(
+    page,
+    including.locator(".react-flow__handle-right").last(),
+    included.locator(".react-flow__handle-left").first(),
+  );
+  const edge = canvas.getByLabel("Include entre Caso de uso y Caso de uso 2");
+  await expect(edge).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await canvas
+    .locator(".react-flow__pane")
+    .click({ position: { x: 700, y: 80 } });
+  await expect(inspector.getByTestId("inspector-type")).toHaveCount(0);
+
+  const midPoint = await edge
+    .locator(".react-flow__edge-interaction")
+    .evaluate((node) => {
+      if (!(node instanceof SVGPathElement)) {
+        throw new Error("Falta el path de include");
+      }
+      const length = node.getTotalLength();
+      const pt = node.getPointAtLength(length * 0.5);
+      const ctm = node.getScreenCTM();
+      if (ctm === null) {
+        throw new Error("No hay CTM");
+      }
+      const screen = new DOMPoint(pt.x, pt.y).matrixTransform(ctm);
+      return { x: screen.x, y: screen.y };
+    });
+  await page.mouse.click(midPoint.x, midPoint.y);
+  await expect(inspector.getByTestId("inspector-type")).toHaveText("Include");
+  await expect(edge).toHaveClass(/selected/);
+
+  await inspector.getByTestId("inspector-target").selectOption({
+    label: "Caso de uso Caso de uso 3",
+  });
+  await expect(page.getByTestId("editor-live")).toHaveText(
+    "Se actualizó include.",
+  );
+  await expect(
+    canvas.getByLabel("Include entre Caso de uso y Caso de uso 3"),
+  ).toBeVisible();
+
+  await page.keyboard.press("Delete");
+  await expect(
+    canvas.getByLabel("Include entre Caso de uso y Caso de uso 3"),
+  ).toHaveCount(0);
+  await expect(canvasElementName(page, "Caso de uso")).toBeVisible();
+  await expect(canvasElementName(page, "Caso de uso 2")).toBeVisible();
+  await expect(canvasElementName(page, "Caso de uso 3")).toBeVisible();
 });

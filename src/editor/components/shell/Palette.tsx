@@ -5,6 +5,7 @@ import {
   BOUNDARY_EXISTS_REASON,
   PALETTE_ELEMENT_TOOLS,
   PALETTE_RELATIONSHIP_TOOLS,
+  PALETTE_SELECT_TOOL,
 } from "./paletteTools.ts";
 import { selectHasSystemBoundary, selectTool } from "../../store/selectors.ts";
 import {
@@ -15,10 +16,12 @@ import type { EditorTool } from "../../store/editorStore.ts";
 import styles from "./Palette.module.css";
 
 const PALETTE_ICONS: Record<
+  | (typeof PALETTE_SELECT_TOOL)["id"]
   | (typeof PALETTE_ELEMENT_TOOLS)[number]["id"]
   | (typeof PALETTE_RELATIONSHIP_TOOLS)[number]["id"],
   IconName
 > = {
+  select: "select",
   actor: "actor",
   "use-case": "useCase",
   "system-boundary": "systemBoundary",
@@ -28,10 +31,13 @@ const PALETTE_ICONS: Record<
 };
 
 const PALETTE_DESCRIPTIONS: Record<
+  | (typeof PALETTE_SELECT_TOOL)["id"]
   | (typeof PALETTE_ELEMENT_TOOLS)[number]["id"]
   | (typeof PALETTE_RELATIONSHIP_TOOLS)[number]["id"],
   string
 > = {
+  select:
+    "Seleccionar elementos y relaciones. Copiar, pegar o eliminar lo seleccionado.",
   actor: "Crear actor.",
   "use-case": "Crear caso de uso.",
   "system-boundary": "Crear límite del sistema.",
@@ -60,6 +66,23 @@ export function Palette({ headingId }: PaletteProps) {
       <h2 id={headingId} className={styles.heading}>
         Paleta
       </h2>
+      <section className={styles.group}>
+        <ul className={styles.list}>
+          <li>
+            <ToolButton
+              variant="row"
+              icon={PALETTE_ICONS[PALETTE_SELECT_TOOL.id]}
+              label={PALETTE_SELECT_TOOL.label}
+              description={PALETTE_DESCRIPTIONS[PALETTE_SELECT_TOOL.id]}
+              placement="right"
+              pressed={tool === PALETTE_SELECT_TOOL.id}
+              onClick={() => {
+                selectElementTool(PALETTE_SELECT_TOOL.id);
+              }}
+            />
+          </li>
+        </ul>
+      </section>
       <section className={styles.group}>
         <h3 className={styles.groupTitle}>Elementos</h3>
         <ul className={styles.list}>

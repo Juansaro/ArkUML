@@ -25,9 +25,18 @@ La UI no llama a `toObject()` para guardar.
 
 - Click izquierdo + drag sobre nodo: mover (transacción).
 - Click izquierdo + drag en vacío: marquee.
+- Click en Association, Include o Extend (trazo, hit area o estereotipo):
+  selecciona la relación. El relleno del SystemBoundary no captura ese
+  click; título, resizer y handles del boundary sí. Actores y casos
+  siguen por encima de las líneas.
+- Relación seleccionada: Delete la elimina; el inspector y el drag de un
+  extremo cambian origen/destino con la misma matriz `canConnect`.
 - Space+drag o botón medio: pan.
 - Rueda: zoom al cursor.
-- Handles visibles en hover, selección o modo relación.
+- Handles visibles en hover, selección o modo relación. Crear
+  Association, Include o Extend vuelve a la herramienta Selección
+  (handles de conexión ocultos). Un intento inválido permanece en
+  el modo relación.
 - Fit view no muta el documento.
 - Atribución de React Flow **visible** (MIT no obliga a ocultarla; la política del proyecto es no ocultarla sin decisión comercial). Ver [ADR-002](../decisions/ADR-002-diagram-engine.md).
 

@@ -92,6 +92,13 @@ export function targetHandle(element: Locator): Locator {
   return element.locator(".react-flow__handle-left").first();
 }
 
+export function selectedEndpoint(
+  inspector: Locator,
+  testId: "inspector-source" | "inspector-target",
+): Locator {
+  return inspector.getByTestId(testId).locator("option:checked");
+}
+
 export async function downloadBytes(download: {
   path: () => Promise<string | null>;
 }): Promise<Buffer> {

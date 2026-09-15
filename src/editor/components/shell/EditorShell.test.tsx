@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { act } from "react";
 import { describe, expect, it } from "vitest";
@@ -78,12 +78,20 @@ describe("EditorShell", () => {
     const user = userEvent.setup();
     render(<EditorShell />);
 
+    const select = screen.getByRole("button", { name: "Selección" });
     const actor = screen.getByRole("button", { name: "Actor" });
     const useCase = screen.getByRole("button", { name: "Caso de uso" });
     const boundary = screen.getByRole("button", { name: "Límite del sistema" });
     const association = screen.getByRole("button", { name: "Asociación" });
     const include = screen.getByRole("button", { name: "Include" });
     const extend = screen.getByRole("button", { name: "Extend" });
+
+    expect(select).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(screen.getByRole("navigation", { name: "Paleta" })).getAllByRole(
+        "button",
+      )[0],
+    ).toBe(select);
 
     expect(actor).not.toHaveAttribute("aria-disabled", "true");
     expect(useCase).not.toHaveAttribute("aria-disabled", "true");
@@ -111,10 +119,21 @@ describe("EditorShell", () => {
 
     await user.click(actor);
     expect(actor).toHaveAttribute("aria-pressed", "true");
+    expect(select).toHaveAttribute("aria-pressed", "false");
+
+    await user.click(select);
+    expect(select).toHaveAttribute("aria-pressed", "true");
+    expect(actor).toHaveAttribute("aria-pressed", "false");
+    await user.click(select);
+    expect(select).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(actor);
+    expect(actor).toHaveAttribute("aria-pressed", "true");
 
     await user.keyboard("{Escape}");
     await user.keyboard("{Escape}");
     expect(actor).toHaveAttribute("aria-pressed", "false");
+    expect(select).toHaveAttribute("aria-pressed", "true");
 
     for (const tool of PALETTE_RELATIONSHIP_TOOLS) {
       const button = screen.getByRole("button", { name: tool.label });

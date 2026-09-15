@@ -47,6 +47,10 @@ export type CreateRelationshipInput = {
   targetAnchor: Anchor;
 };
 
+export type ReconnectRelationshipInput = CreateRelationshipInput & {
+  id: string;
+};
+
 const INVALID_NAME_MESSAGE = "El nombre debe tener entre 1 y 80 caracteres.";
 const BOUNDARY_EXISTS_MESSAGE = "El documento ya tiene un SystemBoundary.";
 const UNKNOWN_ELEMENT_MESSAGE = "No existe el elemento.";
@@ -519,6 +523,68 @@ export function createRelationship(
           deps,
         ),
       ],
+    },
+    deps,
+  );
+}
+
+export function reconnectRelationship(
+  document: DiagramDocument,
+  input: ReconnectRelationshipInput,
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  const existing = document.relationships.find(
+    (relationship) => relationship.id === input.id,
+  );
+  if (existing === undefined) {
+    return err("UNKNOWN_RELATIONSHIP", UNKNOWN_RELATIONSHIP_MESSAGE);
+  }
+
+  const withoutCurrent: DiagramDocument = {
+    ...document,
+    relationships: document.relationships.filter(
+      (relationship) => relationship.id !== input.id,
+    ),
+  };
+  const allowed = canConnect(withoutCurrent, {
+    kind: existing.kind,
+    sourceId: input.sourceId,
+    targetId: input.targetId,
+  });
+  if (!allowed.ok) {
+    return allowed;
+  }
+
+  const swapped =
+    allowed.value.sourceId !== input.sourceId ||
+    allowed.value.targetId !== input.targetId;
+  const sourceAnchor = swapped ? input.targetAnchor : input.sourceAnchor;
+  const targetAnchor = swapped ? input.sourceAnchor : input.targetAnchor;
+
+  if (
+    existing.sourceId === allowed.value.sourceId &&
+    existing.targetId === allowed.value.targetId &&
+    existing.sourceAnchor === sourceAnchor &&
+    existing.targetAnchor === targetAnchor
+  ) {
+    return ok(document);
+  }
+
+  return commit(
+    document,
+    {
+      relationships: document.relationships.map((relationship) => {
+        if (relationship.id !== input.id) {
+          return relationship;
+        }
+        return {
+          ...relationship,
+          sourceId: allowed.value.sourceId,
+          targetId: allowed.value.targetId,
+          sourceAnchor,
+          targetAnchor,
+        };
+      }),
     },
     deps,
   );

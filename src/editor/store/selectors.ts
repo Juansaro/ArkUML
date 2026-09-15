@@ -1,4 +1,5 @@
 import type {
+  Anchor,
   DiagramDocument,
   DiagramElement,
   RelationshipKind,
@@ -179,6 +180,10 @@ export type InspectorView =
       id: string;
       kind: RelationshipKind;
       typeLabel: string;
+      sourceId: string;
+      targetId: string;
+      sourceAnchor: Anchor;
+      targetAnchor: Anchor;
       sourceLabel: string;
       targetLabel: string;
     };
@@ -227,6 +232,10 @@ export function selectInspectorView(state: EditorStore): InspectorView {
     id: relationship.id,
     kind: relationship.kind,
     typeLabel: relationshipTypeLabel(relationship.kind),
+    sourceId: relationship.sourceId,
+    targetId: relationship.targetId,
+    sourceAnchor: relationship.sourceAnchor,
+    targetAnchor: relationship.targetAnchor,
     sourceLabel: endpointLabel(state.document, relationship.sourceId),
     targetLabel: endpointLabel(state.document, relationship.targetId),
   };

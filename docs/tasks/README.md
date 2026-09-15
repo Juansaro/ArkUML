@@ -76,8 +76,7 @@ Gobierno y estado: [post-024/README.md](post-024/README.md). Roadmap
 (catálogo): [post-024/roadmap.md](post-024/roadmap.md).
 
 Wave 1 congelada (**Editor local sobre schema 1**). Wave 2 congelada
-(**Intercambio y distribución sobre schema 1**). Próximo contrato
-ejecutable: [TASK-039](post-024/13-editor/TASK-039.md). Siguientes
-en la wave: [TASK-040](post-024/15-export/TASK-040.md),
-[TASK-041](post-024/17-ecosystem/TASK-041.md). No duplicar aquí los
-contratos.
+(**Intercambio y distribución sobre schema 1**). Remediación 1.x:
+[TASK-042](post-024/13-editor/TASK-042.md) (selección y retarget de
+relaciones) `Hecha`. [TASK-043](post-024/13-editor/TASK-043.md) (modo
+Selección en paleta) `En curso`. No duplicar aquí los contratos.

@@ -5,6 +5,7 @@
   height: 100%;
   color: var(--color-fg);
   font-size: var(--font-size-sm);
+  pointer-events: none;
 }
 
 .node[data-selected="true"] {
@@ -31,6 +32,7 @@
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+  pointer-events: auto;
 }
 
 .resizeHandle {
@@ -38,8 +40,10 @@
   height: 12px;
   border-color: var(--color-focus);
   background-color: var(--color-focus);
+  pointer-events: auto;
 }
 
 .resizeLine {
   border-color: var(--color-focus);
+  pointer-events: auto;
 }

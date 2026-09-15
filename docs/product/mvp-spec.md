@@ -40,7 +40,7 @@ Los ítems «MVP recomendado» **sí se implementan** en este MVP. «Post-MVP» 
 | Superficie / capacidad | Comportamiento | Clasificación |
 | --- | --- | --- |
 | Top bar | Título, Nuevo, undo/redo, Exportar, ayuda breve | MVP |
-| Paleta izquierda | Actor, Caso de uso, Boundary, Association, Include, Extend. Click-tool → click-canvas | MVP |
+| Paleta izquierda | Selección, Actor, Caso de uso, Boundary, Association, Include, Extend. Click-tool → click-canvas; crear una relación vuelve a Selección | MVP |
 | Canvas | Grid 16, selección, marquee, handles contextuales, zoom/pan/fit | MVP |
 | Inspector derecho | Nombre, tipo, endpoints, errores; alternativa de relación por teclado | MVP recomendado |
 | Status bar | Zoom y Guardando / Guardado / Error. Workspace vacío: «—» hasta el primer autosave o restore. Sin toast de éxito de autosave | MVP recomendado |

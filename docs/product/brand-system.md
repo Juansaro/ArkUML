@@ -294,6 +294,12 @@ cual.
 <path d="M4 15h5v5" />
 ```
 
+**`select`** — puntero de selección:
+
+```text
+<path d="M6 4v16l4.5-4.5 2.2 5.3 2.4-1-2.2-5.3H19z" />
+```
+
 **`actor`** — figura UML de palo (canónica, no el viewBox 48×72 del nodo):
 
 ```text
@@ -352,8 +358,8 @@ estereotipo del diagrama.
 
 Los ids de `Icon` van en camelCase. En paleta se conectan a los `EditorTool`
 existentes sin renombrar ni el icono ni la herramienta: `useCase` →
-`use-case`, `systemBoundary` → `system-boundary`. El resto coincide (`actor`,
-`association`, `include`, `extend`).
+`use-case`, `systemBoundary` → `system-boundary`. El resto coincide (`select`,
+`actor`, `association`, `include`, `extend`).
 
 ## Matriz de controles
 
@@ -374,6 +380,7 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Top bar | `redo` | Icon-only | Rehacer | «Rehacer (Ctrl/Cmd+Shift+Z o Ctrl/Cmd+Y).» | «Nada que rehacer (Ctrl/Cmd+Shift+Z o Ctrl/Cmd+Y).» |
 | Top bar | `export` | Icon-only | Exportar | «Exportar como PNG o JPG.» | — |
 | Top bar | `help` | Icon-only | Ayuda | «Ver ayuda y atajos.» | — |
+| Paleta | `select` | Icono + etiqueta. Primer control | Selección | «Seleccionar elementos y relaciones. Copiar, pegar o eliminar lo seleccionado.» | — |
 | Paleta | `actor` | Icono + etiqueta | Actor | «Crear actor.» | — |
 | Paleta | `useCase` | Icono + etiqueta | Caso de uso | «Crear caso de uso.» | — |
 | Paleta | `systemBoundary` | Icono + etiqueta | Límite del sistema | «Crear límite del sistema.» | Reutilizar `BOUNDARY_EXISTS_REASON`: «Ya existe un límite del sistema. El documento admite uno solo.» |

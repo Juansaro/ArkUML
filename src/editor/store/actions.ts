@@ -14,6 +14,7 @@ import {
   duplicateElements as duplicateElementsOperation,
   insertElementCopies as insertElementCopiesOperation,
   moveElements,
+  reconnectRelationship as reconnectRelationshipOperation,
   renameElement as renameElementOperation,
   reparentUseCase as reparentUseCaseOperation,
   resizeBoundary,
@@ -21,6 +22,7 @@ import {
   type CreateRelationshipInput,
   type ElementCopy,
   type ElementMove,
+  type ReconnectRelationshipInput,
 } from "../../domain/diagram/operations.ts";
 import type {
   DialogMode,
@@ -68,6 +70,7 @@ export type EditorActions = {
     parentId: string | undefined,
   ) => Result<DiagramDocument>;
   connect: (input: CreateRelationshipInput) => Result<DiagramDocument>;
+  reconnect: (input: ReconnectRelationshipInput) => Result<DiagramDocument>;
   deleteElements: (elementIds: readonly string[]) => Result<DiagramDocument>;
   deleteRelationships: (
     relationshipIds: readonly string[],
@@ -158,6 +161,10 @@ export function createEditorActions(
       ),
     connect: (input) =>
       apply((document) => createRelationship(document, input, deps)),
+    reconnect: (input) =>
+      apply((document) =>
+        reconnectRelationshipOperation(document, input, deps),
+      ),
     deleteElements: (elementIds) =>
       apply((document) => deleteElementsOperation(document, elementIds, deps)),
     deleteRelationships: (relationshipIds) =>

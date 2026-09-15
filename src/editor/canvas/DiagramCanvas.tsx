@@ -11,6 +11,7 @@ import {
   useStore,
   useViewport,
   type OnMoveEnd,
+  type OnReconnect,
   type OnSelectionChangeFunc,
   type ReactFlowState,
 } from "@xyflow/react";
@@ -20,6 +21,7 @@ import { useCompactLayout } from "../a11y/useCompactLayout.ts";
 import { copySelection, pasteSelection } from "../shortcuts/editorCommands.ts";
 import {
   mapDocumentToReactFlow,
+  type DiagramEdge,
   type DiagramNode,
 } from "../adapters/reactFlowMapper.ts";
 import { ToolButton } from "../components/common/ToolButton.tsx";
@@ -40,6 +42,11 @@ import {
 import { useCreateElementTool } from "../tools/useCreateElementTool.ts";
 import { useRelationshipTool } from "../tools/useRelationshipTool.ts";
 import { isCreateElementTool } from "../tools/createElementTool.ts";
+import {
+  anchorFromHandle,
+  commitReconnect,
+  isRelationshipTool,
+} from "../tools/relationshipTool.ts";
 import {
   FlowDiagramMinimapNode,
   minimapNodeClassName,
@@ -122,7 +129,8 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
       }
       if (
         event.target instanceof Element &&
-        event.target.closest(".react-flow__node") !== null
+        (event.target.closest(".react-flow__node") !== null ||
+          event.target.closest(".react-flow__edge") !== null)
       ) {
         return;
       }
@@ -207,6 +215,40 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
     setContextMenu(null);
   }, []);
 
+  const onEdgeClick = useCallback(
+    (_event: { stopPropagation?: () => void }, edge: DiagramEdge) => {
+      if (placing) {
+        return;
+      }
+      if (isRelationshipTool(store.getState().tool)) {
+        store.getState().setTool("select");
+      }
+      store.getState().setSelection({
+        elementIds: [],
+        relationshipIds: [edge.id],
+      });
+    },
+    [placing, store],
+  );
+
+  const onReconnect = useCallback<OnReconnect>(
+    (oldEdge, connection) => {
+      const kind = oldEdge.data?.kind;
+      if (kind !== "association" && kind !== "include" && kind !== "extend") {
+        return;
+      }
+      commitReconnect(store, {
+        id: oldEdge.id,
+        kind,
+        sourceId: connection.source,
+        targetId: connection.target,
+        sourceAnchor: anchorFromHandle(connection.sourceHandle),
+        targetAnchor: anchorFromHandle(connection.targetHandle),
+      });
+    },
+    [store],
+  );
+
   const onCopyFromMenu = useCallback(() => {
     copySelection(store);
   }, [store]);
@@ -269,6 +311,7 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
         onPaneClick={onPaneClick}
         onPaneContextMenu={onPaneContextMenu}
         onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onPaneContextMenu}
         onSelectionContextMenu={onPaneContextMenu}
@@ -282,6 +325,7 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
         onNodesChange={nodeDrag.onNodesChange}
         onConnect={onConnect}
         onConnectEnd={onConnectEnd}
+        onReconnect={onReconnect}
         isValidConnection={isValidConnection}
         connectionMode={connectionMode}
         connectionLineType={ConnectionLineType.Straight}
@@ -296,7 +340,7 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
         nodesDraggable={!placing && !connecting}
         nodesConnectable={connecting}
         elementsSelectable={!placing}
-        edgesReconnectable={false}
+        edgesReconnectable={!placing && !connecting}
         connectOnClick={false}
         deleteKeyCode={null}
         disableKeyboardA11y

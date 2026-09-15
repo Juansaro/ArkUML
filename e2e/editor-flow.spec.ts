@@ -58,8 +58,9 @@ test(
     await expect(
       canvas.getByLabel("Asociación entre Usuario y Caso de uso"),
     ).toBeVisible();
-
-    await page.keyboard.press("Escape");
+    await expect(
+      page.getByRole("button", { name: "Selección" }),
+    ).toHaveAttribute("aria-pressed", "true");
     await expect(
       page.getByRole("button", { name: "Asociación" }),
     ).toHaveAttribute("aria-pressed", "false");
@@ -90,7 +91,6 @@ test(
       "Include entre Caso de uso y Caso de uso 2",
     );
     await expect(includeEdge).toBeVisible();
-    await page.keyboard.press("Escape");
     await expect(page.getByRole("button", { name: "Include" })).toHaveAttribute(
       "aria-pressed",
       "false",

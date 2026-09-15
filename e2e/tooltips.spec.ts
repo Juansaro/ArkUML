@@ -54,6 +54,12 @@ test.describe("tooltips del chrome", () => {
       page.getByRole("button", { name: "Deshacer" }),
     ).toHaveAttribute("aria-disabled", "true");
 
+    await expectTooltipCopy(
+      page,
+      "Selección",
+      "Seleccionar elementos y relaciones. Copiar, pegar o eliminar lo seleccionado.",
+    );
+
     await page.getByRole("button", { name: "Include" }).focus();
     await expect(page.getByTestId("editor-tooltip")).toHaveText(
       "Origen: caso que incluye. Destino: caso incluido. Arrastra del origen al destino; el sentido no se invierte.",

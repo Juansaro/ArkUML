@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { canvasElementName } from "./support.ts";
+import { canvasElementName, selectedEndpoint } from "./support.ts";
 
 async function dragBy(
   page: Page,
@@ -84,18 +84,21 @@ test("conecta Actor y Caso de uso, mueve, selecciona, borra y deshace", async ({
   await expect(inspector.getByTestId("inspector-type")).toHaveText(
     "Asociación",
   );
-  await expect(inspector.getByTestId("inspector-source")).toHaveText(
+  await expect(selectedEndpoint(inspector, "inspector-source")).toHaveText(
     "Actor Actor",
   );
-  await expect(inspector.getByTestId("inspector-target")).toHaveText(
+  await expect(selectedEndpoint(inspector, "inspector-target")).toHaveText(
     "Caso de uso Caso de uso",
   );
   await expect(inspector.getByLabel("Nombre")).toHaveCount(0);
-
-  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Selección" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
   await expect(
     page.getByRole("button", { name: "Asociación" }),
   ).toHaveAttribute("aria-pressed", "false");
+  await expect(canvas).toHaveAttribute("data-show-handles", "false");
 
   const edgePath = edge.locator(".react-flow__edge-path");
   const pathBefore = await edgePath.getAttribute("d");
@@ -152,10 +155,10 @@ test("el drag inverso normaliza el actor como origen y un intento inválido no m
   await expect(
     canvas.getByLabel("Asociación entre Actor y Caso de uso"),
   ).toBeVisible();
-  await expect(inspector.getByTestId("inspector-source")).toHaveText(
+  await expect(selectedEndpoint(inspector, "inspector-source")).toHaveText(
     "Actor Actor",
   );
-  await expect(inspector.getByTestId("inspector-target")).toHaveText(
+  await expect(selectedEndpoint(inspector, "inspector-target")).toHaveText(
     "Caso de uso Caso de uso",
   );
 

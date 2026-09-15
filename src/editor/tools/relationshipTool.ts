@@ -6,7 +6,10 @@ import type {
   Result,
 } from "../../domain/diagram/model.ts";
 import { canConnect } from "../../domain/diagram/rules.ts";
-import type { CreateRelationshipInput } from "../../domain/diagram/operations.ts";
+import type {
+  CreateRelationshipInput,
+  ReconnectRelationshipInput,
+} from "../../domain/diagram/operations.ts";
 import { elementAccessibleName } from "../a11y/labels.ts";
 import type { EditorStoreApi, EditorTool } from "../store/editorStore.ts";
 
@@ -60,6 +63,18 @@ export function createdRelationshipAnnouncement(
     return "Se creó include.";
   }
   return "Se creó extend.";
+}
+
+export function updatedRelationshipAnnouncement(
+  kind: RelationshipTool,
+): string {
+  if (kind === "association") {
+    return "Se actualizó la asociación.";
+  }
+  if (kind === "include") {
+    return "Se actualizó include.";
+  }
+  return "Se actualizó extend.";
 }
 
 export function relationshipConnectionHelp(
@@ -257,6 +272,34 @@ export function commitRelationship(
       relationshipIds: [created.id],
     });
     store.getState().setMessage(createdRelationshipAnnouncement(created.kind));
+    store.getState().setTool("select");
+  }
+  return result;
+}
+
+export function commitReconnect(
+  store: EditorStoreApi,
+  input: ReconnectRelationshipInput,
+): Result<DiagramDocument> {
+  const before = store.getState().document;
+  const result = store.getState().reconnect(input);
+  if (!result.ok) {
+    return result;
+  }
+
+  store.getState().setSelection({
+    elementIds: [],
+    relationshipIds: [input.id],
+  });
+  if (result.value !== before) {
+    const updated = result.value.relationships.find(
+      (relationship) => relationship.id === input.id,
+    );
+    if (updated !== undefined) {
+      store
+        .getState()
+        .setMessage(updatedRelationshipAnnouncement(updated.kind));
+    }
   }
   return result;
 }

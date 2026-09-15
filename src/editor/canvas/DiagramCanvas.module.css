@@ -31,6 +31,7 @@
 
 .flow :global(.react-flow__node-system-boundary) {
   overflow: visible;
+  pointer-events: none;
 }
 
 .flow :global(.react-flow__edge-path) {
@@ -46,6 +47,7 @@
 }
 
 .root[data-exporting="true"] :global(.react-flow__handle),
+.root[data-exporting="true"] :global(.react-flow__edgeupdater),
 .root[data-exporting="true"] :global(.react-flow__resize-control),
 .root[data-exporting="true"] :global(.react-flow__background),
 .root[data-exporting="true"] :global(.react-flow__controls),

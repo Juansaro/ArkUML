@@ -29,8 +29,8 @@ TASK-033 congeló la Wave 1 (**Editor local sobre schema 1**). TASK-034
 y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 (W17-01, W17-13); no congeló implementación. TASK-037 congeló la Wave 2
 (**Intercambio y distribución sobre schema 1**). TASK-038–041 están
-`Hecha`. Wave 2 cerrada. No hay TASK-042+ en este árbol hasta un freeze
-nuevo.
+`Hecha`. Wave 2 cerrada. TASK-042 y TASK-043 son remediación 1.x
+(defectos de selección; no son freeze de catálogo).
 
 ## Estado
 
@@ -53,6 +53,8 @@ nuevo.
 | 039 | [`13-editor/TASK-039.md`](13-editor/TASK-039.md) | Hecha | P1 | 037 | 2026-09-09: FR-P04; MiniMap xyflow (chrome); schema `1`; ausente <1024 px |
 | 040 | [`15-export/TASK-040.md`](15-export/TASK-040.md) | Hecha | P1 | 037 | 2026-09-09: FR-P05; Copiar PNG/JPG reutiliza `exportDiagram`; pin 1.11.11; schema `1` |
 | 041 | [`17-ecosystem/TASK-041.md`](17-ecosystem/TASK-041.md) | Hecha | P1 | 037 | 2026-09-14: FR-P06; `docs/operations/static-hosting.md`; README enlaza; sin secrets ni workflow |
+| 042 | [`13-editor/TASK-042.md`](13-editor/TASK-042.md) | Hecha | P0 | 014, 041 | 2026-09-14: click selecciona Association/Include/Extend; inspector y reconnect retargetean; interior del boundary pasante |
+| 043 | [`13-editor/TASK-043.md`](13-editor/TASK-043.md) | En curso | P0 | 042 | paleta Selección; crear relación vuelve a ese modo |
 
 ## Fases y gates
 
@@ -91,7 +93,7 @@ Gate (cumplido 2026-09-09):
 
 El inventario completo vive en [roadmap.md](roadmap.md), alineado con
 [`post-mvp-spec.md`](../../product/post-mvp-spec.md). Existen
-`12-uml/` (TASK-034), `13-editor/` (TASK-035 y TASK-039),
+`12-uml/` (TASK-034), `13-editor/` (TASK-035, TASK-039, TASK-042 y TASK-043),
 `14-persistence/` (TASK-038), `15-export/` (TASK-040) y
 `17-ecosystem/` (TASK-041). No hay `16-a11y/`. W17-01/13 y el resto del
 catálogo no son ejecutables.
@@ -112,8 +114,8 @@ no como 94 features pendientes.
 ## Próximo paso
 
 Wave 2 (**Intercambio y distribución sobre schema 1**) está `Hecha`
-(TASK-038–041). No hay contrato ejecutable siguiente en este árbol hasta
-un freeze nuevo. Una TASK por chat. W17-01/13 siguen bloqueadas.
+(TASK-038–041). TASK-042 está `Hecha`. TASK-043 (remediación 1.x,
+modo Selección) está `En curso`. W17-01/13 siguen bloqueadas.
 Multi-documento: no. IndexedDB: no elegido (condicional C-QUOTA). No
 implementar Generalization, PDF, temas ni un class diagram en estos
 chats.

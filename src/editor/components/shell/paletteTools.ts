@@ -1,3 +1,8 @@
+export const PALETTE_SELECT_TOOL = {
+  id: "select",
+  label: "Selección",
+} as const;
+
 export const PALETTE_ELEMENT_TOOLS = [
   {
     id: "actor",

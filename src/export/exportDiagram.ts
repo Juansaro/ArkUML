@@ -16,6 +16,7 @@ const CHROME_CLASS_FRAGMENTS = [
   "react-flow__attribution",
   "react-flow__minimap",
   "react-flow__handle",
+  "react-flow__edgeupdater",
   "react-flow__edge-interaction",
   "react-flow__background",
   "react-flow__selection",

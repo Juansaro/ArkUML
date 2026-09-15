@@ -22,6 +22,7 @@ import {
   duplicateElements,
   insertElementCopies,
   moveElements,
+  reconnectRelationship,
   snapshotDuplicableElements,
   renameElement,
   reparentUseCase,
@@ -1162,5 +1163,217 @@ describe("createRelationship and deleteRelationships", () => {
       }),
       "DUPLICATE_RELATIONSHIP",
     );
+  });
+});
+
+describe("reconnectRelationship", () => {
+  it("cambia extremos, conserva el id y no-op si no hay cambio", () => {
+    const createId = sequentialIds();
+    const document = emptyDocument(createId);
+    const actor = createActor(
+      { name: "Usuario", geometry: ACTOR_GEOMETRY },
+      { createId },
+    );
+    const otherActor = createActor(
+      { name: "Admin", geometry: { ...ACTOR_GEOMETRY, x: -200 } },
+      { createId },
+    );
+    const login = createUseCase(
+      { name: "Login", geometry: USE_CASE_GEOMETRY },
+      { createId },
+    );
+    const logout = createUseCase(
+      { name: "Logout", geometry: { ...USE_CASE_GEOMETRY, x: 280 } },
+      { createId },
+    );
+    const seeded: DiagramDocument = {
+      ...document,
+      elements: [...document.elements, actor, otherActor, login, logout],
+    };
+    const connected = expectOk(
+      createRelationship(
+        seeded,
+        {
+          kind: "association",
+          sourceId: actor.id,
+          targetId: login.id,
+          sourceAnchor: "right",
+          targetAnchor: "left",
+        },
+        { createId, now: () => UPDATED_AT },
+      ),
+    );
+    const relationship = connected.relationships[0];
+    if (relationship === undefined) {
+      throw new Error("Falta la relación");
+    }
+
+    expectUnchanged(
+      reconnectRelationship(connected, {
+        id: relationship.id,
+        kind: "include",
+        sourceId: actor.id,
+        targetId: login.id,
+        sourceAnchor: "right",
+        targetAnchor: "left",
+      }),
+      connected,
+    );
+
+    const retargeted = expectOk(
+      reconnectRelationship(
+        connected,
+        {
+          id: relationship.id,
+          kind: "association",
+          sourceId: otherActor.id,
+          targetId: login.id,
+          sourceAnchor: "bottom",
+          targetAnchor: "left",
+        },
+        { now: () => UPDATED_AT },
+      ),
+    );
+    expect(retargeted.relationships).toHaveLength(1);
+    expect(retargeted.relationships[0]).toMatchObject({
+      id: relationship.id,
+      kind: "association",
+      sourceId: otherActor.id,
+      targetId: login.id,
+      sourceAnchor: "bottom",
+      targetAnchor: "left",
+    });
+
+    const swapped = expectOk(
+      reconnectRelationship(
+        retargeted,
+        {
+          id: relationship.id,
+          kind: "association",
+          sourceId: logout.id,
+          targetId: otherActor.id,
+          sourceAnchor: "left",
+          targetAnchor: "right",
+        },
+        { now: () => UPDATED_AT },
+      ),
+    );
+    expect(swapped.relationships[0]).toMatchObject({
+      id: relationship.id,
+      sourceId: otherActor.id,
+      targetId: logout.id,
+      sourceAnchor: "right",
+      targetAnchor: "left",
+    });
+  });
+
+  it("rechaza desconocida, duplicada e include reflexivo", () => {
+    const createId = sequentialIds();
+    const document = emptyDocument(createId);
+    const login = createUseCase(
+      { name: "Login", geometry: USE_CASE_GEOMETRY },
+      { createId },
+    );
+    const logout = createUseCase(
+      { name: "Logout", geometry: { ...USE_CASE_GEOMETRY, x: 280 } },
+      { createId },
+    );
+    const extra = createUseCase(
+      { name: "Pago", geometry: { ...USE_CASE_GEOMETRY, y: 200 } },
+      { createId },
+    );
+    const seeded: DiagramDocument = {
+      ...document,
+      elements: [...document.elements, login, logout, extra],
+    };
+    const first = expectOk(
+      createRelationship(
+        seeded,
+        {
+          kind: "include",
+          sourceId: login.id,
+          targetId: logout.id,
+          sourceAnchor: "right",
+          targetAnchor: "left",
+        },
+        { createId, now: () => UPDATED_AT },
+      ),
+    );
+    const second = expectOk(
+      createRelationship(
+        first,
+        {
+          kind: "include",
+          sourceId: login.id,
+          targetId: extra.id,
+          sourceAnchor: "bottom",
+          targetAnchor: "top",
+        },
+        { createId, now: () => UPDATED_AT },
+      ),
+    );
+    const includeLoginLogout = second.relationships[0];
+    const includeLoginExtra = second.relationships[1];
+    if (includeLoginLogout === undefined || includeLoginExtra === undefined) {
+      throw new Error("Faltan includes");
+    }
+
+    expectCode(
+      reconnectRelationship(second, {
+        id: MISSING_ID,
+        kind: "include",
+        sourceId: login.id,
+        targetId: extra.id,
+        sourceAnchor: "right",
+        targetAnchor: "left",
+      }),
+      "UNKNOWN_RELATIONSHIP",
+    );
+    expectCode(
+      reconnectRelationship(second, {
+        id: includeLoginLogout.id,
+        kind: "include",
+        sourceId: login.id,
+        targetId: extra.id,
+        sourceAnchor: "right",
+        targetAnchor: "left",
+      }),
+      "DUPLICATE_RELATIONSHIP",
+    );
+    expectCode(
+      reconnectRelationship(second, {
+        id: includeLoginLogout.id,
+        kind: "include",
+        sourceId: login.id,
+        targetId: login.id,
+        sourceAnchor: "top",
+        targetAnchor: "bottom",
+      }),
+      "SELF_RELATIONSHIP",
+    );
+
+    const moved = expectOk(
+      reconnectRelationship(
+        second,
+        {
+          id: includeLoginExtra.id,
+          kind: "include",
+          sourceId: extra.id,
+          targetId: logout.id,
+          sourceAnchor: "left",
+          targetAnchor: "right",
+        },
+        { now: () => UPDATED_AT },
+      ),
+    );
+    expect(moved.relationships).toHaveLength(2);
+    expect(
+      moved.relationships.find(
+        (relationship) => relationship.id === includeLoginExtra.id,
+      ),
+    ).toMatchObject({
+      sourceId: extra.id,
+      targetId: logout.id,
+    });
   });
 });

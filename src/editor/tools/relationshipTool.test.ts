@@ -8,6 +8,7 @@ import { createEditorStore } from "../store/editorStore.ts";
 import {
   announceInvalidConnection,
   anchorFromHandle,
+  commitReconnect,
   commitRelationship,
   connectionRejectionMessage,
   createdRelationshipAnnouncement,
@@ -17,6 +18,7 @@ import {
   connectableEndpointOptions,
   relationshipInputFromConnection,
   relationshipKindFromTool,
+  updatedRelationshipAnnouncement,
   validRelationshipTargets,
 } from "./relationshipTool.ts";
 
@@ -226,7 +228,7 @@ describe("relationshipTool", () => {
     expect(store.getState().ui.message).toBe(
       createdRelationshipAnnouncement("association"),
     );
-    expect(store.getState().tool).toBe("association");
+    expect(store.getState().tool).toBe("select");
     expect(store.getState().history.past).toHaveLength(3);
   });
 
@@ -234,6 +236,7 @@ describe("relationshipTool", () => {
     const store = createStore();
     const { actor, boundary } = seedActorAndUseCase(store);
     const before = store.getState().document;
+    store.getState().setTool("association");
 
     const result = commitRelationship(store, {
       kind: "association",
@@ -246,6 +249,7 @@ describe("relationshipTool", () => {
     expect(result.ok).toBe(false);
     expect(store.getState().document).toBe(before);
     expect(store.getState().document.relationships).toEqual([]);
+    expect(store.getState().tool).toBe("association");
     expect(store.getState().ui.message).toMatch(/SystemBoundary/i);
 
     store.getState().setMessage(undefined);
@@ -337,6 +341,15 @@ describe("relationshipTool include/extend", () => {
     expect(relationshipKindFromTool("extend")).toBe("extend");
     expect(createdRelationshipAnnouncement("include")).toBe("Se creó include.");
     expect(createdRelationshipAnnouncement("extend")).toBe("Se creó extend.");
+    expect(updatedRelationshipAnnouncement("association")).toBe(
+      "Se actualizó la asociación.",
+    );
+    expect(updatedRelationshipAnnouncement("include")).toBe(
+      "Se actualizó include.",
+    );
+    expect(updatedRelationshipAnnouncement("extend")).toBe(
+      "Se actualizó extend.",
+    );
   });
 
   it("conserva el sentido del drag include y no lo reescribe", () => {
@@ -395,7 +408,57 @@ describe("relationshipTool include/extend", () => {
       targetAnchor: "right",
     });
     expect(store.getState().ui.message).toBe("Se creó include.");
-    expect(store.getState().tool).toBe("include");
+    expect(store.getState().tool).toBe("select");
+  });
+
+  it("reconecta include conservando el id y anuncia", () => {
+    const store = createStore();
+    const { login, logout } = seedTwoUseCases(store);
+    expectOk(
+      store.getState().createUseCase({
+        name: "Pago",
+        geometry: { ...USE_CASE_GEOMETRY, y: 200 },
+      }),
+    );
+    const pago = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Pago",
+      );
+    if (pago === undefined) {
+      throw new Error("Falta Pago");
+    }
+    expectOk(
+      commitRelationship(
+        store,
+        relationshipInputFromConnection("include", {
+          source: login.id,
+          target: logout.id,
+          sourceHandle: "right",
+          targetHandle: "left",
+        }),
+      ),
+    );
+    const relationshipId = store.getState().document.relationships[0]?.id;
+    if (relationshipId === undefined) {
+      throw new Error("Falta include");
+    }
+    expectOk(
+      commitReconnect(store, {
+        id: relationshipId,
+        kind: "include",
+        sourceId: login.id,
+        targetId: pago.id,
+        sourceAnchor: "right",
+        targetAnchor: "left",
+      }),
+    );
+    expect(store.getState().document.relationships[0]).toMatchObject({
+      id: relationshipId,
+      sourceId: login.id,
+      targetId: pago.id,
+    });
+    expect(store.getState().ui.message).toBe("Se actualizó include.");
   });
 
   it("rechaza self, actor, boundary y duplicado del mismo tipo y dirección", () => {

@@ -55,8 +55,8 @@ function StereotypeLabel({
   return (
     <g
       data-testid="dependency-stereotype"
-      pointerEvents="none"
-      transform={`translate(${x}, ${y})`}
+      pointerEvents="all"
+      transform={`translate(${x}, ${y - 16})`}
     >
       <rect
         className={styles.labelBg}

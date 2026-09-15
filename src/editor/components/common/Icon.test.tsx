@@ -16,6 +16,11 @@ describe("Icon", () => {
     }
   });
 
+  it("pinta el puntero de Selección", () => {
+    render(<Icon name="select" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M6 4v16");
+  });
+
   it("distingue Include y Extend por la letra, no solo por el trazo discontinuo", () => {
     const { rerender } = render(<Icon name="include" />);
     expect(document.querySelector("svg")?.innerHTML).toContain("M18 8v8");

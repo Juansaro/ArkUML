@@ -181,6 +181,74 @@ describe("semantic actions undo/redo", () => {
     expect(store.getState().document.relationships).toHaveLength(1);
   });
 
+  it("reconecta una asociación conservando el id y deshace el gesto", () => {
+    const store = createStore();
+    expectOk(
+      store.getState().createActor({
+        name: "Usuario",
+        geometry: ACTOR_GEOMETRY,
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+      }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Logout",
+        geometry: { ...USE_CASE_GEOMETRY, x: 280 },
+      }),
+    );
+    const actorId = actorOf(store.getState().document).id;
+    const login = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Login",
+      );
+    const logout = store
+      .getState()
+      .document.elements.find(
+        (element) => element.kind === "use-case" && element.name === "Logout",
+      );
+    if (login === undefined || logout === undefined) {
+      throw new Error("Faltan casos de uso");
+    }
+    expectOk(
+      store.getState().connect({
+        kind: "association",
+        sourceId: actorId,
+        targetId: login.id,
+        sourceAnchor: "right",
+        targetAnchor: "left",
+      }),
+    );
+    const relationshipId = store.getState().document.relationships[0]?.id;
+    if (relationshipId === undefined) {
+      throw new Error("Falta la asociación");
+    }
+    expectOk(
+      store.getState().reconnect({
+        id: relationshipId,
+        kind: "association",
+        sourceId: actorId,
+        targetId: logout.id,
+        sourceAnchor: "right",
+        targetAnchor: "left",
+      }),
+    );
+    expect(store.getState().document.relationships[0]).toMatchObject({
+      id: relationshipId,
+      targetId: logout.id,
+    });
+    store.getState().undo();
+    expect(store.getState().document.relationships[0]).toMatchObject({
+      id: relationshipId,
+      targetId: login.id,
+    });
+  });
+
   it("duplica, redimensiona y reparenta como acciones semánticas", () => {
     const store = createStore();
     const boundary = boundaryOf(store.getState().document);

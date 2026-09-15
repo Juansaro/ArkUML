@@ -46,12 +46,14 @@ test("reparenta un caso de uso al entrar y salir del boundary", async ({
   expect(Math.abs(afterEnter.x - startBox.x)).toBeLessThan(24);
   expect(Math.abs(afterEnter.y - (startBox.y - 280))).toBeLessThan(24);
 
-  const boundary = canvas.getByTestId("system-boundary-rect");
+  const boundaryName = canvas
+    .getByTestId("element-name")
+    .filter({ hasText: /^Sistema$/ });
   const childBefore = await useCase.boundingBox();
   if (childBefore === null) {
     throw new Error("No se pudo medir el hijo");
   }
-  await dragBy(page, boundary, 80, 0);
+  await dragBy(page, boundaryName, 80, 0);
 
   const childAfterParentMove = await useCase.boundingBox();
   if (childAfterParentMove === null) {

@@ -57,6 +57,7 @@ describe("DependencyEdge", () => {
       '[data-testid="dependency-stereotype"]',
     );
     expect(stereotype).toHaveTextContent(INCLUDE_STEREOTYPE);
+    expect(stereotype).toHaveAttribute("pointer-events", "all");
 
     const hitArea = container.querySelector(".react-flow__edge-interaction");
     expect(hitArea).toHaveAttribute(

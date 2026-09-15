@@ -69,6 +69,7 @@ test.describe("invalidación de conexión", () => {
     ).toBeVisible();
     await expect(canvas.locator(".diagram-edge-include")).toHaveCount(1);
 
+    await page.getByRole("button", { name: "Include" }).click();
     await connectHandles(page, sourceHandle(including), targetHandle(included));
     await expect(page.getByTestId("editor-live")).toHaveText(
       /ya existe una relación con el mismo tipo y extremos/i,

@@ -2,6 +2,7 @@ import { useShallow } from "zustand/react/shallow";
 import { ElementNameField } from "../../interactions/ElementNameField.tsx";
 import {
   selectDiagramWarnings,
+  selectDocument,
   selectInspectorView,
   selectTool,
 } from "../../store/selectors.ts";
@@ -14,6 +15,8 @@ import {
   placeActiveCreateTool,
 } from "../../tools/createElementTool.ts";
 import {
+  commitReconnect,
+  connectableEndpointOptions,
   isRelationshipTool,
   relationshipConnectionHelp,
   relationshipEndpointFieldLabels,
@@ -106,16 +109,7 @@ function InspectorBody({
           <ConnectionHelp text={connectionHelp} />
         ) : null}
         <TypeField label={view.typeLabel} />
-        <EndpointField
-          label={endpoints.source}
-          value={view.sourceLabel}
-          testId="inspector-source"
-        />
-        <EndpointField
-          label={endpoints.target}
-          value={view.targetLabel}
-          testId="inspector-target"
-        />
+        <RelationshipEndpoints view={view} labels={endpoints} />
       </div>
     );
   }
@@ -134,6 +128,88 @@ function InspectorBody({
         />
       </label>
     </div>
+  );
+}
+
+function RelationshipEndpoints({
+  view,
+  labels,
+}: {
+  view: Extract<
+    ReturnType<typeof selectInspectorView>,
+    { status: "relationship" }
+  >;
+  labels: { source: string; target: string };
+}) {
+  const store = useEditorStoreApi();
+  const document = useEditorStore(selectDocument);
+  const options = connectableEndpointOptions(document, view.kind);
+
+  function reconnectEndpoint(
+    sourceId: string,
+    targetId: string,
+    sourceAnchor: typeof view.sourceAnchor,
+    targetAnchor: typeof view.targetAnchor,
+  ) {
+    commitReconnect(store, {
+      id: view.id,
+      kind: view.kind,
+      sourceId,
+      targetId,
+      sourceAnchor,
+      targetAnchor,
+    });
+  }
+
+  return (
+    <>
+      <label className={styles.field}>
+        <span className={styles.label}>{labels.source}</span>
+        <select
+          className={styles.select}
+          value={view.sourceId}
+          data-testid="inspector-source"
+          aria-label={labels.source}
+          onChange={(event) => {
+            reconnectEndpoint(
+              event.target.value,
+              view.targetId,
+              "right",
+              view.targetAnchor,
+            );
+          }}
+        >
+          {options.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className={styles.field}>
+        <span className={styles.label}>{labels.target}</span>
+        <select
+          className={styles.select}
+          value={view.targetId}
+          data-testid="inspector-target"
+          aria-label={labels.target}
+          onChange={(event) => {
+            reconnectEndpoint(
+              view.sourceId,
+              event.target.value,
+              view.sourceAnchor,
+              "left",
+            );
+          }}
+        >
+          {options.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+    </>
   );
 }
 
@@ -156,25 +232,6 @@ function PlaceElementControl() {
     >
       Colocar en el lienzo
     </button>
-  );
-}
-
-function EndpointField({
-  label,
-  value,
-  testId,
-}: {
-  label: string;
-  value: string;
-  testId: string;
-}) {
-  return (
-    <div className={styles.field}>
-      <p className={styles.label}>{label}</p>
-      <p className={styles.value} data-testid={testId}>
-        {value}
-      </p>
-    </div>
   );
 }
 
