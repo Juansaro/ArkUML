@@ -74,7 +74,8 @@ clave `arkuml:workspace:v1`.
 ## Cambios esperados
 
 Reload restaura **todos** los documentos de la biblioteca y el activo.
-Un blob v1 migra a v2 en memoria y, tras confirmar, se guarda como v2.
+Un blob v1 migra a v2 en memoria y se guarda como 2.0 en el hydrate
+(si el write falla, se pide confirmación y el blob 1 permanece).
 Un cliente no puede quedar con dos claves.
 
 ## Restricciones
@@ -89,8 +90,8 @@ Un cliente no puede quedar con dos claves.
 - [x] Snapshot Zod v2; lista vacía o `activeDocumentId` huérfano →
       `PARSE_INVALID`.
 - [x] Migración `1→2` envuelve un documento y sube schema si hace falta.
-- [x] Confirmación antes del primer overwrite 2.0; cancelar no pisa el
-      blob 1.
+- [x] Hydrate de v1 persiste 2.0; si el write falla, confirmación y el
+      blob 1 no se pisa.
 - [x] Añadir / activar / borrar (último no se borra) cubierto por tests
       de store.
 - [x] Historial: mutar A, activar B, mutar B, volver a A: undo de A no

@@ -6,6 +6,7 @@ import {
 import {
   createDiagramDocument,
   createEmptySequenceDocument,
+  createUuid,
   type DiagramFactoryDeps,
 } from "../../domain/diagram/factories.ts";
 import type {
@@ -126,6 +127,7 @@ export type EditorActions = {
   hydrateWorkspace: (document: DiagramDocument, viewport?: Viewport) => void;
   hydrateWorkspaceSnapshot: (snapshot: WorkspaceSnapshot) => void;
   addDocument: (document: DiagramDocument, viewport?: Viewport) => boolean;
+  importDocument: (document: DiagramDocument, viewport?: Viewport) => boolean;
   addNewDocument: (kind?: DocumentKind) => boolean;
   activateDocument: (documentId: string) => boolean;
   deleteDocument: (documentId: string) => boolean;
@@ -506,6 +508,14 @@ export function createEditorActions(
         tool: "select",
       });
       return true;
+    },
+    importDocument: (document, viewport) => {
+      const state = get();
+      if (state.documents.some((entry) => entry.document.id === document.id)) {
+        const createId = deps?.createId ?? createUuid;
+        return get().addDocument({ ...document, id: createId() }, viewport);
+      }
+      return get().addDocument(document, viewport);
     },
     addNewDocument: (kind) => {
       const state = get();

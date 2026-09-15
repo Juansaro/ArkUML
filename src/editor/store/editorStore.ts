@@ -42,7 +42,6 @@ export type DialogMode =
   | "help"
   | "export"
   | "new-diagram"
-  | "open-file"
   | "invalid-document-file"
   | "recovery"
   | "storage-upgrade";

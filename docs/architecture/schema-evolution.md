@@ -157,6 +157,13 @@ ArkUmlDocumentFile
   desconocido; `formatVersion` no soportado; claves de más; `kind`
   desconocido; secuencia dentro de `arkuml-usecase-json`.
 
+Implementación (TASK-050): `src/domain/diagram/documentFile.ts` serializa
+el envelope 2.x del documento activo y su viewport. Importar valida con
+Zod estricto, llama `migrateDocument` si el archivo es 1.x, y **añade**
+el resultado a la biblioteca (ADR-007). Un id que ya esté en la lista
+recibe uno nuevo para no destruir el anterior. El autosave sigue siendo
+el snapshot v2; un blob de localStorage no es este archivo.
+
 Este I/O no cambia `DiagramRepository`. No reabre ADR-004 (sí usa
 ADR-007 para la cardinalidad de la lista).
 
@@ -176,10 +183,13 @@ Orden:
    `2→3`. Nunca `3→1`. Nunca un `migrateToLatest` opaco.
 5. Validar el resultado con Zod del schema **destino**. Falla →
    `PARSE_INVALID`; no persistir el intento.
-6. El resultado vive en memoria. El primer save de una versión que el
-   MVP no puede abrir exige confirmación explícita (el workspace es
-   único; la conversión es irreversible para 1.0). No hay dual-write de
-   schema `1` y `2`.
+6. El resultado vive en memoria y se persiste como workspace 2.0 en el
+   primer hydrate (Release 1, TASK-047): la biblioteca tiene que poder
+   crecer (nuevo diagrama, secuencia) sin un diálogo que bloquee el
+   save. Si ese write falla (cuota / storage), se pide confirmación y el
+   blob 1.0 permanece. No hay dual-write de schema `1` y `2`. Un envelope
+   de un solo `document` + `view` etiquetado `storageVersion: 2` se
+   envuelve como lista de un elemento; no se trata como corrupto.
 
 Dónde vive el código cuando exista:
 

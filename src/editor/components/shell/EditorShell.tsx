@@ -7,7 +7,6 @@ import {
   type ChangeEvent,
   type Ref,
 } from "react";
-import { workspaceNeedsNewDiagramConfirmation } from "../../../app/bootstrap.ts";
 import { useOptionalWorkspaceSession } from "../../../app/WorkspaceSessionProvider.tsx";
 import { DEFAULT_VIEWPORT } from "../../../domain/diagram/defaults.ts";
 import {
@@ -19,7 +18,6 @@ import {
 } from "../../../domain/diagram/documentFile.ts";
 import { createDiagramDocument } from "../../../domain/diagram/factories.ts";
 import type { DocumentKind } from "../../../domain/diagram/model.ts";
-import { migrateDocument } from "../../../domain/diagram/migrate.ts";
 import { downloadBlob } from "../../../export/download.ts";
 import { useCompactLayout } from "../../a11y/useCompactLayout.ts";
 import { DiagramCanvas } from "../../canvas/DiagramCanvas.tsx";
@@ -76,7 +74,6 @@ function EditorShellLayout({ zoomPercent }: EditorShellProps) {
   const recoveryMessage = useEditorStore(selectMessage);
   const helpOpen = dialogMode === "help";
   const exportOpen = dialogMode === "export";
-  const openFileOpen = dialogMode === "open-file";
   const invalidFileOpen = dialogMode === "invalid-document-file";
   const recoveryOpen = dialogMode === "recovery";
   const storageUpgradeOpen = dialogMode === "storage-upgrade";
@@ -97,7 +94,6 @@ function EditorShellLayout({ zoomPercent }: EditorShellProps) {
   }
   const [canvasNonce, setCanvasNonce] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const pendingFileRef = useRef<ArkUmlDocumentFile | undefined>(undefined);
   const paletteRef = useRef<HTMLElement>(null);
   const inspectorPanelRef = useRef<HTMLElement>(null);
   const paletteButtonRef = useRef<HTMLButtonElement>(null);
@@ -241,21 +237,15 @@ function EditorShellLayout({ zoomPercent }: EditorShellProps) {
   }
 
   function cancelDialog() {
-    pendingFileRef.current = undefined;
     store.getState().setDialogMode("none");
   }
 
   function applyDocumentFile(file: ArkUmlDocumentFile) {
-    const migrated = migrateDocument(file.document);
-    if (!migrated.ok) {
-      pendingFileRef.current = undefined;
+    if (!store.getState().importDocument(file.document, file.view)) {
       store.getState().setMessage(INVALID_DOCUMENT_FILE_MESSAGE);
       store.getState().setDialogMode("invalid-document-file");
       return;
     }
-    pendingFileRef.current = undefined;
-    store.getState().hydrateWorkspace(migrated.value, file.view);
-    store.getState().setTool("select");
     store.getState().setDialogMode("none");
     setCanvasNonce((value) => value + 1);
   }
@@ -299,26 +289,7 @@ function EditorShellLayout({ zoomPercent }: EditorShellProps) {
       return;
     }
 
-    const needsConfirmation = workspaceNeedsNewDiagramConfirmation(
-      store.getState(),
-      session?.coordinator.isOverwriteBlocked() === true,
-    );
-    if (needsConfirmation) {
-      pendingFileRef.current = parsed.value;
-      store.getState().setDialogMode("open-file");
-      return;
-    }
-
     applyDocumentFile(parsed.value);
-  }
-
-  function confirmOpenFile() {
-    const pending = pendingFileRef.current;
-    if (pending === undefined) {
-      store.getState().setDialogMode("none");
-      return;
-    }
-    applyDocumentFile(pending);
   }
 
   return (
@@ -440,15 +411,6 @@ function EditorShellLayout({ zoomPercent }: EditorShellProps) {
             defaultKind={documentKind}
             onCancel={cancelDialog}
             onConfirm={confirmNewDiagram}
-          />
-        ) : null}
-        {openFileOpen ? (
-          <NewDiagramDialog
-            title="Abrir archivo"
-            confirmLabel="Abrir archivo"
-            testId="open-file-dialog"
-            onCancel={cancelDialog}
-            onConfirm={confirmOpenFile}
           />
         ) : null}
         {invalidFileOpen ? (

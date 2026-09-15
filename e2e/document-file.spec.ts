@@ -3,18 +3,50 @@ import {
   downloadBytes,
   canvasElementName,
   createNewDiagram,
+  diagramCanvas,
   placeElement,
 } from "./support.ts";
 
 const STORAGE_KEY = "arkuml:workspace:v1";
 const INVALID_MESSAGE = "El archivo no es un documento ArkUML válido.";
 
+const LEGACY_V1_FILE = {
+  format: "arkuml-usecase-json",
+  formatVersion: 1,
+  document: {
+    schemaVersion: 1,
+    id: "00000000-0000-4000-8000-0000000000a1",
+    kind: "use-case",
+    metadata: {
+      title: "Importado 1.x",
+      createdAt: "2026-09-07T12:00:00.000Z",
+      updatedAt: "2026-09-07T12:00:00.000Z",
+    },
+    elements: [
+      {
+        id: "00000000-0000-4000-8000-0000000000a2",
+        kind: "system-boundary",
+        name: "Sistema",
+        geometry: { x: 0, y: 0, width: 640, height: 400 },
+      },
+      {
+        id: "00000000-0000-4000-8000-0000000000a3",
+        kind: "actor",
+        name: "Actor 1.x",
+        geometry: { x: 8, y: 40, width: 48, height: 96 },
+      },
+    ],
+    relationships: [],
+  },
+  view: { x: 0, y: 0, zoom: 1 },
+};
+
 test.describe("archivo JSON de usuario", () => {
-  test("exportar e importar restaura actor, viewport e historial vacío", async ({
+  test("exportar e importar 2.x use-case añade, restaura actor y viewport e historial vacío", async ({
     page,
   }) => {
     await page.goto("/");
-    const canvas = page.getByTestId("diagram-canvas");
+    const canvas = diagramCanvas(page);
     await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
 
     await placeElement(page, "Actor", { x: 80, y: 480 }, "Actor");
@@ -49,10 +81,10 @@ test.describe("archivo JSON de usuario", () => {
     const parsed: unknown = JSON.parse(bytes.toString("utf8"));
     expect(parsed).toEqual(
       expect.objectContaining({
-        format: "arkuml-usecase-json",
-        formatVersion: 1,
+        format: "arkuml-document-json",
+        formatVersion: 2,
         document: expect.objectContaining({
-          schemaVersion: 1,
+          schemaVersion: 2,
           kind: "use-case",
         }),
         view: expect.objectContaining({
@@ -74,10 +106,9 @@ test.describe("archivo JSON de usuario", () => {
       mimeType: "application/json",
       buffer: bytes,
     });
-    const openDialog = page.getByRole("dialog", { name: "Abrir archivo" });
-    await expect(openDialog).toBeVisible();
-    await openDialog.getByRole("button", { name: "Abrir archivo" }).click();
-    await expect(openDialog).toHaveCount(0);
+    await expect(
+      page.getByRole("dialog", { name: "Abrir archivo" }),
+    ).toHaveCount(0);
 
     await expect(canvasElementName(page, "Actor")).toBeVisible();
     await expect(page.locator(".react-flow__viewport")).toHaveAttribute(
@@ -85,6 +116,11 @@ test.describe("archivo JSON de usuario", () => {
       exportedViewport ?? "",
     );
     await expect(page.getByRole("button", { name: "Deshacer" })).toBeDisabled();
+
+    const switcher = page.getByRole("combobox", { name: "Diagrama activo" });
+    await switcher.click();
+    await expect(page.getByRole("option")).toHaveCount(3);
+    await page.keyboard.press("Escape");
 
     await expect
       .poll(async () => {
@@ -107,6 +143,77 @@ test.describe("archivo JSON de usuario", () => {
         return JSON.stringify(snapshot.documents).includes("Actor");
       })
       .toBe(true);
+  });
+
+  test("exportar e importar 2.x secuencia añade y deja el diagrama editable", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await createNewDiagram(page, "Secuencia");
+    const canvas = diagramCanvas(page);
+    await expect(page.getByRole("button", { name: "Lifeline" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Lifeline" }).click();
+    await canvas.click({ position: { x: 160, y: 80 } });
+    await expect(canvasElementName(page, "Lifeline")).toBeVisible();
+
+    const pending = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Guardar JSON" }).click();
+    const download = await pending;
+    expect(download.suggestedFilename()).toBe(
+      "Diagrama de secuencia.arkuml.json",
+    );
+
+    const bytes = await downloadBytes(download);
+    const parsed: unknown = JSON.parse(bytes.toString("utf8"));
+    expect(parsed).toEqual(
+      expect.objectContaining({
+        format: "arkuml-document-json",
+        formatVersion: 2,
+        document: expect.objectContaining({
+          schemaVersion: 2,
+          kind: "sequence",
+        }),
+      }),
+    );
+
+    await page.getByTestId("document-file-input").setInputFiles({
+      name: "Diagrama de secuencia.arkuml.json",
+      mimeType: "application/json",
+      buffer: bytes,
+    });
+    await expect(canvasElementName(page, "Lifeline")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Lifeline" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Actor" })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Lifeline" }).click();
+    await canvas.click({ position: { x: 420, y: 80 } });
+    await expect(canvasElementName(page, "Lifeline 2")).toBeVisible();
+
+    const switcher = page.getByRole("combobox", { name: "Diagrama activo" });
+    await switcher.click();
+    await expect(page.getByRole("option")).toHaveCount(3);
+  });
+
+  test("importar arkuml-usecase-json 1.x migra y añade", async ({ page }) => {
+    await page.goto("/");
+    await placeElement(page, "Actor", { x: 80, y: 480 }, "Actor");
+
+    await page.getByTestId("document-file-input").setInputFiles({
+      name: "Importado 1.x.arkuml.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(LEGACY_V1_FILE), "utf8"),
+    });
+
+    await expect(canvasElementName(page, "Actor 1.x")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Actor" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Deshacer" })).toBeDisabled();
+
+    const switcher = page.getByRole("combobox", { name: "Diagrama activo" });
+    await switcher.click();
+    await expect(page.getByRole("option")).toHaveCount(2);
+    await page.getByRole("option").nth(0).click({ position: { x: 12, y: 16 } });
+    await expect(canvasElementName(page, "Actor")).toBeVisible();
   });
 
   test("JSON basura y un snapshot interno se rechazan sin mutar", async ({
@@ -153,9 +260,9 @@ test.describe("archivo JSON de usuario", () => {
     ).toBe(saved);
   });
 
-  test("cancelar Abrir archivo no muta el diagrama", async ({ page }) => {
+  test("importar no sustituye el diagrama anterior", async ({ page }) => {
     await page.goto("/");
-    const canvas = page.getByTestId("diagram-canvas");
+    const canvas = diagramCanvas(page);
     await placeElement(page, "Actor", { x: 80, y: 480 }, "Actor");
 
     const pending = page.waitForEvent("download");
@@ -172,10 +279,16 @@ test.describe("archivo JSON de usuario", () => {
       mimeType: "application/json",
       buffer: bytes,
     });
-    const dialog = page.getByRole("dialog", { name: "Abrir archivo" });
-    await expect(dialog).toBeVisible();
-    await dialog.getByRole("button", { name: "Cancelar" }).click();
-    await expect(dialog).toHaveCount(0);
+    await expect(
+      page.getByRole("dialog", { name: "Abrir archivo" }),
+    ).toHaveCount(0);
+    await expect(canvasElementName(page, "Actor")).toBeVisible();
+    await expect(canvasElementName(page, "Caso de uso")).toHaveCount(0);
+
+    const switcher = page.getByRole("combobox", { name: "Diagrama activo" });
+    await switcher.click();
+    await expect(page.getByRole("option")).toHaveCount(2);
+    await page.getByRole("option").nth(0).click({ position: { x: 12, y: 16 } });
     await expect(canvasElementName(page, "Actor")).toBeVisible();
     await expect(canvasElementName(page, "Caso de uso")).toBeVisible();
   });

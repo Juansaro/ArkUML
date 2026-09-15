@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   DOCUMENT_FILE_FORMAT,
+  DOCUMENT_FILE_FORMAT_V1,
   DOCUMENT_FILE_FORMAT_VERSION,
+  DOCUMENT_FILE_FORMAT_VERSION_V1,
   documentFileFilename,
   INVALID_DOCUMENT_FILE_MESSAGE,
   parseDocumentFile,
@@ -12,7 +14,10 @@ import {
 import { DEFAULT_BOUNDARY_GEOMETRY } from "./defaults.ts";
 import {
   createActor,
+  createEmptySequenceDocument,
+  createLifeline,
   createRelationship,
+  createSequenceMessage,
   createUseCase,
   createWorkspaceSnapshot,
   type IdFactory,
@@ -52,10 +57,24 @@ function toV1(document: DiagramDocument): DiagramDocumentV1 {
   };
 }
 
-function sampleFileSnapshot(): {
+function legacyV1File(
+  document: DiagramDocumentV1,
+  view: Viewport,
+): {
+  format: typeof DOCUMENT_FILE_FORMAT_V1;
+  formatVersion: typeof DOCUMENT_FILE_FORMAT_VERSION_V1;
   document: DiagramDocumentV1;
   view: Viewport;
 } {
+  return {
+    format: DOCUMENT_FILE_FORMAT_V1,
+    formatVersion: DOCUMENT_FILE_FORMAT_VERSION_V1,
+    document,
+    view,
+  };
+}
+
+function sampleUseCaseDocument(): DiagramDocument {
   const createId = sequentialIds();
   const snapshot = createWorkspaceSnapshot({
     createId,
@@ -93,15 +112,47 @@ function sampleFileSnapshot(): {
     { createId },
   );
 
-  const document = toV1({
+  return {
     ...entry.document,
     elements: [...entry.document.elements, actor, useCase],
     relationships: [relationship],
-  });
+  };
+}
 
+function sampleSequenceDocument(): DiagramDocument {
+  const createId = sequentialIds(20);
+  const document = createEmptySequenceDocument({
+    createId,
+    now: () => FIXED_NOW,
+  });
+  const client = createLifeline(
+    {
+      name: "Cliente",
+      geometry: { x: 0, y: 0, width: 120, height: 40 },
+    },
+    { createId },
+  );
+  const server = createLifeline(
+    {
+      name: "Servidor",
+      geometry: { x: 240, y: 0, width: 120, height: 40 },
+    },
+    { createId },
+  );
+  const message = createSequenceMessage(
+    {
+      kind: "sync-message",
+      sourceId: client.id,
+      targetId: server.id,
+      name: "login",
+      y: 80,
+    },
+    { createId },
+  );
   return {
-    document,
-    view: VIEW,
+    ...document,
+    elements: [client, server],
+    relationships: [message],
   };
 }
 
@@ -115,57 +166,71 @@ function expectRejected(input: unknown): void {
 }
 
 describe("serializeDocumentFile / parseDocumentFile", () => {
-  it("exporta el envelope público y hace round-trip", () => {
-    const snapshot = sampleFileSnapshot();
-    const json = serializeDocumentFile(snapshot.document, snapshot.view);
+  it("exporta el envelope 2.x de un use-case y hace round-trip", () => {
+    const document = sampleUseCaseDocument();
+    const json = serializeDocumentFile(document, VIEW);
     const parsedJson: unknown = JSON.parse(json);
 
     expect(parsedJson).toEqual({
       format: DOCUMENT_FILE_FORMAT,
       formatVersion: DOCUMENT_FILE_FORMAT_VERSION,
-      document: snapshot.document,
+      document,
       view: VIEW,
     });
     expect(json).not.toMatch(/storageVersion|history|selection|"tool"/);
+    expect(json).not.toMatch(/arkuml-usecase-json/);
 
     const parsed = parseDocumentFileText(json);
     expect(parsed).toEqual({
       ok: true,
-      value: toDocumentFile(snapshot.document, snapshot.view),
+      value: toDocumentFile(document, VIEW),
     });
   });
 
-  it("exporta un documento use-case schema 2 como envelope schema 1", () => {
-    const snapshot = createWorkspaceSnapshot({
-      createId: sequentialIds(40),
-      now: () => FIXED_NOW,
-    });
-    const entry = snapshot.documents[0];
-    if (entry === undefined) {
-      throw new Error("Falta el documento");
-    }
-    expect(entry.document.schemaVersion).toBe(2);
+  it("exporta el envelope 2.x de un secuencia y hace round-trip", () => {
+    const document = sampleSequenceDocument();
+    const json = serializeDocumentFile(document, VIEW);
+    const parsedJson: unknown = JSON.parse(json);
 
-    const parsedJson: unknown = JSON.parse(
-      serializeDocumentFile(entry.document, VIEW),
-    );
+    expect(parsedJson).toEqual({
+      format: DOCUMENT_FILE_FORMAT,
+      formatVersion: DOCUMENT_FILE_FORMAT_VERSION,
+      document,
+      view: VIEW,
+    });
     expect(parsedJson).toEqual(
       expect.objectContaining({
-        format: DOCUMENT_FILE_FORMAT,
-        formatVersion: DOCUMENT_FILE_FORMAT_VERSION,
         document: expect.objectContaining({
-          schemaVersion: 1,
-          kind: "use-case",
+          schemaVersion: 2,
+          kind: "sequence",
         }),
       }),
     );
-    const parsed = parseDocumentFile(parsedJson);
-    expect(parsed.ok).toBe(true);
+
+    const parsed = parseDocumentFileText(json);
+    expect(parsed).toEqual({
+      ok: true,
+      value: toDocumentFile(document, VIEW),
+    });
   });
 
-  it("acepta un envelope válido construido a mano", () => {
-    const snapshot = sampleFileSnapshot();
-    const file = toDocumentFile(snapshot.document, snapshot.view);
+  it("migra un envelope 1.x arkuml-usecase-json a schema 2 y lo añade como 2.x", () => {
+    const document = sampleUseCaseDocument();
+    const v1 = toV1(document);
+    const parsed = parseDocumentFile(legacyV1File(v1, VIEW));
+    expect(parsed).toEqual({
+      ok: true,
+      value: toDocumentFile(document, VIEW),
+    });
+    if (!parsed.ok) {
+      return;
+    }
+    expect(parsed.value.document.schemaVersion).toBe(2);
+    expect(parsed.value.format).toBe(DOCUMENT_FILE_FORMAT);
+  });
+
+  it("acepta un envelope 2.x válido construido a mano", () => {
+    const file = toDocumentFile(sampleUseCaseDocument(), VIEW);
     expect(parseDocumentFile(file)).toEqual({ ok: true, value: file });
   });
 });
@@ -184,74 +249,134 @@ describe("rechazo del archivo de usuario", () => {
     expectRejected(createWorkspaceSnapshot());
   });
 
-  it("rechaza format distinto de arkuml-usecase-json", () => {
-    const snapshot = sampleFileSnapshot();
+  it("rechaza format desconocido", () => {
     expectRejected({
-      ...toDocumentFile(snapshot.document, snapshot.view),
+      ...toDocumentFile(sampleUseCaseDocument(), VIEW),
       format: "application/json",
     });
   });
 
-  it("rechaza formatVersion distinto de 1", () => {
-    const snapshot = sampleFileSnapshot();
+  it("rechaza formatVersion no soportado", () => {
     expectRejected({
-      ...toDocumentFile(snapshot.document, snapshot.view),
+      ...toDocumentFile(sampleUseCaseDocument(), VIEW),
+      formatVersion: 3,
+    });
+    expectRejected({
+      ...legacyV1File(toV1(sampleUseCaseDocument()), VIEW),
       formatVersion: 2,
+    });
+    expectRejected({
+      ...toDocumentFile(sampleUseCaseDocument(), VIEW),
+      format: DOCUMENT_FILE_FORMAT_V1,
     });
   });
 
-  it("rechaza schemaVersion distinto de 1", () => {
-    const snapshot = sampleFileSnapshot();
+  it("rechaza schemaVersion 1 dentro del envelope 2.x", () => {
+    const document = sampleUseCaseDocument();
     expectRejected({
-      ...toDocumentFile(snapshot.document, snapshot.view),
-      document: { ...snapshot.document, schemaVersion: 2 },
+      ...toDocumentFile(document, VIEW),
+      document: toV1(document),
+    });
+  });
+
+  it("rechaza schemaVersion 2 dentro del envelope 1.x", () => {
+    const document = sampleUseCaseDocument();
+    expectRejected({
+      ...legacyV1File(toV1(document), VIEW),
+      document,
     });
   });
 
   it("rechaza claves de más en el envelope", () => {
-    const snapshot = sampleFileSnapshot();
     expectRejected({
-      ...toDocumentFile(snapshot.document, snapshot.view),
-      storageVersion: 1,
+      ...toDocumentFile(sampleUseCaseDocument(), VIEW),
+      storageVersion: 2,
     });
   });
 
   it("rechaza claves de más en el documento", () => {
-    const snapshot = sampleFileSnapshot();
+    const document = sampleUseCaseDocument();
     expectRejected({
-      ...toDocumentFile(snapshot.document, snapshot.view),
-      document: { ...snapshot.document, selected: true },
+      ...toDocumentFile(document, VIEW),
+      document: { ...document, selected: true },
     });
   });
 
   it("rechaza un kind de documento desconocido", () => {
-    const snapshot = sampleFileSnapshot();
+    const document = sampleUseCaseDocument();
     expectRejected({
-      ...toDocumentFile(snapshot.document, snapshot.view),
-      document: { ...snapshot.document, kind: "class" },
+      ...toDocumentFile(document, VIEW),
+      document: { ...document, kind: "class" },
     });
   });
 
   it("rechaza un kind de elemento desconocido", () => {
-    const snapshot = sampleFileSnapshot();
-    const [boundary, ...rest] = snapshot.document.elements;
+    const document = sampleUseCaseDocument();
+    const [boundary, ...rest] = document.elements;
     expectRejected({
-      ...toDocumentFile(snapshot.document, snapshot.view),
+      ...toDocumentFile(document, VIEW),
       document: {
-        ...snapshot.document,
+        ...document,
         elements: [boundary, { ...rest[0], kind: "note" }, ...rest.slice(1)],
       },
     });
   });
 
   it("rechaza un kind de relación desconocido", () => {
-    const snapshot = sampleFileSnapshot();
-    const [relationship] = snapshot.document.relationships;
+    const document = sampleUseCaseDocument();
+    const [relationship] = document.relationships;
     expectRejected({
-      ...toDocumentFile(snapshot.document, snapshot.view),
+      ...toDocumentFile(document, VIEW),
       document: {
-        ...snapshot.document,
+        ...document,
         relationships: [{ ...relationship, kind: "generalization" }],
+      },
+    });
+  });
+
+  it("rechaza mezcla de kinds en un use-case 2.x", () => {
+    const document = sampleUseCaseDocument();
+    const lifeline = createLifeline(
+      { name: "Huésped" },
+      { createId: sequentialIds(90) },
+    );
+    expectRejected({
+      ...toDocumentFile(document, VIEW),
+      document: {
+        ...document,
+        elements: [...document.elements, lifeline],
+      },
+    });
+  });
+
+  it("rechaza mezcla de kinds en un secuencia 2.x", () => {
+    const document = sampleSequenceDocument();
+    const actor = createActor(
+      { name: "Usuario", geometry: { x: 8, y: 40, width: 48, height: 96 } },
+      { createId: sequentialIds(90) },
+    );
+    expectRejected({
+      ...toDocumentFile(document, VIEW),
+      document: {
+        ...document,
+        elements: [...document.elements, actor],
+      },
+    });
+  });
+
+  it("rechaza secuencia en envelope arkuml-usecase-json", () => {
+    const sequence = sampleSequenceDocument();
+    expectRejected({
+      format: DOCUMENT_FILE_FORMAT_V1,
+      formatVersion: DOCUMENT_FILE_FORMAT_VERSION_V1,
+      document: { ...sequence, schemaVersion: 1 },
+      view: VIEW,
+    });
+    expectRejected({
+      ...legacyV1File(toV1(sampleUseCaseDocument()), VIEW),
+      document: {
+        ...toV1(sampleUseCaseDocument()),
+        kind: "sequence",
       },
     });
   });
@@ -272,6 +397,9 @@ describe("documentFileFilename", () => {
     expect(documentFileFilename("Diagrama de casos de uso")).toBe(
       "Diagrama de casos de uso.arkuml.json",
     );
+    expect(documentFileFilename("Diagrama de secuencia")).toBe(
+      "Diagrama de secuencia.arkuml.json",
+    );
     expect(documentFileFilename('a/b<>:"|?*.x')).toBe("a b .x.arkuml.json");
   });
 
@@ -283,43 +411,43 @@ describe("documentFileFilename", () => {
 
 describe("strictObject del envelope", () => {
   it("no admite historial ni selección en el archivo", () => {
-    const snapshot = sampleFileSnapshot();
     expectRejected({
-      ...toDocumentFile(snapshot.document, snapshot.view),
+      ...toDocumentFile(sampleUseCaseDocument(), VIEW),
       history: [],
       selection: [],
       tool: "select",
     });
   });
 
-  it("el payload del documento sigue siendo schema 1", () => {
-    const snapshot = sampleFileSnapshot();
-    const file = toDocumentFile(snapshot.document, VIEW);
-    expect(file.document.schemaVersion).toBe(1);
+  it("el payload del documento exportado es schema 2", () => {
+    const document = sampleUseCaseDocument();
+    const file = toDocumentFile(document, VIEW);
+    expect(file.document.schemaVersion).toBe(2);
     expect(file.document.kind).toBe("use-case");
-    const asDocument: DiagramDocumentV1 = file.document;
-    expect(asDocument.elements.length).toBeGreaterThan(0);
+    expect(file.format).toBe(DOCUMENT_FILE_FORMAT);
+    expect(file.formatVersion).toBe(DOCUMENT_FILE_FORMAT_VERSION);
+    expect(file.document.elements.length).toBeGreaterThan(0);
   });
 });
 
 describe("geometría del documento importado", () => {
   it("rechaza geometría no finita", () => {
-    const snapshot = structuredClone(sampleFileSnapshot());
-    const boundary = snapshot.document.elements[0];
+    const document = structuredClone(sampleUseCaseDocument());
+    const boundary = document.elements[0];
     if (boundary === undefined) {
       throw new Error("Falta el boundary");
     }
     boundary.geometry.x = Number.POSITIVE_INFINITY;
-    expectRejected(toDocumentFile(snapshot.document, snapshot.view));
+    expectRejected(toDocumentFile(document, VIEW));
   });
 
   it("rechaza claves extra en geometría", () => {
-    const snapshot = sampleFileSnapshot();
+    const document = sampleUseCaseDocument();
     expectRejected({
-      ...toDocumentFile(snapshot.document, snapshot.view),
+      ...toDocumentFile(document, VIEW),
       document: {
-        ...snapshot.document,
-        elements: snapshot.document.elements.map((element) =>
+        ...document,
+        elements: document.elements.map((element) =>
           element.kind === "system-boundary"
             ? {
                 ...element,

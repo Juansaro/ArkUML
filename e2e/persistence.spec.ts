@@ -92,6 +92,38 @@ test(
       .nth(0)
       .click({ position: { x: 12, y: 16 } });
     await expect(canvasElementName(page, "Actor")).toBeVisible();
+
+    await createNewDiagram(page, "Secuencia");
+    await expect
+      .poll(async () => {
+        await page.keyboard.press("ControlOrMeta+s");
+        const raw = await page.evaluate(
+          (key) => localStorage.getItem(key),
+          STORAGE_KEY,
+        );
+        if (raw === null) {
+          return 0;
+        }
+        const parsed: unknown = JSON.parse(raw);
+        if (
+          typeof parsed !== "object" ||
+          parsed === null ||
+          !("documents" in parsed) ||
+          !Array.isArray(parsed.documents)
+        ) {
+          return 0;
+        }
+        return parsed.documents.length;
+      })
+      .toBe(3);
+
+    await page.reload();
+    await expect(page.getByTestId("diagram-canvas")).toBeVisible();
+    await page.getByRole("combobox", { name: "Diagrama activo" }).click();
+    const options = page.getByRole("option");
+    await expect(options).toHaveCount(3);
+    await expect(options.filter({ hasText: "Casos de uso" })).toHaveCount(2);
+    await expect(options.filter({ hasText: "Secuencia" })).toHaveCount(1);
   },
 );
 

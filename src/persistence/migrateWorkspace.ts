@@ -24,17 +24,54 @@ export function migrateWorkspace(
   const storageVersion = inspectStorageVersion(input);
   if (storageVersion === STORAGE_VERSION) {
     const parsed = parseWorkspaceSnapshot(input);
-    if (!parsed.ok) {
-      return persistenceErr("PARSE_INVALID", parsed.error.message);
+    if (parsed.ok) {
+      return persistenceOk({ snapshot: parsed.value, migratedFromV1: false });
     }
-    return persistenceOk({ snapshot: parsed.value, migratedFromV1: false });
+    const recovered = wrapSingleDocumentWorkspace(input);
+    if (recovered.ok) {
+      return recovered;
+    }
+    return persistenceErr("PARSE_INVALID", parsed.error.message);
   }
 
-  if (storageVersion !== STORAGE_VERSION_V1) {
-    return persistenceErr("PARSE_INVALID", UNSUPPORTED_STORAGE_MESSAGE);
+  if (storageVersion === STORAGE_VERSION_V1) {
+    return wrapSingleDocumentWorkspace(input);
   }
 
-  const parsedV1 = parseWorkspaceSnapshotV1(input);
+  const recovered = wrapSingleDocumentWorkspace(input);
+  if (recovered.ok) {
+    return recovered;
+  }
+
+  return persistenceErr("PARSE_INVALID", UNSUPPORTED_STORAGE_MESSAGE);
+}
+
+function wrapSingleDocumentWorkspace(
+  input: unknown,
+): PersistenceResult<MigratedWorkspace> {
+  if (typeof input !== "object" || input === null) {
+    return persistenceErr("PARSE_INVALID", "El workspace no es un objeto.");
+  }
+
+  const record = input as Record<string, unknown>;
+  if (Array.isArray(record.documents)) {
+    return persistenceErr(
+      "PARSE_INVALID",
+      "El envelope de un documento no incluye documents[].",
+    );
+  }
+  if (!("document" in record) || !("view" in record)) {
+    return persistenceErr(
+      "PARSE_INVALID",
+      "Faltan document y view para envolver el workspace.",
+    );
+  }
+
+  const parsedV1 = parseWorkspaceSnapshotV1({
+    storageVersion: STORAGE_VERSION_V1,
+    document: record.document,
+    view: record.view,
+  });
   if (!parsedV1.ok) {
     return persistenceErr("PARSE_INVALID", parsedV1.error.message);
   }

@@ -4,8 +4,9 @@ import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_DOCUMENT_TITLE } from "../../../domain/diagram/defaults.ts";
 import {
+  DOCUMENT_FILE_FORMAT_V1,
+  DOCUMENT_FILE_FORMAT_VERSION_V1,
   INVALID_DOCUMENT_FILE_MESSAGE,
-  serializeDocumentFile,
 } from "../../../domain/diagram/documentFile.ts";
 import {
   createDiagramDocument,
@@ -579,7 +580,7 @@ describe("EditorShell", () => {
     );
   });
 
-  it("Abrir archivo cancelado no muta; confirmado sustituye documento, viewport e historial", async () => {
+  it("Abrir archivo añade y activa; el documento anterior sigue en la biblioteca", async () => {
     const user = userEvent.setup();
     const createId = sequentialIds();
     const deps = {
@@ -613,7 +614,12 @@ describe("EditorShell", () => {
           relationship.kind === "extend",
       ),
     };
-    const json = serializeDocumentFile(importedV1, importedView);
+    const json = JSON.stringify({
+      format: DOCUMENT_FILE_FORMAT_V1,
+      formatVersion: DOCUMENT_FILE_FORMAT_VERSION_V1,
+      document: importedV1,
+      view: importedView,
+    });
 
     render(
       <EditorStoreProvider store={store}>
@@ -628,36 +634,24 @@ describe("EditorShell", () => {
           .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
       );
     });
-    const before = store.getState().document;
+    const beforeId = store.getState().document.id;
 
     await user.upload(
       screen.getByTestId("document-file-input"),
       new File([json], "Importado.arkuml.json", { type: "application/json" }),
     );
-
-    const dialog = await screen.findByRole("dialog", { name: "Abrir archivo" });
-    expect(dialog).toHaveTextContent(
-      "Se perderá el diagrama actual. Esta acción no se puede deshacer.",
-    );
-
-    await user.click(screen.getByRole("button", { name: "Cancelar" }));
-    expect(
-      screen.queryByRole("dialog", { name: "Abrir archivo" }),
-    ).not.toBeInTheDocument();
-    expect(store.getState().document).toBe(before);
-
-    await user.upload(
-      screen.getByTestId("document-file-input"),
-      new File([json], "Importado.arkuml.json", { type: "application/json" }),
-    );
-    await screen.findByRole("dialog", { name: "Abrir archivo" });
-    await user.click(screen.getByRole("button", { name: "Abrir archivo" }));
 
     expect(
       screen.queryByRole("dialog", { name: "Abrir archivo" }),
     ).not.toBeInTheDocument();
     expect(store.getState().document.metadata.title).toBe("Importado");
     expect(store.getState().viewport).toEqual(importedView);
+    expect(store.getState().documents).toHaveLength(2);
+    expect(
+      store
+        .getState()
+        .documents.some((entry) => entry.document.id === beforeId),
+    ).toBe(true);
     expect(store.getState().history.past).toHaveLength(0);
     expect(store.getState().history.future).toHaveLength(0);
     expect(screen.getByRole("button", { name: "Deshacer" })).toHaveAttribute(

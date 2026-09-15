@@ -31,8 +31,8 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 (**Intercambio y distribución sobre schema 1**). TASK-038–041 están
 `Hecha`. Wave 2 cerrada. TASK-042–044 son remediación 1.x. TASK-045
 congeló **Release 1** (biblioteca + secuencia, schema 2). TASK-046,
-TASK-047 y TASK-048 están `Hecha`. TASK-049 está `Hecha`. El próximo
-contrato ejecutable es TASK-050.
+TASK-047, TASK-048, TASK-049 y TASK-050 están `Hecha`. Release 1
+cerrada a nivel de TASKs ejecutables.
 
 ## Estado
 
@@ -63,7 +63,7 @@ contrato ejecutable es TASK-050.
 | 047 | [`14-persistence/TASK-047.md`](14-persistence/TASK-047.md) | Hecha | P0 | 046 | 2026-09-14: biblioteca `storageVersion` 2; `migrateWorkspace` 1→2; historial por id; confirmación overwrite 2.0 |
 | 048 | [`13-editor/TASK-048.md`](13-editor/TASK-048.md) | Hecha | P0 | 047 | 2026-09-14: combobox + búsqueda (FR-R02); Nuevo añade; borrar el último indisponible |
 | 049 | [`13-editor/TASK-049.md`](13-editor/TASK-049.md) | Hecha | P0 | 046, 048 | 2026-09-14: módulo secuencia (paleta, lienzo, inspector, Nuevo kind); use-case intacto |
-| 050 | [`14-persistence/TASK-050.md`](14-persistence/TASK-050.md) | Lista | P0 | 049 | Envelope `arkuml-document-json` v2 |
+| 050 | [`14-persistence/TASK-050.md`](14-persistence/TASK-050.md) | Hecha | P0 | 049 | 2026-09-14: envelope `arkuml-document-json` v2; 1.x `arkuml-usecase-json` migra y añade |
 
 ## Fases y gates
 
@@ -131,9 +131,9 @@ Wave 2 (**Intercambio y distribución sobre schema 1**) está `Hecha`
 (TASK-038–041). TASK-042–044 (remediación 1.x) están `Hecha`. TASK-045
 congeló **Release 1**. TASK-046 (schema 2 y dominio de secuencia),
 TASK-047 (biblioteca `storageVersion` 2) y TASK-048 (combobox + búsqueda)
-están `Hecha`. TASK-049 (módulo secuencia) está `Hecha`. El próximo
-contrato es [TASK-050](14-persistence/TASK-050.md) (envelope
-`arkuml-document-json` v2).
+están `Hecha`. TASK-049 (módulo secuencia) y TASK-050 (envelope
+`arkuml-document-json` v2) están `Hecha`. Release 1 de TASKs
+ejecutables está cerrada.
 W17-13 clases sigue bloqueada. IndexedDB: no elegido (condicional
 C-QUOTA). No implementar Generalization, PDF, temas, fragmentos de
 secuencia ni un class diagram en estos chats.

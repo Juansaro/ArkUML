@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -92,11 +92,11 @@ Guardar un secuencia y reabrirlo lo añade y lo deja editable. Un JSON
 
 ## Criterios de aceptación
 
-- [ ] Export 2.x del activo use-case y del activo sequence.
-- [ ] Import 2.x añade y activa; el otro documento sigue en la lista.
-- [ ] Import 1.x `arkuml-usecase-json` migra y añade.
-- [ ] Secuencia en envelope v1 se rechaza.
-- [ ] Snapshot de localStorage abierto como archivo se rechaza.
+- [x] Export 2.x del activo use-case y del activo sequence.
+- [x] Import 2.x añade y activa; el otro documento sigue en la lista.
+- [x] Import 1.x `arkuml-usecase-json` migra y añade.
+- [x] Secuencia en envelope v1 se rechaza.
+- [x] Snapshot de localStorage abierto como archivo se rechaza.
 
 ## Tests
 
@@ -125,4 +125,25 @@ I/O de archivo 2.x cerrado; 1.x de casos de uso sigue importable.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-14. Envelope público 2.x `arkuml-document-json` / `formatVersion`
+2 / payload schema 2 (use-case o secuencia). Exporta el documento
+activo y su viewport; nombre título saneado + `.arkuml.json`; no
+serializa biblioteca ni historial. Importar valida con Zod estricto,
+migra 1.x `arkuml-usecase-json` vía `migrateDocument` 1→2 y **añade**
+a la biblioteca (sin confirmación FR-11). Secuencia en envelope v1,
+JSON inválido, format desconocido, claves de más, mezcla de kinds y
+un blob de localStorage se rechazan con «El archivo no es un documento
+ArkUML válido.» Autosave interno intacto (snapshot v2). Dominio puro;
+sin DOM ni paquetes nuevos.
+
+Comandos: `npx vitest run src/domain/diagram/documentFile.test.ts`
+(más store/shell/persistence: 372 passed en `src/editor src/domain
+src/persistence`). `npx playwright test e2e/document-file.spec.ts
+--project=chromium` (5 passed). `npx tsc -b --pretty false`: app
+limpia; fallos previos en `e2e/include-extend.spec.ts`
+(`SVGPathElement` / `DOMPoint` sin DOM en `tsconfig.node.json`) —
+sucio anterior, no tocado.
+
+Desviación: si el `id` del archivo ya está en la biblioteca se asigna
+uno nuevo para poder añadir sin destruir el anterior (ADR-007: ids
+únicos).

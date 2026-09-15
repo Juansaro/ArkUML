@@ -6,10 +6,11 @@ import {
   type IdFactory,
 } from "../../domain/diagram/factories.ts";
 import {
+  DOCUMENT_FILE_FORMAT_V1,
+  DOCUMENT_FILE_FORMAT_VERSION_V1,
   parseDocumentFileText,
   serializeDocumentFile,
 } from "../../domain/diagram/documentFile.ts";
-import { migrateDocument } from "../../domain/diagram/migrate.ts";
 import type {
   DiagramDocument,
   DiagramDocumentV1,
@@ -488,8 +489,9 @@ describe("domain errors and hydrate", () => {
     expect(store.getState().clipboard.pasteCount).toBe(0);
   });
 
-  it("un archivo de usuario hidratado restaura documento y viewport y vacía el historial", () => {
+  it("un archivo de usuario importado añade, activa y vacía el historial del nuevo", () => {
     const store = createStore();
+    const previousId = store.getState().document.id;
     expectOk(
       store
         .getState()
@@ -519,24 +521,71 @@ describe("domain errors and hydrate", () => {
           relationship.kind === "extend",
       ),
     };
-    const parsed = parseDocumentFileText(serializeDocumentFile(v1, VIEWPORT));
+    const parsed = parseDocumentFileText(
+      JSON.stringify({
+        format: DOCUMENT_FILE_FORMAT_V1,
+        formatVersion: DOCUMENT_FILE_FORMAT_VERSION_V1,
+        document: v1,
+        view: VIEWPORT,
+      }),
+    );
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) {
       return;
     }
-    const migrated = migrateDocument(parsed.value.document);
-    expect(migrated.ok).toBe(true);
-    if (!migrated.ok) {
-      return;
-    }
 
-    store.getState().hydrateWorkspace(migrated.value, parsed.value.view);
+    expect(
+      store.getState().importDocument(parsed.value.document, parsed.value.view),
+    ).toBe(true);
 
     expect(store.getState().document).toEqual(imported);
     expect(store.getState().viewport).toEqual(VIEWPORT);
+    expect(store.getState().documents).toHaveLength(2);
+    expect(
+      store
+        .getState()
+        .documents.some((entry) => entry.document.id === previousId),
+    ).toBe(true);
     expect(store.getState().history.past).toHaveLength(0);
     expect(store.getState().history.future).toHaveLength(0);
     expect(selectCanUndo(store.getState())).toBe(false);
+  });
+
+  it("importDocument asigna un id nuevo si el archivo choca con la biblioteca", () => {
+    const store = createStore();
+    const current = store.getState().document;
+    expect(store.getState().importDocument(current, VIEWPORT)).toBe(true);
+    expect(store.getState().documents).toHaveLength(2);
+    expect(store.getState().document.id).not.toBe(current.id);
+    expect(store.getState().document.metadata).toEqual(current.metadata);
+    expect(store.getState().viewport).toEqual(VIEWPORT);
+  });
+
+  it("importDocument de un 2.x secuencia añade y activa", () => {
+    const store = createStore();
+    const previousId = store.getState().document.id;
+    const sequence = createEmptySequenceDocument({
+      createId: sequentialIds(90),
+      now: () => CREATED_AT,
+    });
+    const parsed = parseDocumentFileText(
+      serializeDocumentFile(sequence, VIEWPORT),
+    );
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+    expect(
+      store.getState().importDocument(parsed.value.document, parsed.value.view),
+    ).toBe(true);
+    expect(store.getState().document.kind).toBe("sequence");
+    expect(store.getState().document.id).toBe(sequence.id);
+    expect(store.getState().documents).toHaveLength(2);
+    expect(
+      store
+        .getState()
+        .documents.some((entry) => entry.document.id === previousId),
+    ).toBe(true);
   });
 });
 

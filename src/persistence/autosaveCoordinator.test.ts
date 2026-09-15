@@ -365,7 +365,7 @@ describe("createAutosaveCoordinator", () => {
         },
       ],
     });
-    expect(raw).not.toMatch(/arkuml-usecase-json/);
+    expect(raw).not.toMatch(/arkuml-usecase-json|arkuml-document-json/);
   });
 
   it("startNewDiagram puede sustituir un blob corrupto tras confirmar", async () => {
@@ -380,7 +380,7 @@ describe("createAutosaveCoordinator", () => {
     expect(storage.getItem(WORKSPACE_STORAGE_KEY)).not.toBe(corrupt);
   });
 
-  it("un blob v1 se hidrata y no se pisa hasta confirmar el overwrite 2.0", async () => {
+  it("un blob v1 se hidrata y se guarda como workspace 2.0", async () => {
     const document = createDiagramDocument({
       createId: sequentialIds(20),
       now: () => CREATED_AT,
@@ -402,34 +402,12 @@ describe("createAutosaveCoordinator", () => {
 
     const loaded = await coordinator.hydrate();
     expect(loaded.ok).toBe(true);
-    expect(coordinator.isStorageUpgradePending()).toBe(true);
+    expect(coordinator.isStorageUpgradePending()).toBe(false);
     expect(store.getState().document.id).toBe(document.id);
     expect(store.getState().document.schemaVersion).toBe(2);
-    expect(store.getState().ui.dialogMode).toBe("storage-upgrade");
-    expect(store.getState().ui.message).toBe(STORAGE_UPGRADE_MESSAGE);
-    expect(storage.getItem(WORKSPACE_STORAGE_KEY)).toBe(raw);
+    expect(store.getState().ui.dialogMode).toBe("none");
+    expect(selectSaveStatus(store.getState())).toBe("saved");
 
-    expectOk(
-      store
-        .getState()
-        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
-    );
-    const flushed = await coordinator.flush();
-    expect(flushed.ok).toBe(false);
-    expect(storage.getItem(WORKSPACE_STORAGE_KEY)).toBe(raw);
-    expect(
-      store
-        .getState()
-        .document.elements.some((element) => element.kind === "actor"),
-    ).toBe(true);
-
-    coordinator.cancelStorageUpgrade();
-    expect(coordinator.isStorageUpgradePending()).toBe(true);
-    expect(storage.getItem(WORKSPACE_STORAGE_KEY)).toBe(raw);
-
-    const confirmed = await coordinator.confirmStorageUpgrade();
-    expect(confirmed.ok).toBe(true);
-    expect(coordinator.isStorageUpgradePending()).toBe(false);
     const savedRaw = storage.getItem(WORKSPACE_STORAGE_KEY);
     expect(savedRaw).not.toBe(raw);
     const saved = parseWorkspaceSnapshot(JSON.parse(savedRaw ?? "") as unknown);
@@ -439,11 +417,74 @@ describe("createAutosaveCoordinator", () => {
     }
     expect(saved.value.storageVersion).toBe(2);
     expect(saved.value.activeDocumentId).toBe(document.id);
+    expect(saved.value.documents).toHaveLength(1);
     expect(saved.value.documents[0]?.document.schemaVersion).toBe(2);
-    expect(
-      saved.value.documents[0]?.document.elements.some(
-        (element) => element.kind === "actor",
-      ),
-    ).toBe(true);
+
+    expect(store.getState().addNewDocument("sequence")).toBe(true);
+    const flushed = await coordinator.flush();
+    expect(flushed.ok).toBe(true);
+    const library = parseWorkspaceSnapshot(
+      JSON.parse(storage.getItem(WORKSPACE_STORAGE_KEY) ?? "") as unknown,
+    );
+    expect(library.ok).toBe(true);
+    if (!library.ok) {
+      throw new Error("Expected library snapshot");
+    }
+    expect(library.value.storageVersion).toBe(2);
+    expect(library.value.documents).toHaveLength(2);
+    expect(library.value.documents.map((entry) => entry.document.kind)).toEqual(
+      ["use-case", "sequence"],
+    );
+  });
+
+  it("si el save 2.0 falla al hidratar v1, pide confirmación y no pisa el blob", async () => {
+    const document = createDiagramDocument({
+      createId: sequentialIds(20),
+      now: () => CREATED_AT,
+    });
+    const v1 = {
+      storageVersion: 1,
+      document: {
+        schemaVersion: 1,
+        id: document.id,
+        kind: "use-case",
+        metadata: document.metadata,
+        elements: document.elements,
+        relationships: document.relationships,
+      },
+      view: { x: 4, y: 8, zoom: 1.25 },
+    };
+    const raw = JSON.stringify(v1);
+    const inner = createMemoryStorage({
+      [WORKSPACE_STORAGE_KEY]: raw,
+    });
+    coordinator.dispose();
+    coordinator = createAutosaveCoordinator({
+      store,
+      repository: createLocalStorageDiagramRepository({
+        storage: {
+          getItem(key) {
+            return inner.getItem(key);
+          },
+          setItem() {
+            throw new DOMException(
+              "The quota has been exceeded.",
+              "QuotaExceededError",
+            );
+          },
+          removeItem(key) {
+            inner.removeItem(key);
+          },
+        },
+      }),
+      now: () => SAVED_AT,
+    });
+
+    const loaded = await coordinator.hydrate();
+    expect(loaded.ok).toBe(true);
+    expect(coordinator.isStorageUpgradePending()).toBe(true);
+    expect(store.getState().ui.dialogMode).toBe("storage-upgrade");
+    expect(store.getState().ui.message).toBe(STORAGE_UPGRADE_MESSAGE);
+    expect(inner.getItem(WORKSPACE_STORAGE_KEY)).toBe(raw);
   });
 });

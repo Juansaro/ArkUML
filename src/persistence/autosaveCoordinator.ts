@@ -160,15 +160,19 @@ export function createAutosaveCoordinator(
       }
 
       suppressCommit = true;
-      pendingStorageUpgrade = loaded.migratedFromV1;
+      pendingStorageUpgrade = false;
       store.getState().hydrateWorkspaceSnapshot(loaded.snapshot);
       rememberClean(store.getState());
       suppressCommit = false;
 
       if (loaded.migratedFromV1) {
-        store.getState().setSaveStatus("idle");
-        store.getState().setDialogMode("storage-upgrade");
-        store.getState().setMessage(STORAGE_UPGRADE_MESSAGE);
+        const saved = await writeNow();
+        if (!saved.ok) {
+          pendingStorageUpgrade = true;
+          store.getState().setSaveStatus("idle");
+          store.getState().setDialogMode("storage-upgrade");
+          store.getState().setMessage(STORAGE_UPGRADE_MESSAGE);
+        }
       } else {
         store.getState().setSaveStatus("saved", now().toISOString());
         store.getState().setMessage(undefined);

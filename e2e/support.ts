@@ -123,7 +123,11 @@ export async function createNewDiagram(
 
 export async function confirmWorkspaceUpgrade(page: Page): Promise<void> {
   const dialog = page.getByRole("dialog", { name: "Actualizar el workspace" });
-  await expect(dialog).toBeVisible();
+  try {
+    await dialog.waitFor({ state: "visible", timeout: 1500 });
+  } catch {
+    return;
+  }
   await dialog.getByRole("button", { name: "Guardar como 2.0" }).click();
   await expect(dialog).toHaveCount(0);
 }

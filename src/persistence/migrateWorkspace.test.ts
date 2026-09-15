@@ -144,6 +144,24 @@ describe("migrateWorkspace", () => {
     expect(result.error.message).toMatch(/no soportado/i);
   });
 
+  it("envuelve un envelope de un documento etiquetado como storageVersion 2", () => {
+    const document = createDiagramDocument({
+      createId: sequentialIds(),
+      now: () => FIXED_NOW,
+    });
+    const mislabeled = {
+      storageVersion: 2 as const,
+      document,
+      view: VIEW,
+    };
+
+    const result = expectOk(migrateWorkspace(mislabeled));
+    expect(result.migratedFromV1).toBe(true);
+    expect(result.snapshot.storageVersion).toBe(2);
+    expect(result.snapshot.activeDocumentId).toBe(document.id);
+    expect(result.snapshot.documents).toEqual([{ document, view: VIEW }]);
+  });
+
   it("puede incluir un documento de secuencia junto a uno de casos de uso", () => {
     const createId = sequentialIds();
     const useCase = createDiagramDocument({

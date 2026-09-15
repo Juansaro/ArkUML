@@ -17,7 +17,8 @@ export function EditorStoreProvider({
   children,
   store,
 }: EditorStoreProviderProps) {
-  const [storeApi] = useState(() => store ?? createEditorStore());
+  const [fallbackStore] = useState(() => createEditorStore());
+  const storeApi = store ?? fallbackStore;
   return (
     <EditorStoreContext.Provider value={storeApi}>
       {children}
