@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { STORAGE_VERSION } from "../../domain/diagram/defaults.ts";
+import { parseWorkspaceSnapshot } from "../../domain/diagram/schema.ts";
 import { TooltipProvider } from "../components/common/Tooltip.tsx";
 import { createEditorStore } from "../store/editorStore.ts";
 import { EditorStoreProvider } from "../store/EditorStoreProvider.tsx";
@@ -12,6 +14,23 @@ import {
 } from "./DiagramCanvas.tsx";
 import { edgeTypes } from "./edgeTypes.ts";
 import { nodeTypes } from "./nodeTypes.ts";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+function stubCompactLayout(compact: boolean): void {
+  vi.stubGlobal("matchMedia", (query: string): MediaQueryList => ({
+    matches: query === "(max-width: 1023px)" ? compact : false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }));
+}
 
 function renderCanvas(
   store = createEditorStore({
@@ -37,7 +56,7 @@ describe("DiagramCanvas", () => {
     renderCanvas();
 
     expect(screen.getByTestId("diagram-canvas")).toBeInTheDocument();
-    expect(screen.getByText("Sistema")).toBeInTheDocument();
+    expect(screen.getByTestId("element-name")).toHaveTextContent("Sistema");
     expect(screen.getByTestId("system-boundary-rect")).toBeInTheDocument();
     expect(screen.queryByTestId("alignment-guides")).not.toBeInTheDocument();
   });
@@ -108,5 +127,131 @@ describe("DiagramCanvas", () => {
       "aria-disabled",
       "true",
     );
+  });
+
+  it("muestra el minimap a chrome completo y no escribe historial ni documento", () => {
+    stubCompactLayout(false);
+    const { store } = renderCanvas();
+    const history = store.getState().history;
+    const before = JSON.stringify(store.getState().document);
+
+    const minimap = screen.getByTestId("diagram-minimap");
+    expect(minimap).toHaveAttribute("aria-label", "Mapa del diagrama");
+    expect(minimap.querySelector(".react-flow__minimap")).not.toBeNull();
+    expect(screen.getByTestId("minimap-expand")).toBeInTheDocument();
+
+    store.getState().setViewport({ x: 12, y: 24, zoom: 1.5 });
+    expect(store.getState().history).toBe(history);
+    expect(JSON.stringify(store.getState().document)).toBe(before);
+
+    const snapshot = {
+      storageVersion: STORAGE_VERSION,
+      document: store.getState().document,
+      view: store.getState().viewport,
+    };
+    expect(Object.keys(snapshot).sort()).toEqual([
+      "document",
+      "storageVersion",
+      "view",
+    ]);
+    expect(snapshot.document.schemaVersion).toBe(1);
+    expect(
+      parseWorkspaceSnapshot(JSON.parse(JSON.stringify(snapshot))),
+    ).toEqual({
+      ok: true,
+      value: snapshot,
+    });
+  });
+
+  it("no monta el minimap bajo 1024 px", () => {
+    stubCompactLayout(true);
+    renderCanvas();
+    expect(screen.queryByTestId("diagram-minimap")).not.toBeInTheDocument();
+  });
+
+  it("pinta boundary, actor y caso con la notación del lienzo", () => {
+    stubCompactLayout(false);
+    const store = createEditorStore();
+    store.getState().createActor({
+      name: "Usuario",
+      geometry: { x: -80, y: 480, width: 48, height: 96 },
+    });
+    const boundary = store
+      .getState()
+      .document.elements.find((element) => element.kind === "system-boundary");
+    if (boundary === undefined) {
+      throw new Error("Falta el boundary");
+    }
+    store.getState().createUseCase({
+      name: "Login",
+      geometry: { x: 80, y: 80, width: 160, height: 80 },
+      parentId: boundary.id,
+    });
+    renderCanvas(store);
+
+    const minimap = screen.getByTestId("diagram-minimap");
+    expect(
+      minimap.querySelector('[data-minimap-kind="system-boundary"] rect'),
+    ).not.toBeNull();
+    expect(
+      minimap.querySelector('[data-minimap-kind="use-case"] ellipse'),
+    ).not.toBeNull();
+    expect(
+      minimap.querySelector('[data-minimap-kind="actor"] circle'),
+    ).not.toBeNull();
+    expect(
+      minimap.querySelector('[data-minimap-kind="system-boundary"]'),
+    ).toHaveTextContent("Sistema");
+    expect(
+      minimap.querySelector('[data-minimap-kind="use-case"]'),
+    ).toHaveTextContent("Login");
+
+    const svg = minimap.querySelector("svg.react-flow__minimap-svg");
+    const viewBox = svg?.getAttribute("viewBox")?.split(" ").map(Number) ?? [];
+    expect(viewBox).toHaveLength(4);
+    const mapX = viewBox[0];
+    const mapY = viewBox[1];
+    const mapW = viewBox[2];
+    const mapH = viewBox[3];
+    expect(mapX).toBeDefined();
+    expect(mapY).toBeDefined();
+    expect(mapW).toBeDefined();
+    expect(mapH).toBeDefined();
+    if (
+      mapX === undefined ||
+      mapY === undefined ||
+      mapW === undefined ||
+      mapH === undefined
+    ) {
+      throw new Error("Falta viewBox del minimap");
+    }
+    expect(mapX + mapW).toBeGreaterThan(640);
+    expect(mapY + mapH).toBeGreaterThan(480 + 96);
+    expect(minimap.querySelector(".react-flow__minimap-mask")).not.toBeNull();
+  });
+
+  it("amplía el minimap al doble sin escribir historial ni documento", async () => {
+    stubCompactLayout(false);
+    const user = userEvent.setup();
+    const { store } = renderCanvas();
+    const history = store.getState().history;
+    const before = JSON.stringify(store.getState().document);
+
+    const minimap = screen.getByTestId("diagram-minimap");
+    const width = Number.parseFloat(minimap.style.width);
+    const height = Number.parseFloat(minimap.style.height);
+    expect(width).toBeGreaterThan(0);
+    expect(minimap).toHaveAttribute("data-expanded", "false");
+
+    await user.click(screen.getByRole("button", { name: "Ampliar mapa" }));
+    expect(minimap).toHaveAttribute("data-expanded", "true");
+    expect(Number.parseFloat(minimap.style.width)).toBe(width * 2);
+    expect(Number.parseFloat(minimap.style.height)).toBe(height * 2);
+    expect(store.getState().history).toBe(history);
+    expect(JSON.stringify(store.getState().document)).toBe(before);
+
+    await user.click(screen.getByRole("button", { name: "Reducir mapa" }));
+    expect(minimap).toHaveAttribute("data-expanded", "false");
+    expect(Number.parseFloat(minimap.style.width)).toBe(width);
   });
 });

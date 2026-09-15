@@ -28,8 +28,9 @@ cerró el gate de fase 10 (**ship**, 2026-09-09). TASK-031 publicó
 TASK-033 congeló la Wave 1 (**Editor local sobre schema 1**). TASK-034
 y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 (W17-01, W17-13); no congeló implementación. TASK-037 congeló la Wave 2
-(**Intercambio y distribución sobre schema 1**). TASK-038 está `Hecha`.
-TASK-039–041 están `Lista`. Próximo contrato ejecutable: TASK-039.
+(**Intercambio y distribución sobre schema 1**). TASK-038–041 están
+`Hecha`. Wave 2 cerrada. No hay TASK-042+ en este árbol hasta un freeze
+nuevo.
 
 ## Estado
 
@@ -49,9 +50,9 @@ TASK-039–041 están `Lista`. Próximo contrato ejecutable: TASK-039.
 | 036 | [`11-governance/TASK-036.md`](11-governance/TASK-036.md) | Hecha | P0 | 031, 032 | 2026-09-09: W17-01 plataforma + W17-13 clases (bloqueadas); FR-P07; `diagram-kinds.md`; schema `1` intacto |
 | 037 | [`11-governance/TASK-037.md`](11-governance/TASK-037.md) | Hecha | P0 | 033, 036 | 2026-09-09: Wave 2 **Intercambio y distribución sobre schema 1** (W14-03, W13-03, W15-03, W17-05); TASK-038–041 |
 | 038 | [`14-persistence/TASK-038.md`](14-persistence/TASK-038.md) | Hecha | P0 | 037 | 2026-09-09: FR-P03; envelope `arkuml-usecase-json`; schema `1`; autosave `arkuml:workspace:v1` intacto |
-| 039 | [`13-editor/TASK-039.md`](13-editor/TASK-039.md) | Lista | P1 | 037 | W13-03 / FR-P04 minimap (chrome) |
-| 040 | [`15-export/TASK-040.md`](15-export/TASK-040.md) | Lista | P1 | 037 | W15-03 / FR-P05 clipboard de imagen |
-| 041 | [`17-ecosystem/TASK-041.md`](17-ecosystem/TASK-041.md) | Lista | P1 | 037 | W17-05 / FR-P06 runbook estático |
+| 039 | [`13-editor/TASK-039.md`](13-editor/TASK-039.md) | Hecha | P1 | 037 | 2026-09-09: FR-P04; MiniMap xyflow (chrome); schema `1`; ausente <1024 px |
+| 040 | [`15-export/TASK-040.md`](15-export/TASK-040.md) | Hecha | P1 | 037 | 2026-09-09: FR-P05; Copiar PNG/JPG reutiliza `exportDiagram`; pin 1.11.11; schema `1` |
+| 041 | [`17-ecosystem/TASK-041.md`](17-ecosystem/TASK-041.md) | Hecha | P1 | 037 | 2026-09-14: FR-P06; `docs/operations/static-hosting.md`; README enlaza; sin secrets ni workflow |
 
 ## Fases y gates
 
@@ -110,10 +111,9 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-Wave 2 (**Intercambio y distribución sobre schema 1**). TASK-038
-(FR-P03) está `Hecha`. Próximo contrato ejecutable:
-[TASK-039](13-editor/TASK-039.md) (FR-P04, minimap). Siguientes:
-TASK-040 (clipboard), TASK-041 (runbook). Una TASK por chat. W17-01/13
-siguen bloqueadas. Multi-documento: no. IndexedDB: no elegido
-(condicional C-QUOTA). No implementar Generalization, PDF, temas ni un
-class diagram en estos chats.
+Wave 2 (**Intercambio y distribución sobre schema 1**) está `Hecha`
+(TASK-038–041). No hay contrato ejecutable siguiente en este árbol hasta
+un freeze nuevo. Una TASK por chat. W17-01/13 siguen bloqueadas.
+Multi-documento: no. IndexedDB: no elegido (condicional C-QUOTA). No
+implementar Generalization, PDF, temas ni un class diagram en estos
+chats.

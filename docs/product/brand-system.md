@@ -285,6 +285,15 @@ cual.
 <path d="M4 15v5h5" />
 ```
 
+**`collapseView`** — cuatro esquinas hacia adentro:
+
+```text
+<path d="M9 4v5H4" />
+<path d="M15 4v5h5" />
+<path d="M20 15h-5v5" />
+<path d="M4 15h5v5" />
+```
+
 **`actor`** — figura UML de palo (canónica, no el viewBox 48×72 del nodo):
 
 ```text
@@ -374,6 +383,7 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Lienzo | `zoomIn` | Icon-only | Acercar | «Acercar.» | «El zoom ya está en el máximo (200%).» cuando `zoom >= 2` |
 | Lienzo | `zoomOut` | Icon-only | Alejar | «Alejar.» | «El zoom ya está en el mínimo (50%).» cuando `zoom <= 0.5` |
 | Lienzo | `fitView` | Icon-only | Ajustar vista | «Ajustar todo el diagrama (Ctrl/Cmd+0).» | — |
+| Lienzo | `fitView` / `collapseView` | Icon-only. Visible al hover o foco del minimapa | Ampliar mapa / Reducir mapa | «Ver el mapa al doble de tamaño.» / «Volver el mapa al tamaño normal.» | — |
 
 No migrar a iconos: título del documento, tagline «Editor de diagramas de
 casos de uso», «Cerrar paneles», campos del inspector, acciones de diálogos.

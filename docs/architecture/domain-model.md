@@ -75,6 +75,7 @@ Todas devuelven un documento nuevo o un error de dominio con `code` estable y `m
 | `reparentUseCase` | Convierte coordenadas para preservar posición visual. |
 | `deleteElements` | Cascada de relaciones; unboundarying si se borra el boundary. |
 | `duplicateElements` | Solo actor/use case; offset 24; sin relaciones. |
+| `snapshotDuplicableElements` / `insertElementCopies` | Misma selección que duplicar; el pegado reutiliza el offset 24. |
 | `canConnect` / `createRelationship` | Matriz de [mvp-spec.md](../product/mvp-spec.md). |
 | `deleteRelationships` | Por id. |
 

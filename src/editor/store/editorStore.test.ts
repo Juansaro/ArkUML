@@ -396,6 +396,11 @@ describe("domain errors and hydrate", () => {
         .getState()
         .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
     );
+    store
+      .getState()
+      .setClipboard([
+        { kind: "actor", name: "Usuario", geometry: ACTOR_GEOMETRY },
+      ]);
     const replacement = createDiagramDocument({
       createId: sequentialIds(90),
       now: () => CREATED_AT,
@@ -408,6 +413,8 @@ describe("domain errors and hydrate", () => {
     expect(store.getState().history.past).toHaveLength(0);
     expect(store.getState().history.future).toHaveLength(0);
     expect(selectCanUndo(store.getState())).toBe(false);
+    expect(store.getState().clipboard.items).toHaveLength(0);
+    expect(store.getState().clipboard.pasteCount).toBe(0);
   });
 
   it("un archivo de usuario hidratado restaura documento y viewport y vacía el historial", () => {

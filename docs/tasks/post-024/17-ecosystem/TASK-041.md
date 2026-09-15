@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -88,12 +88,12 @@ runbook, sin secrets en el repositorio.
 
 ## Criterios de aceptación
 
-- [ ] Existe `docs/operations/static-hosting.md` con build, `base` `./`,
+- [x] Existe `docs/operations/static-hosting.md` con build, `base` `./`,
       HTTP vs `file://`, y al menos dos recetas estáticas.
-- [ ] El runbook prohíbe secrets, backend, analytics y PWA.
-- [ ] README enlaza el runbook y conserva `vite preview`.
-- [ ] Ningún workflow de deploy ni cambio de `src/`.
-- [ ] `LICENSE` Apache-2.0 sigue siendo la referencia legal.
+- [x] El runbook prohíbe secrets, backend, analytics y PWA.
+- [x] README enlaza el runbook y conserva `vite preview`.
+- [x] Ningún workflow de deploy ni cambio de `src/`.
+- [x] `LICENSE` Apache-2.0 sigue siendo la referencia legal.
 
 ## Tests
 
@@ -119,4 +119,19 @@ FR-P06 publicado; producto y CI intactos; criterios `[x]` con evidencia.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-14. FR-P06: runbook
+[`docs/operations/static-hosting.md`](../../../operations/static-hosting.md)
+con `npm ci` / `npm run build`, `base` `./`, HTTP vs `file://`, cache
+(`index.html` corto; assets hasheados inmutables) y recetas ilustrativas
+nginx, GitHub Pages (sin Action con secrets) y Netlify Drop / carpeta
+estática. Prohíbe backend, env de API, analytics, PWA, headers de auth y
+secrets de CI. `LICENSE` Apache-2.0 no omitida; `dist/` lleva runtime
+MIT. README conserva `vite preview` y enlaza el runbook. Puntero en
+`docs/architecture/architecture.md`. Sin workflow de deploy ni cambio de
+`src/`. `LICENSE` intacta.
+
+Comando realmente corrido:
+
+```bash
+git diff --check
+```

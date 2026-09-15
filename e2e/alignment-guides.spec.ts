@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { diagramCanvas, diagramElement } from "./support.ts";
+import { diagramCanvas, diagramElement, canvasElementName } from "./support.ts";
 
 const STORAGE_KEY = "arkuml:workspace:v1";
 
@@ -14,7 +14,7 @@ test("muestra guías al alinear un actor y las quita al soltar", async ({
   await page.goto("/");
 
   const canvas = diagramCanvas(page);
-  await expect(canvas.getByText("Arrastre", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Arrastre")).toBeVisible();
   await expect(canvas.getByTestId("alignment-guides")).toHaveCount(0);
 
   const arrastre = diagramElement(page, "actor", "Arrastre");

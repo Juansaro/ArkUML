@@ -3,16 +3,25 @@ import {
   Background,
   BackgroundVariant,
   ConnectionLineType,
+  MiniMap,
   ReactFlow,
   SelectionMode,
   ViewportPortal,
   useReactFlow,
+  useStore,
   useViewport,
   type OnMoveEnd,
   type OnSelectionChangeFunc,
+  type ReactFlowState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { mapDocumentToReactFlow } from "../adapters/reactFlowMapper.ts";
+import { snapshotDuplicableElements } from "../../domain/diagram/operations.ts";
+import { useCompactLayout } from "../a11y/useCompactLayout.ts";
+import { copySelection, pasteSelection } from "../shortcuts/editorCommands.ts";
+import {
+  mapDocumentToReactFlow,
+  type DiagramNode,
+} from "../adapters/reactFlowMapper.ts";
 import { ToolButton } from "../components/common/ToolButton.tsx";
 import type { AlignmentGuides } from "../interactions/alignmentGuides.ts";
 import { useElementRename } from "../interactions/useElementRename.ts";
@@ -20,6 +29,7 @@ import { useNodeDrag } from "../interactions/useNodeDrag.ts";
 import {
   selectDocument,
   selectEditingElementId,
+  selectClipboardItems,
   selectSelectedElementIds,
   selectSelectedRelationshipIds,
 } from "../store/selectors.ts";
@@ -30,8 +40,19 @@ import {
 import { useCreateElementTool } from "../tools/useCreateElementTool.ts";
 import { useRelationshipTool } from "../tools/useRelationshipTool.ts";
 import { isCreateElementTool } from "../tools/createElementTool.ts";
+import {
+  FlowDiagramMinimapNode,
+  minimapNodeClassName,
+} from "./DiagramMinimapNode.tsx";
+import {
+  boundsEqual,
+  minimapFrameSize,
+  unionNodeBounds,
+  type MinimapBounds,
+} from "./minimapOverview.ts";
 import { edgeTypes } from "./edgeTypes.ts";
 import { nodeTypes } from "./nodeTypes.ts";
+import { CanvasContextMenu } from "./CanvasContextMenu.tsx";
 import styles from "./DiagramCanvas.module.css";
 
 const GUIDE_SPAN = 10_000;
@@ -58,6 +79,7 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
   const elementIds = useEditorStore(selectSelectedElementIds);
   const relationshipIds = useEditorStore(selectSelectedRelationshipIds);
   const editingElementId = useEditorStore(selectEditingElementId);
+  const clipboardItems = useEditorStore(selectClipboardItems);
   const {
     canvasRef,
     placing,
@@ -76,6 +98,11 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
   const nodeDrag = useNodeDrag();
   const { onNodeDoubleClick } = useElementRename();
   const [defaultViewport] = useState(() => store.getState().viewport);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const compact = useCompactLayout();
   const ignoreSelectionAfterPaneClick = useRef(false);
   const { nodes, edges } = useMemo(
     () =>
@@ -127,6 +154,71 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
     [store],
   );
 
+  const openContextMenu = useCallback(
+    (event: {
+      clientX: number;
+      clientY: number;
+      preventDefault: () => void;
+    }) => {
+      event.preventDefault();
+      if (placing || connecting) {
+        setContextMenu(null);
+        return;
+      }
+      setContextMenu({ x: event.clientX, y: event.clientY });
+    },
+    [connecting, placing],
+  );
+
+  const onPaneContextMenu = useCallback(
+    (event: {
+      clientX: number;
+      clientY: number;
+      preventDefault: () => void;
+    }) => {
+      openContextMenu(event);
+    },
+    [openContextMenu],
+  );
+
+  const onNodeContextMenu = useCallback(
+    (
+      event: { clientX: number; clientY: number; preventDefault: () => void },
+      node: DiagramNode,
+    ) => {
+      if (!placing && !connecting) {
+        const kind = node.data.kind;
+        if (kind === "actor" || kind === "use-case") {
+          const selected = store.getState().selection.elementIds;
+          if (!selected.includes(node.id)) {
+            store.getState().setSelection({
+              elementIds: [node.id],
+              relationshipIds: [],
+            });
+          }
+        }
+      }
+      openContextMenu(event);
+    },
+    [connecting, openContextMenu, placing, store],
+  );
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  const onCopyFromMenu = useCallback(() => {
+    copySelection(store);
+  }, [store]);
+
+  const onPasteFromMenu = useCallback(() => {
+    pasteSelection(store);
+  }, [store]);
+
+  const copySnapshot = snapshotDuplicableElements(document, elementIds);
+  const canCopy = copySnapshot.ok && copySnapshot.value.length > 0;
+  const canPaste = clipboardItems.length > 0;
+
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
     ({ nodes: selectedNodes, edges: selectedEdges }) => {
       if (shouldIgnoreSelectionChange()) {
@@ -175,7 +267,11 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
         onMoveEnd={onMoveEnd}
         onSelectionChange={onSelectionChange}
         onPaneClick={onPaneClick}
+        onPaneContextMenu={onPaneContextMenu}
         onNodeClick={onNodeClick}
+        onNodeContextMenu={onNodeContextMenu}
+        onEdgeContextMenu={onPaneContextMenu}
+        onSelectionContextMenu={onPaneContextMenu}
         onNodeDoubleClick={onNodeDoubleClick}
         onNodeDragStart={nodeDrag.onNodeDragStart}
         onNodeDrag={nodeDrag.onNodeDrag}
@@ -220,10 +316,22 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
         />
         <AlignmentGuidesOverlay guides={nodeDrag.guides} />
         <CanvasViewportControls />
+        {compact ? null : <DiagramMinimap />}
         {onFitViewReady !== undefined ? (
           <FitViewRegistration onReady={onFitViewReady} />
         ) : null}
       </ReactFlow>
+      {contextMenu === null ? null : (
+        <CanvasContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          canCopy={canCopy}
+          canPaste={canPaste}
+          onCopy={onCopyFromMenu}
+          onPaste={onPasteFromMenu}
+          onClose={closeContextMenu}
+        />
+      )}
     </div>
   );
 }
@@ -274,6 +382,61 @@ function FitViewRegistration({
   }, [fitView, onReady]);
 
   return null;
+}
+
+function selectMinimapBounds(state: ReactFlowState): MinimapBounds | null {
+  return unionNodeBounds(state.nodeLookup.values());
+}
+
+function DiagramMinimap() {
+  const [expanded, setExpanded] = useState(false);
+  const bounds = useStore(selectMinimapBounds, boundsEqual);
+  const frame = minimapFrameSize(bounds, expanded);
+
+  return (
+    <div
+      className={styles.minimap}
+      data-testid="diagram-minimap"
+      data-expanded={expanded ? "true" : "false"}
+      aria-label="Mapa del diagrama"
+      style={{ width: frame.width, height: frame.height }}
+    >
+      <MiniMap<DiagramNode>
+        ariaLabel="Mapa del diagrama"
+        pannable
+        zoomable
+        position="bottom-right"
+        style={{ width: frame.width, height: frame.height }}
+        bgColor="var(--color-canvas)"
+        maskColor="var(--color-bg)"
+        maskStrokeColor="var(--color-control-border)"
+        nodeClassName={minimapNodeClassName}
+        nodeComponent={FlowDiagramMinimapNode}
+        nodeColor="transparent"
+        nodeStrokeColor="transparent"
+        nodeStrokeWidth={0}
+        nodeBorderRadius={0}
+        offsetScale={1}
+      />
+      <div className={styles.minimapExpand} data-testid="minimap-expand">
+        <ToolButton
+          icon={expanded ? "collapseView" : "fitView"}
+          label={expanded ? "Reducir mapa" : "Ampliar mapa"}
+          description={
+            expanded
+              ? "Volver el mapa al tamaño normal."
+              : "Ver el mapa al doble de tamaño."
+          }
+          placement="left"
+          pressed={expanded}
+          aria-expanded={expanded}
+          onClick={() => {
+            setExpanded((current) => !current);
+          }}
+        />
+      </div>
+    </div>
+  );
 }
 
 function CanvasViewportControls() {

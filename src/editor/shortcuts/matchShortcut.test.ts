@@ -41,6 +41,8 @@ describe("matchEditorShortcut", () => {
     expect(matchEditorShortcut(event("d", { ctrlKey: true }))).toBe(
       "duplicate",
     );
+    expect(matchEditorShortcut(event("c", { metaKey: true }))).toBe("copy");
+    expect(matchEditorShortcut(event("v", { ctrlKey: true }))).toBe("paste");
     expect(matchEditorShortcut(event("0", { ctrlKey: true }))).toBe("fitView");
     expect(
       matchEditorShortcut(

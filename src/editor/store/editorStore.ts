@@ -5,8 +5,14 @@ import {
   type DiagramFactoryDeps,
 } from "../../domain/diagram/factories.ts";
 import type { DiagramDocument, Viewport } from "../../domain/diagram/model.ts";
+import type { ElementCopy } from "../../domain/diagram/operations.ts";
 import { createEditorActions, type EditorActions } from "./actions.ts";
 import { emptyHistory, type DocumentHistory } from "./history.ts";
+
+export type EditorClipboard = {
+  items: readonly ElementCopy[];
+  pasteCount: number;
+};
 
 export const EDITOR_TOOLS = [
   "select",
@@ -63,6 +69,7 @@ export type EditorSlices = {
   history: HistorySlice;
   hover: HoverState;
   ui: UiState;
+  clipboard: EditorClipboard;
 };
 
 export type EditorStore = EditorSlices & EditorActions;
@@ -85,6 +92,11 @@ const EMPTY_HOVER: HoverState = {
   relationshipId: undefined,
 };
 
+const EMPTY_CLIPBOARD: EditorClipboard = {
+  items: [],
+  pasteCount: 0,
+};
+
 function createInitialSlices(options?: CreateEditorStoreOptions): EditorSlices {
   const viewport = options?.viewport ?? DEFAULT_VIEWPORT;
 
@@ -105,6 +117,7 @@ function createInitialSlices(options?: CreateEditorStoreOptions): EditorSlices {
       dialogMode: "none",
       editingElementId: undefined,
     },
+    clipboard: EMPTY_CLIPBOARD,
   };
 }
 

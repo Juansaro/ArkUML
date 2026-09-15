@@ -30,6 +30,7 @@ const CHROME_TEST_IDS = new Set([
   "inspector-warning",
   "editor-live",
   "alignment-guides",
+  "diagram-minimap",
 ]);
 
 export type ExportDiagramInput = {

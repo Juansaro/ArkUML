@@ -42,6 +42,14 @@ export function matchEditorShortcut(
     return "duplicate";
   }
 
+  if (mod && !event.shiftKey && key.toLowerCase() === "c") {
+    return "copy";
+  }
+
+  if (mod && !event.shiftKey && key.toLowerCase() === "v") {
+    return "paste";
+  }
+
   if (mod && !event.shiftKey && isZeroKey(event)) {
     return "fitView";
   }

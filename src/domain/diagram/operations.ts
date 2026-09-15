@@ -381,17 +381,20 @@ export function deleteElements(
   );
 }
 
-export function duplicateElements(
+export type ElementCopy =
+  | { kind: "actor"; name: string; geometry: Geometry }
+  | { kind: "use-case"; name: string; geometry: Geometry; parentId?: string };
+
+export function snapshotDuplicableElements(
   document: DiagramDocument,
   elementIds: readonly string[],
-  deps?: OperationDeps,
-): Result<DiagramDocument> {
+): Result<readonly ElementCopy[]> {
   if (elementIds.length === 0) {
-    return ok(document);
+    return ok([]);
   }
 
   const byId = indexElements(document);
-  const copies: DiagramElement[] = [];
+  const copies: ElementCopy[] = [];
 
   for (const id of elementIds) {
     const element = byId.get(id);
@@ -405,35 +408,83 @@ export function duplicateElements(
       return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
     }
 
-    const geometry = offsetGeometry(element.geometry, DUPLICATE_OFFSET);
+    const geometry = copyGeometry(element.geometry);
     if (element.kind === "actor") {
-      copies.push(createActor({ name: element.name, geometry }, deps));
+      copies.push({ kind: "actor", name: element.name, geometry });
       continue;
     }
 
     if (element.parentId !== undefined) {
-      copies.push(
-        createUseCase(
-          { name: element.name, geometry, parentId: element.parentId },
-          deps,
-        ),
-      );
+      copies.push({
+        kind: "use-case",
+        name: element.name,
+        geometry,
+        parentId: element.parentId,
+      });
     } else {
-      copies.push(createUseCase({ name: element.name, geometry }, deps));
+      copies.push({ kind: "use-case", name: element.name, geometry });
     }
   }
 
+  return ok(copies);
+}
+
+export function insertElementCopies(
+  document: DiagramDocument,
+  copies: readonly ElementCopy[],
+  offset: number,
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
   if (copies.length === 0) {
     return ok(document);
+  }
+
+  const created: DiagramElement[] = [];
+
+  for (const copy of copies) {
+    if (!isFiniteGeometry(copy.geometry)) {
+      return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+    }
+
+    const geometry = offsetGeometry(copy.geometry, offset);
+    if (copy.kind === "actor") {
+      created.push(createActor({ name: copy.name, geometry }, deps));
+      continue;
+    }
+
+    const parentId = copy.parentId;
+    if (parentId !== undefined) {
+      const parent = findElement(document, parentId);
+      if (parent !== undefined && parent.kind === "system-boundary") {
+        created.push(
+          createUseCase({ name: copy.name, geometry, parentId }, deps),
+        );
+        continue;
+      }
+    }
+
+    created.push(createUseCase({ name: copy.name, geometry }, deps));
   }
 
   return commit(
     document,
     {
-      elements: [...document.elements, ...copies],
+      elements: [...document.elements, ...created],
     },
     deps,
   );
+}
+
+export function duplicateElements(
+  document: DiagramDocument,
+  elementIds: readonly string[],
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  const snapshot = snapshotDuplicableElements(document, elementIds);
+  if (!snapshot.ok) {
+    return snapshot;
+  }
+  return insertElementCopies(document, snapshot.value, DUPLICATE_OFFSET, deps);
 }
 
 export function createRelationship(

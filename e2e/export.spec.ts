@@ -15,7 +15,7 @@ test.describe("exportación de producto", { tag: "@export" }, () => {
     async ({ page }) => {
       await page.goto("/");
       const canvas = page.getByTestId("diagram-canvas");
-      await expect(canvas.getByText("Sistema")).toBeVisible();
+      await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
       await expect(
         canvas.locator(".react-flow__resize-control").first(),
       ).toBeVisible();
@@ -40,9 +40,7 @@ test.describe("exportación de producto", { tag: "@export" }, () => {
     page,
   }) => {
     await page.goto("/");
-    await expect(
-      page.getByTestId("diagram-canvas").getByText("Sistema"),
-    ).toBeVisible();
+    await expect(page.getByTestId("system-boundary-rect")).toBeVisible();
 
     const download = await downloadExport(page, { format: "jpg", scale: 1 });
     expect(download.suggestedFilename()).toBe("Diagrama de casos de uso.jpg");
@@ -67,7 +65,7 @@ test.describe("exportación de producto", { tag: "@export" }, () => {
   }) => {
     await page.goto("/");
     const canvas = page.getByTestId("diagram-canvas");
-    await expect(canvas.getByText("Sistema")).toBeVisible();
+    await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
     const viewport = page.locator(".react-flow__viewport");
     const before = await viewport.getAttribute("style");
 
@@ -85,12 +83,65 @@ test.describe("exportación de producto", { tag: "@export" }, () => {
     ).toHaveText(/Zoom 100%/);
   });
 
+  test("Copiar PNG 1x escribe image/png, anuncia y no descarga", async ({
+    page,
+    context,
+  }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.goto("/");
+    await expect(page.getByTestId("system-boundary-rect")).toBeVisible();
+    const viewport = page.locator(".react-flow__viewport");
+    const zoomBefore = await viewport.getAttribute("style");
+    const downloads: string[] = [];
+    page.on("download", (download) => {
+      downloads.push(download.suggestedFilename());
+    });
+
+    await page.getByRole("button", { name: "Exportar" }).click();
+    const dialog = page.getByRole("dialog", { name: "Exportar" });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("radio", { name: "PNG" }).click();
+    await dialog.getByRole("radio", { name: "1x" }).click();
+    await page.evaluate(() => {
+      const scope = globalThis as unknown as {
+        __arkumlClipboardTypes: string[];
+        navigator: {
+          clipboard: {
+            write: (items: { types: string[] }[]) => Promise<void>;
+          };
+        };
+      };
+      scope.__arkumlClipboardTypes = [];
+      const originalWrite = scope.navigator.clipboard.write.bind(
+        scope.navigator.clipboard,
+      );
+      scope.navigator.clipboard.write = async (items) => {
+        scope.__arkumlClipboardTypes = items.flatMap((item) => [...item.types]);
+        return originalWrite(items);
+      };
+    });
+
+    await dialog.getByRole("button", { name: "Copiar" }).click();
+    await expect(page.getByTestId("editor-live")).toHaveText("Imagen copiada.");
+    await expect(dialog).toBeHidden();
+    expect(downloads).toEqual([]);
+    await expect(viewport).toHaveAttribute("style", zoomBefore ?? "");
+
+    const types = await page.evaluate(() => {
+      const scope = globalThis as unknown as {
+        __arkumlClipboardTypes: string[];
+      };
+      return scope.__arkumlClipboardTypes;
+    });
+    expect(types).toContain("image/png");
+  });
+
   test("incluye el diagrama aunque esté fuera del viewport", async ({
     page,
   }) => {
     await page.goto("/");
     const canvas = page.getByTestId("diagram-canvas");
-    await expect(canvas.getByText("Sistema")).toBeVisible();
+    await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
 
     const box = await canvas.boundingBox();
     if (box === null) {

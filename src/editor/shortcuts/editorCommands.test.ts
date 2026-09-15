@@ -14,11 +14,15 @@ import type {
 } from "../../domain/diagram/model.ts";
 import { createEditorStore } from "../store/editorStore.ts";
 import {
+  COPIED_SELECTION_MESSAGE,
+  copySelection,
   DELETED_SELECTION_MESSAGE,
   deleteSelection,
   duplicateSelection,
   movesForNudge,
   nudgeSelection,
+  PASTED_SELECTION_MESSAGE,
+  pasteSelection,
 } from "./editorCommands.ts";
 import { NUDGE_GRID_DISTANCE } from "./shortcutMap.ts";
 
@@ -220,6 +224,117 @@ describe("duplicateSelection", () => {
       actorCopy?.id,
       useCaseCopy?.id,
     ]);
+  });
+});
+
+describe("copySelection and pasteSelection", () => {
+  it("copia con el teclado, pega con offset 24 y no copia relaciones", () => {
+    const store = createStore();
+    const boundary = boundaryOf(store.getState().document);
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: USE_CASE_GEOMETRY,
+        parentId: boundary.id,
+      }),
+    );
+    const actor = actorsOf(store.getState().document)[0];
+    const useCase = useCasesOf(store.getState().document)[0];
+    if (actor === undefined || useCase === undefined) {
+      throw new Error("Faltan elementos");
+    }
+    expectOk(
+      store.getState().connect({
+        kind: "association",
+        sourceId: actor.id,
+        targetId: useCase.id,
+        sourceAnchor: "right",
+        targetAnchor: "left",
+      }),
+    );
+
+    store.getState().setSelection({
+      elementIds: [actor.id, useCase.id, boundary.id],
+      relationshipIds: store
+        .getState()
+        .document.relationships.map((relationship) => relationship.id),
+    });
+    expect(copySelection(store)).toBe(true);
+    expect(store.getState().ui.message).toBe(COPIED_SELECTION_MESSAGE);
+    expect(store.getState().clipboard.items).toHaveLength(2);
+
+    expect(pasteSelection(store)).toBe(true);
+    expect(store.getState().ui.message).toBe(PASTED_SELECTION_MESSAGE);
+
+    const document = store.getState().document;
+    expect(actorsOf(document)).toHaveLength(2);
+    expect(useCasesOf(document)).toHaveLength(2);
+    expect(document.relationships).toHaveLength(1);
+
+    const actorCopy = actorsOf(document).find(
+      (element) => element.id !== actor.id,
+    );
+    const useCaseCopy = useCasesOf(document).find(
+      (element) => element.id !== useCase.id,
+    );
+    expect(actorCopy?.geometry).toMatchObject({
+      x: ACTOR_GEOMETRY.x + DUPLICATE_OFFSET,
+      y: ACTOR_GEOMETRY.y + DUPLICATE_OFFSET,
+    });
+    expect(useCaseCopy?.geometry).toMatchObject({
+      x: USE_CASE_GEOMETRY.x + DUPLICATE_OFFSET,
+      y: USE_CASE_GEOMETRY.y + DUPLICATE_OFFSET,
+    });
+    expect(useCaseCopy?.parentId).toBe(boundary.id);
+    expect(store.getState().selection.elementIds).toEqual([
+      actorCopy?.id,
+      useCaseCopy?.id,
+    ]);
+
+    expect(pasteSelection(store)).toBe(true);
+    const secondActor = actorsOf(store.getState().document).find(
+      (element) => element.id !== actor.id && element.id !== actorCopy?.id,
+    );
+    expect(secondActor?.geometry).toMatchObject({
+      x: ACTOR_GEOMETRY.x + DUPLICATE_OFFSET * 2,
+      y: ACTOR_GEOMETRY.y + DUPLICATE_OFFSET * 2,
+    });
+  });
+
+  it("pega después de borrar el original y no copia solo el boundary", () => {
+    const store = createStore();
+    expectOk(
+      store
+        .getState()
+        .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
+    );
+    const actor = actorsOf(store.getState().document)[0];
+    if (actor === undefined) {
+      throw new Error("Falta el actor");
+    }
+
+    store.getState().setSelection({
+      elementIds: [actor.id],
+      relationshipIds: [],
+    });
+    expect(copySelection(store)).toBe(true);
+    expect(deleteSelection(store)).toBe(true);
+    expect(actorsOf(store.getState().document)).toHaveLength(0);
+    expect(pasteSelection(store)).toBe(true);
+    expect(actorsOf(store.getState().document)).toHaveLength(1);
+    expect(actorsOf(store.getState().document)[0]?.name).toBe("Usuario");
+
+    const boundary = boundaryOf(store.getState().document);
+    store.getState().setSelection({
+      elementIds: [boundary.id],
+      relationshipIds: [],
+    });
+    expect(copySelection(store)).toBe(false);
   });
 });
 

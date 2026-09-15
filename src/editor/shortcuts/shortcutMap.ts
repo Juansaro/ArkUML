@@ -6,6 +6,8 @@ export const EDITOR_SHORTCUT_IDS = [
   "undo",
   "redo",
   "duplicate",
+  "copy",
+  "paste",
   "fitView",
   "save",
   "nudgeLeft",
@@ -46,6 +48,16 @@ export const EDITOR_SHORTCUT_HELP: readonly EditorShortcutHelpItem[] = [
     id: "duplicate",
     keysLabel: "Ctrl/Cmd+D",
     action: "Duplicar actores y casos seleccionados",
+  },
+  {
+    id: "copy",
+    keysLabel: "Ctrl/Cmd+C",
+    action: "Copiar actores y casos seleccionados",
+  },
+  {
+    id: "paste",
+    keysLabel: "Ctrl/Cmd+V",
+    action: "Pegar actores y casos copiados",
   },
   {
     id: "rename",

@@ -52,6 +52,12 @@ describe("excludeExportChrome", () => {
     expect(excludeExportChrome(node({ class: "alignment-guides" }))).toBe(
       false,
     );
+    expect(excludeExportChrome(node({ class: "react-flow__minimap" }))).toBe(
+      false,
+    );
+    expect(
+      excludeExportChrome(node({ "data-testid": "diagram-minimap" })),
+    ).toBe(false);
     expect(excludeExportChrome(node({ role: "alert" }))).toBe(false);
     expect(excludeExportChrome(node({ class: "react-flow__edge-path" }))).toBe(
       true,

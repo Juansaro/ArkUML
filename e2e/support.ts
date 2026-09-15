@@ -9,6 +9,16 @@ export function diagramCanvas(page: Page): Locator {
   return page.getByTestId("diagram-canvas");
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export function canvasElementName(page: Page, name: string): Locator {
+  return diagramCanvas(page)
+    .getByTestId("element-name")
+    .filter({ hasText: new RegExp(`^${escapeRegExp(name)}$`) });
+}
+
 export function diagramElement(
   page: Page,
   kind: "actor" | "use-case",
@@ -16,7 +26,8 @@ export function diagramElement(
 ): Locator {
   return diagramCanvas(page)
     .locator(`[data-kind="${kind}"]`)
-    .filter({ has: page.getByText(name, { exact: true }) });
+    .filter({ has: page.getByTestId("element-name") })
+    .filter({ hasText: new RegExp(`^${escapeRegExp(name)}$`) });
 }
 
 export async function placeElement(
@@ -28,7 +39,7 @@ export async function placeElement(
   const canvas = diagramCanvas(page);
   await page.getByRole("button", { name: tool }).click();
   await canvas.click({ position });
-  await expect(canvas.getByText(name, { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, name)).toBeVisible();
   return diagramElement(page, tool === "Actor" ? "actor" : "use-case", name);
 }
 

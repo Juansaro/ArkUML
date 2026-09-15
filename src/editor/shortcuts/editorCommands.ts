@@ -1,5 +1,9 @@
+import { DUPLICATE_OFFSET } from "../../domain/diagram/defaults.ts";
 import type { DiagramDocument } from "../../domain/diagram/model.ts";
-import type { ElementMove } from "../../domain/diagram/operations.ts";
+import {
+  snapshotDuplicableElements,
+  type ElementMove,
+} from "../../domain/diagram/operations.ts";
 import type { EditorStoreApi } from "../store/editorStore.ts";
 import {
   isNudgeShortcut,
@@ -8,6 +12,8 @@ import {
 } from "./shortcutMap.ts";
 
 export const DELETED_SELECTION_MESSAGE = "Se eliminó la selección.";
+export const COPIED_SELECTION_MESSAGE = "Selección copiada.";
+export const PASTED_SELECTION_MESSAGE = "Se pegó la selección.";
 
 export type ShortcutRuntime = {
   fitView?: () => void;
@@ -33,6 +39,14 @@ export function dispatchEditorShortcut(
   }
   if (shortcut === "duplicate") {
     duplicateSelection(store);
+    return;
+  }
+  if (shortcut === "copy") {
+    copySelection(store);
+    return;
+  }
+  if (shortcut === "paste") {
+    pasteSelection(store);
     return;
   }
   if (shortcut === "fitView") {
@@ -84,6 +98,52 @@ export function deleteSelection(store: EditorStoreApi): boolean {
     return false;
   }
   store.getState().setMessage(DELETED_SELECTION_MESSAGE);
+  return true;
+}
+
+export function copySelection(store: EditorStoreApi): boolean {
+  const snapshot = snapshotDuplicableElements(
+    store.getState().document,
+    store.getState().selection.elementIds,
+  );
+  if (!snapshot.ok || snapshot.value.length === 0) {
+    return false;
+  }
+
+  store.getState().setClipboard(snapshot.value);
+  store.getState().setMessage(COPIED_SELECTION_MESSAGE);
+  return true;
+}
+
+export function pasteSelection(store: EditorStoreApi): boolean {
+  const { items, pasteCount } = store.getState().clipboard;
+  if (items.length === 0) {
+    return false;
+  }
+
+  const idsBefore = new Set(
+    store.getState().document.elements.map((element) => element.id),
+  );
+  const result = store
+    .getState()
+    .insertElementCopies(items, DUPLICATE_OFFSET * (pasteCount + 1));
+  if (!result.ok) {
+    return false;
+  }
+
+  const copies = result.value.elements.filter(
+    (element) => !idsBefore.has(element.id),
+  );
+  if (copies.length === 0) {
+    return false;
+  }
+
+  store.getState().bumpClipboardPasteCount();
+  store.getState().setSelection({
+    elementIds: copies.map((element) => element.id),
+    relationshipIds: [],
+  });
+  store.getState().setMessage(PASTED_SELECTION_MESSAGE);
   return true;
 }
 

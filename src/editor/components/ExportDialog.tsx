@@ -6,6 +6,12 @@ import {
   type ExportScale,
 } from "../../export/bounds.ts";
 import {
+  CLIPBOARD_COPY_FAILED_MESSAGE,
+  CLIPBOARD_COPIED_MESSAGE,
+  copyExportImage,
+  isClipboardCopyError,
+} from "../../export/copyExportImage.ts";
+import {
   downloadBlob,
   exportFilename,
   type ExportFormat,
@@ -16,18 +22,26 @@ import {
   type ExportDiagramResult,
 } from "../../export/exportDiagram.ts";
 import { selectDocument, selectDocumentTitle } from "../store/selectors.ts";
-import { useEditorStore } from "../store/EditorStoreProvider.tsx";
+import {
+  useEditorStore,
+  useEditorStoreApi,
+} from "../store/EditorStoreProvider.tsx";
 import { useFocusTrap } from "./useFocusTrap.ts";
 import styles from "./ExportDialog.module.css";
 
 export type ExportRunner = typeof exportDiagram;
 export type ExportDownloader = typeof downloadBlob;
+export type ExportClipboard = (
+  blob: Blob,
+  format: ExportFormat,
+) => Promise<void>;
 export type ViewportElementQuery = () => HTMLElement | null;
 
 type ExportDialogProps = {
   onCancel: () => void;
   runExport?: ExportRunner;
   download?: ExportDownloader;
+  copyImage?: ExportClipboard;
   queryViewport?: ViewportElementQuery;
 };
 
@@ -45,11 +59,13 @@ export function ExportDialog({
   onCancel,
   runExport = exportDiagram,
   download = downloadBlob,
+  copyImage = copyExportImage,
   queryViewport = queryDiagramViewport,
 }: ExportDialogProps) {
   const titleId = useId();
   const descriptionId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const store = useEditorStoreApi();
   const diagram = useEditorStore(selectDocument);
   const documentTitle = useEditorStore(selectDocumentTitle);
   const [format, setFormat] = useState<ExportFormat>("png");
@@ -74,7 +90,7 @@ export function ExportDialog({
     onCancel();
   }
 
-  async function handleDownload() {
+  async function handleExport(action: "download" | "copy") {
     if (busy) {
       return;
     }
@@ -91,12 +107,22 @@ export function ExportDialog({
         { viewportElement, bounds },
         { format, scale },
       );
-      download(result.blob, filename);
+      if (action === "download") {
+        download(result.blob, filename);
+        onCancel();
+        return;
+      }
+      await copyImage(result.blob, format);
+      store.getState().setMessage(CLIPBOARD_COPIED_MESSAGE);
       onCancel();
     } catch (caught) {
       if (isExportError(caught)) {
         setError(caught.message);
         setSuggestScale(caught.suggestScale);
+        return;
+      }
+      if (isClipboardCopyError(caught)) {
+        setError(CLIPBOARD_COPY_FAILED_MESSAGE);
         return;
       }
       setError("No se pudo generar la imagen. Puedes reintentar.");
@@ -122,7 +148,7 @@ export function ExportDialog({
           Exportar
         </h2>
         <p id={descriptionId} className={styles.body}>
-          Descarga el diagrama completo, también el contenido fuera del
+          Descarga o copia el diagrama completo, también el contenido fuera del
           viewport. PNG conserva transparencia; JPG usa fondo blanco.
         </p>
         <fieldset className={styles.fieldset} disabled={busy}>
@@ -203,10 +229,19 @@ export function ExportDialog({
           ) : null}
           <button
             type="button"
+            disabled={busy || !preview.allowed}
+            onClick={() => {
+              void handleExport("copy");
+            }}
+          >
+            Copiar
+          </button>
+          <button
+            type="button"
             className={styles.confirm}
             disabled={busy || !preview.allowed}
             onClick={() => {
-              void handleDownload();
+              void handleExport("download");
             }}
           >
             Descargar

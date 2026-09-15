@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { canvasElementName } from "./support.ts";
 
 async function dragBy(
   page: Page,
@@ -52,11 +53,11 @@ test("conecta Actor y Caso de uso, mueve, selecciona, borra y deshace", async ({
 
   await page.getByRole("button", { name: "Actor" }).click();
   await canvas.click({ position: { x: 80, y: 480 } });
-  await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Actor")).toBeVisible();
 
   await page.getByRole("button", { name: "Caso de uso" }).click();
   await canvas.click({ position: { x: 240, y: 180 } });
-  await expect(canvas.getByText("Caso de uso", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Caso de uso")).toBeVisible();
 
   await page.getByRole("button", { name: "Asociación" }).click();
   await expect(
@@ -160,7 +161,7 @@ test("el drag inverso normaliza el actor como origen y un intento inválido no m
 
   await page.getByRole("button", { name: "Actor" }).click();
   await canvas.click({ position: { x: 200, y: 520 } });
-  await expect(canvas.getByText("Actor 2", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Actor 2")).toBeVisible();
 
   await page.getByRole("button", { name: "Asociación" }).click();
   const secondActor = canvas.locator('[data-kind="actor"]').filter({

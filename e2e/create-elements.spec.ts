@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { canvasElementName } from "./support.ts";
 
 test("crea cada elemento UML y cancela la herramienta con Escape", async ({
   page,
@@ -23,7 +24,7 @@ test("crea cada elemento UML y cancela la herramienta con Escape", async ({
   );
 
   await canvas.click({ position: { x: 80, y: 480 } });
-  await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Actor")).toBeVisible();
   await expect(page.getByTestId("editor-live")).toHaveText("Se creó Actor.");
   await expect(page.getByRole("button", { name: "Actor" })).toHaveAttribute(
     "aria-pressed",
@@ -36,7 +37,7 @@ test("crea cada elemento UML y cancela la herramienta con Escape", async ({
     page.getByRole("button", { name: "Caso de uso" }),
   ).toHaveAttribute("aria-pressed", "true");
   await canvas.click({ position: { x: 240, y: 180 } });
-  await expect(canvas.getByText("Caso de uso", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Caso de uso")).toBeVisible();
   await expect(page.getByTestId("editor-live")).toHaveText(
     "Se creó Caso de uso.",
   );
@@ -49,7 +50,7 @@ test("crea cada elemento UML y cancela la herramienta con Escape", async ({
     "false",
   );
   await canvas.click({ position: { x: 100, y: 520 } });
-  await expect(canvas.getByText("Actor 2")).toHaveCount(0);
+  await expect(canvasElementName(page, "Actor 2")).toHaveCount(0);
 
   await expect(boundaryTool).toHaveAttribute("aria-disabled", "true");
   await expect(canvas.getByTestId("system-boundary-rect")).toHaveCount(1);

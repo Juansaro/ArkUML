@@ -12,6 +12,7 @@ export const ICON_NAMES = [
   "zoomIn",
   "zoomOut",
   "fitView",
+  "collapseView",
   "actor",
   "useCase",
   "systemBoundary",
@@ -128,6 +129,15 @@ export function IconPaths({ name }: { name: IconName }) {
           <path d="M15 4h5v5" />
           <path d="M20 15v5h-5" />
           <path d="M4 15v5h5" />
+        </>
+      );
+    case "collapseView":
+      return (
+        <>
+          <path d="M9 4v5H4" />
+          <path d="M15 4v5h5" />
+          <path d="M20 15h-5v5" />
+          <path d="M4 15h5v5" />
         </>
       );
     case "actor":

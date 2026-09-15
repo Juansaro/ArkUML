@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { canvasElementName } from "./support.ts";
 
 const STORAGE_KEY = "arkuml:workspace:v1";
 
@@ -10,11 +11,11 @@ test(
 
     const canvas = page.getByTestId("diagram-canvas");
     await expect(canvas).toBeVisible();
-    await expect(canvas.getByText("Sistema")).toBeVisible();
+    await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
 
     await page.getByRole("button", { name: "Actor" }).click();
     await canvas.click({ position: { x: 80, y: 480 } });
-    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+    await expect(canvasElementName(page, "Actor")).toBeVisible();
 
     const viewport = page.locator(".react-flow__viewport");
     const beforePan = await viewport.getAttribute("style");
@@ -70,8 +71,8 @@ test(
     const savedViewport = await viewport.getAttribute("style");
 
     await page.reload();
-    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
-    await expect(canvas.getByText("Sistema")).toBeVisible();
+    await expect(canvasElementName(page, "Actor")).toBeVisible();
+    await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
     await expect(page.locator(".react-flow__viewport")).toHaveAttribute(
       "style",
       savedViewport ?? "",
@@ -88,21 +89,21 @@ test(
 
     await page.getByRole("button", { name: "Actor" }).click();
     await canvas.click({ position: { x: 80, y: 480 } });
-    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+    await expect(canvasElementName(page, "Actor")).toBeVisible();
 
     await page.getByRole("button", { name: "Nuevo" }).click();
     const dialog = page.getByRole("dialog", { name: "Nuevo diagrama" });
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", { name: "Cancelar" }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+    await expect(canvasElementName(page, "Actor")).toBeVisible();
 
     await page.getByRole("button", { name: "Nuevo" }).click();
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", { name: "Crear diagrama nuevo" }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(canvas.getByText("Actor", { exact: true })).toHaveCount(0);
-    await expect(canvas.getByText("Sistema")).toBeVisible();
+    await expect(canvasElementName(page, "Actor")).toHaveCount(0);
+    await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
     await expect(page.getByRole("button", { name: "Deshacer" })).toBeDisabled();
   },
 );
@@ -139,9 +140,7 @@ test("corrupción simulada no pisa hasta confirmar", async ({ page }) => {
   await expect(recovery).toBeVisible();
   await recovery.getByRole("button", { name: "Comenzar limpio" }).click();
   await expect(recovery).toHaveCount(0);
-  await expect(
-    page.getByTestId("diagram-canvas").getByText("Sistema"),
-  ).toBeVisible();
+  await expect(page.getByTestId("system-boundary-rect")).toBeVisible();
 
   const raw = await page.evaluate(
     (key) => localStorage.getItem(key),
@@ -189,7 +188,7 @@ test("storage bloqueado permite editar en memoria y muestra error", async ({
 
   await page.goto("/");
   const canvas = page.getByTestId("diagram-canvas");
-  await expect(canvas.getByText("Sistema")).toBeVisible();
+  await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
   await expect(page.getByTestId("save-status")).toHaveAttribute(
     "data-state",
     "error",
@@ -198,7 +197,7 @@ test("storage bloqueado permite editar en memoria y muestra error", async ({
 
   await page.getByRole("button", { name: "Actor" }).click();
   await canvas.click({ position: { x: 80, y: 480 } });
-  await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Actor")).toBeVisible();
   await expect(page.getByTestId("save-status")).toHaveAttribute(
     "data-state",
     "error",

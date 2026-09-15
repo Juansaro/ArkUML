@@ -1,0 +1,233 @@
+{
+  "format": "arkuml-usecase-json",
+  "formatVersion": 1,
+  "document": {
+    "schemaVersion": 1,
+    "id": "00000000-0000-4000-8000-000000000001",
+    "kind": "use-case",
+    "metadata": {
+      "title": "Soporte telefónico L2",
+      "createdAt": "2026-09-10T03:35:00.000Z",
+      "updatedAt": "2026-09-10T03:35:00.000Z"
+    },
+    "elements": [
+      {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "kind": "system-boundary",
+        "name": "Soporte telefónico L2",
+        "geometry": { "x": 180, "y": 40, "width": 800, "height": 520 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "kind": "actor",
+        "name": "Cliente",
+        "geometry": { "x": 40, "y": 72, "width": 72, "height": 112 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000004",
+        "kind": "actor",
+        "name": "Agente L2",
+        "geometry": { "x": 40, "y": 360, "width": 72, "height": 112 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000005",
+        "kind": "actor",
+        "name": "CRM",
+        "geometry": { "x": 1048, "y": 216, "width": 72, "height": 112 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000006",
+        "kind": "actor",
+        "name": "Especialista L3",
+        "geometry": { "x": 1048, "y": 384, "width": 72, "height": 112 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000010",
+        "kind": "use-case",
+        "name": "Atender llamada",
+        "parentId": "00000000-0000-4000-8000-000000000002",
+        "geometry": { "x": 48, "y": 56, "width": 160, "height": 80 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000016",
+        "kind": "use-case",
+        "name": "Ser proactivo",
+        "parentId": "00000000-0000-4000-8000-000000000002",
+        "geometry": { "x": 320, "y": 56, "width": 160, "height": 80 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000011",
+        "kind": "use-case",
+        "name": "Resolver FAQ",
+        "parentId": "00000000-0000-4000-8000-000000000002",
+        "geometry": { "x": 48, "y": 216, "width": 160, "height": 80 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000014",
+        "kind": "use-case",
+        "name": "Consultar docs",
+        "parentId": "00000000-0000-4000-8000-000000000002",
+        "geometry": { "x": 320, "y": 216, "width": 160, "height": 80 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000015",
+        "kind": "use-case",
+        "name": "Registrar ticket",
+        "parentId": "00000000-0000-4000-8000-000000000002",
+        "geometry": { "x": 592, "y": 216, "width": 160, "height": 80 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000012",
+        "kind": "use-case",
+        "name": "Filtrar caso",
+        "parentId": "00000000-0000-4000-8000-000000000002",
+        "geometry": { "x": 48, "y": 376, "width": 160, "height": 80 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000017",
+        "kind": "use-case",
+        "name": "Aplicar protocolo",
+        "parentId": "00000000-0000-4000-8000-000000000002",
+        "geometry": { "x": 320, "y": 376, "width": 160, "height": 80 }
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000018",
+        "kind": "use-case",
+        "name": "Escalar caso",
+        "parentId": "00000000-0000-4000-8000-000000000002",
+        "geometry": { "x": 592, "y": 376, "width": 160, "height": 80 }
+      }
+    ],
+    "relationships": [
+      {
+        "id": "00000000-0000-4000-8000-000000000020",
+        "kind": "association",
+        "sourceId": "00000000-0000-4000-8000-000000000003",
+        "targetId": "00000000-0000-4000-8000-000000000010",
+        "sourceAnchor": "right",
+        "targetAnchor": "left"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000021",
+        "kind": "association",
+        "sourceId": "00000000-0000-4000-8000-000000000003",
+        "targetId": "00000000-0000-4000-8000-000000000011",
+        "sourceAnchor": "right",
+        "targetAnchor": "left"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000022",
+        "kind": "association",
+        "sourceId": "00000000-0000-4000-8000-000000000004",
+        "targetId": "00000000-0000-4000-8000-000000000010",
+        "sourceAnchor": "right",
+        "targetAnchor": "left"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000023",
+        "kind": "association",
+        "sourceId": "00000000-0000-4000-8000-000000000004",
+        "targetId": "00000000-0000-4000-8000-000000000011",
+        "sourceAnchor": "right",
+        "targetAnchor": "left"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000024",
+        "kind": "association",
+        "sourceId": "00000000-0000-4000-8000-000000000004",
+        "targetId": "00000000-0000-4000-8000-000000000012",
+        "sourceAnchor": "right",
+        "targetAnchor": "left"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000025",
+        "kind": "association",
+        "sourceId": "00000000-0000-4000-8000-000000000004",
+        "targetId": "00000000-0000-4000-8000-000000000018",
+        "sourceAnchor": "right",
+        "targetAnchor": "left"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000026",
+        "kind": "association",
+        "sourceId": "00000000-0000-4000-8000-000000000005",
+        "targetId": "00000000-0000-4000-8000-000000000015",
+        "sourceAnchor": "left",
+        "targetAnchor": "right"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000027",
+        "kind": "association",
+        "sourceId": "00000000-0000-4000-8000-000000000006",
+        "targetId": "00000000-0000-4000-8000-000000000018",
+        "sourceAnchor": "left",
+        "targetAnchor": "right"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000030",
+        "kind": "include",
+        "sourceId": "00000000-0000-4000-8000-000000000010",
+        "targetId": "00000000-0000-4000-8000-000000000015",
+        "sourceAnchor": "bottom",
+        "targetAnchor": "left"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000031",
+        "kind": "include",
+        "sourceId": "00000000-0000-4000-8000-000000000011",
+        "targetId": "00000000-0000-4000-8000-000000000014",
+        "sourceAnchor": "right",
+        "targetAnchor": "left"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000032",
+        "kind": "include",
+        "sourceId": "00000000-0000-4000-8000-000000000011",
+        "targetId": "00000000-0000-4000-8000-000000000015",
+        "sourceAnchor": "right",
+        "targetAnchor": "left"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000033",
+        "kind": "include",
+        "sourceId": "00000000-0000-4000-8000-000000000012",
+        "targetId": "00000000-0000-4000-8000-000000000015",
+        "sourceAnchor": "top",
+        "targetAnchor": "left"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000034",
+        "kind": "include",
+        "sourceId": "00000000-0000-4000-8000-000000000018",
+        "targetId": "00000000-0000-4000-8000-000000000017",
+        "sourceAnchor": "left",
+        "targetAnchor": "right"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000035",
+        "kind": "include",
+        "sourceId": "00000000-0000-4000-8000-000000000018",
+        "targetId": "00000000-0000-4000-8000-000000000015",
+        "sourceAnchor": "top",
+        "targetAnchor": "bottom"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000036",
+        "kind": "extend",
+        "sourceId": "00000000-0000-4000-8000-000000000016",
+        "targetId": "00000000-0000-4000-8000-000000000010",
+        "sourceAnchor": "left",
+        "targetAnchor": "right"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000037",
+        "kind": "extend",
+        "sourceId": "00000000-0000-4000-8000-000000000018",
+        "targetId": "00000000-0000-4000-8000-000000000012",
+        "sourceAnchor": "left",
+        "targetAnchor": "right"
+      }
+    ]
+  },
+  "view": { "x": 24, "y": 0, "zoom": 0.85 }
+}

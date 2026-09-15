@@ -12,16 +12,19 @@ import {
   deleteElements as deleteElementsOperation,
   deleteRelationships as deleteRelationshipsOperation,
   duplicateElements as duplicateElementsOperation,
+  insertElementCopies as insertElementCopiesOperation,
   moveElements,
   renameElement as renameElementOperation,
   reparentUseCase as reparentUseCaseOperation,
   resizeBoundary,
   type CreateElementInput,
   type CreateRelationshipInput,
+  type ElementCopy,
   type ElementMove,
 } from "../../domain/diagram/operations.ts";
 import type {
   DialogMode,
+  EditorClipboard,
   EditorStore,
   EditorTool,
   HistorySlice,
@@ -70,6 +73,12 @@ export type EditorActions = {
     relationshipIds: readonly string[],
   ) => Result<DiagramDocument>;
   duplicateElements: (elementIds: readonly string[]) => Result<DiagramDocument>;
+  insertElementCopies: (
+    copies: readonly ElementCopy[],
+    offset: number,
+  ) => Result<DiagramDocument>;
+  setClipboard: (items: readonly ElementCopy[]) => void;
+  bumpClipboardPasteCount: () => void;
   beginTransaction: () => void;
   commitTransaction: () => void;
   cancelTransaction: () => void;
@@ -96,6 +105,11 @@ const EMPTY_SELECTION: SelectionState = {
 const EMPTY_HOVER: HoverState = {
   elementId: undefined,
   relationshipId: undefined,
+};
+
+const EMPTY_CLIPBOARD: EditorClipboard = {
+  items: [],
+  pasteCount: 0,
 };
 
 export function createEditorActions(
@@ -154,6 +168,27 @@ export function createEditorActions(
       apply((document) =>
         duplicateElementsOperation(document, elementIds, deps),
       ),
+    insertElementCopies: (copies, offset) =>
+      apply((document) =>
+        insertElementCopiesOperation(document, copies, offset, deps),
+      ),
+    setClipboard: (items) => {
+      set({
+        clipboard: {
+          items: items.map(cloneElementCopy),
+          pasteCount: 0,
+        },
+      });
+    },
+    bumpClipboardPasteCount: () => {
+      const state = get();
+      set({
+        clipboard: {
+          items: state.clipboard.items,
+          pasteCount: state.clipboard.pasteCount + 1,
+        },
+      });
+    },
     beginTransaction: () => {
       const state = get();
       if (state.history.transactionBaseline !== undefined) {
@@ -345,9 +380,31 @@ export function createEditorActions(
           message: undefined,
           editingElementId: undefined,
         },
+        clipboard: EMPTY_CLIPBOARD,
       });
     },
   };
+}
+
+function cloneElementCopy(copy: ElementCopy): ElementCopy {
+  const geometry = {
+    x: copy.geometry.x,
+    y: copy.geometry.y,
+    width: copy.geometry.width,
+    height: copy.geometry.height,
+  };
+  if (copy.kind === "actor") {
+    return { kind: "actor", name: copy.name, geometry };
+  }
+  if (copy.parentId !== undefined) {
+    return {
+      kind: "use-case",
+      name: copy.name,
+      geometry,
+      parentId: copy.parentId,
+    };
+  }
+  return { kind: "use-case", name: copy.name, geometry };
 }
 
 function useCaseInput(input: {

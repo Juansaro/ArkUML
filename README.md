@@ -24,6 +24,8 @@ npm run preview
 
 `vite preview` escucha en `http://localhost:4173` por defecto. Cualquier servidor de archivos estáticos que sirva el contenido de `dist/` (por ejemplo el `index.html` en la raíz del sitio) también vale. No abras `dist/index.html` como `file://`: los módulos ES requieren HTTP.
 
+Para publicar `dist/` en un host estático (sin secrets cloud, sin convertir el producto en SaaS), sigue el runbook [docs/operations/static-hosting.md](docs/operations/static-hosting.md).
+
 CI usa el mismo bundle: `npm run build` y después Playwright contra `vite preview` (`webServer` en `:5173`). En local, Playwright reutiliza `npm run dev` en ese puerto. La política está en [ADR-005](docs/decisions/ADR-005-testing.md).
 
 ## Exportación

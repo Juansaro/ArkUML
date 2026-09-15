@@ -127,6 +127,7 @@ cuando dos implementaciones revelen el contrato real.
 docs/
   product/{mvp-spec,brand-system,post-mvp-spec}.md
   architecture/{architecture,domain-model,schema-evolution,diagram-kinds,rendering-and-export,testing-strategy,performance}.md
+  operations/static-hosting.md
   decisions/ADR-001 … ADR-006
   development/{agent-workflow,task-template}.md
   tasks/TASK-001 … TASK-025
@@ -136,4 +137,4 @@ src/
 e2e/
 ```
 
-`performance.md` registra los números de TASK-019. La a11y del chrome cabe en mvp-spec; no hay `accessibility.md` aparte.
+`performance.md` registra los números de TASK-019. La a11y del chrome cabe en mvp-spec; no hay `accessibility.md` aparte. `static-hosting.md` es el runbook de `dist/` (FR-P06); no es un proveedor soportado ni un backend.

@@ -84,6 +84,12 @@ export function selectMessage(state: EditorStore): string | undefined {
   return state.ui.message;
 }
 
+export function selectClipboardItems(
+  state: EditorStore,
+): EditorStore["clipboard"]["items"] {
+  return state.clipboard.items;
+}
+
 export type VisibleDiagramWarning = DiagramWarning & {
   label: string;
 };

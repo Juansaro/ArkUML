@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
   PNG_SIGNATURE,
   connectHandles,
+  canvasElementName,
   diagramCanvas,
   diagramElement,
   downloadBytes,
@@ -28,7 +29,7 @@ test(
     await expect(
       page.getByRole("heading", { name: "ArkUML", level: 1 }),
     ).toBeVisible();
-    await expect(canvas.getByText("Sistema")).toBeVisible();
+    await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
 
     await placeElement(page, "Actor", { x: 80, y: 480 }, "Actor");
     await expect(page.getByTestId("editor-live")).toHaveText("Se creó Actor.");
@@ -38,7 +39,7 @@ test(
     await expect(name).toHaveValue("Actor");
     await name.fill("Usuario");
     await name.press("Enter");
-    await expect(canvas.getByText("Usuario", { exact: true })).toBeVisible();
+    await expect(canvasElementName(page, "Usuario")).toBeVisible();
 
     const useCase = await placeElement(
       page,
@@ -106,13 +107,13 @@ test(
       page.getByRole("status", { name: "Estado del editor" }),
     ).not.toHaveText(/Zoom 100%/);
 
-    await canvas.getByText("Usuario", { exact: true }).click({ force: true });
+    await canvasElementName(page, "Usuario").click({ force: true });
     await expect(inspector.getByTestId("inspector-type")).toHaveText("Actor");
     await page.keyboard.press("Delete");
     await expect(page.getByTestId("editor-live")).toHaveText(
       "Se eliminó la selección.",
     );
-    await expect(canvas.getByText("Usuario", { exact: true })).toHaveCount(0);
+    await expect(canvasElementName(page, "Usuario")).toHaveCount(0);
     await expect(canvas.locator(".diagram-edge-association")).toHaveCount(0);
 
     await page.getByRole("button", { name: "Exportar" }).click();

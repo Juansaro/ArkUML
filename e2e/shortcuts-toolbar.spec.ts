@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { canvasElementName } from "./support.ts";
 
 test("elimina, duplica y deshace desde teclado y toolbar", async ({ page }) => {
   await page.goto("/");
@@ -13,28 +14,28 @@ test("elimina, duplica y deshace desde teclado y toolbar", async ({ page }) => {
 
   await page.getByRole("button", { name: "Actor" }).click();
   await canvas.click({ position: { x: 80, y: 480 } });
-  await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Actor")).toBeVisible();
   await expect(undo).toBeEnabled();
 
   await page.keyboard.press("ControlOrMeta+d");
-  await expect(canvas.getByText("Actor", { exact: true })).toHaveCount(2);
+  await expect(canvasElementName(page, "Actor")).toHaveCount(2);
 
   await page.keyboard.press("Delete");
-  await expect(canvas.getByText("Actor", { exact: true })).toHaveCount(1);
+  await expect(canvasElementName(page, "Actor")).toHaveCount(1);
 
   await page.keyboard.press("ControlOrMeta+z");
-  await expect(canvas.getByText("Actor", { exact: true })).toHaveCount(2);
+  await expect(canvasElementName(page, "Actor")).toHaveCount(2);
 
   await undo.click();
-  await expect(canvas.getByText("Actor", { exact: true })).toHaveCount(1);
+  await expect(canvasElementName(page, "Actor")).toHaveCount(1);
   await expect(redo).toBeEnabled();
 
   await redo.click();
-  await expect(canvas.getByText("Actor", { exact: true })).toHaveCount(2);
+  await expect(canvasElementName(page, "Actor")).toHaveCount(2);
 
   await page.getByRole("button", { name: "Actor" }).click();
   await canvas.click({ position: { x: 220, y: 500 } });
-  await expect(canvas.getByText("Actor 2", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Actor 2")).toBeVisible();
 
   const canvasBox = await canvas.boundingBox();
   if (canvasBox === null) {
@@ -47,8 +48,8 @@ test("elimina, duplica y deshace desde teclado y toolbar", async ({ page }) => {
 
   await expect(page.getByTestId("inspector-multiple")).toBeVisible();
   await page.keyboard.press("Backspace");
-  await expect(canvas.getByText("Actor", { exact: true })).toHaveCount(0);
-  await expect(canvas.getByText("Actor 2", { exact: true })).toHaveCount(0);
+  await expect(canvasElementName(page, "Actor")).toHaveCount(0);
+  await expect(canvasElementName(page, "Actor 2")).toHaveCount(0);
 });
 
 test("no elimina mientras se edita el nombre", async ({ page }) => {
@@ -106,7 +107,41 @@ test("mueve la selección con flechas y ajusta la vista con Ctrl+0", async ({
   ).not.toHaveText(/Zoom 100%/);
 
   await page.keyboard.press("ControlOrMeta+0");
-  await expect(canvas.getByText("Sistema")).toBeVisible();
+  await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
+});
+
+test("copia y pega actores y casos con teclado y menú contextual", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const canvas = page.getByTestId("diagram-canvas");
+  await expect(canvas).toBeVisible();
+
+  await page.getByRole("button", { name: "Actor" }).click();
+  await canvas.click({ position: { x: 80, y: 480 } });
+  await expect(canvasElementName(page, "Actor")).toBeVisible();
+
+  await page.keyboard.press("ControlOrMeta+c");
+  await page.keyboard.press("ControlOrMeta+v");
+  await expect(canvasElementName(page, "Actor")).toHaveCount(2);
+
+  await page.getByRole("button", { name: "Caso de uso" }).click();
+  await canvas.click({ position: { x: 240, y: 180 } });
+  const useCase = canvas.locator('[data-kind="use-case"]');
+  await expect(useCase).toBeVisible();
+  await useCase.click();
+  await useCase.click({ button: "right" });
+
+  const menu = page.getByTestId("canvas-context-menu");
+  await expect(menu).toBeVisible();
+  await page.getByRole("menuitem", { name: "Copiar" }).click();
+  await expect(menu).toHaveCount(0);
+
+  await canvas.click({ button: "right", position: { x: 80, y: 80 } });
+  await expect(page.getByTestId("canvas-context-menu")).toBeVisible();
+  await page.getByRole("menuitem", { name: "Pegar" }).click();
+  await expect(canvas.locator('[data-kind="use-case"]')).toHaveCount(2);
 });
 
 test("lista los atajos en la ayuda de la barra superior", async ({ page }) => {
@@ -117,6 +152,8 @@ test("lista los atajos en la ayuda de la barra superior", async ({ page }) => {
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText("Ctrl/Cmd+Z");
   await expect(dialog).toContainText("Ctrl/Cmd+D");
+  await expect(dialog).toContainText("Ctrl/Cmd+C");
+  await expect(dialog).toContainText("Ctrl/Cmd+V");
   await expect(dialog).toContainText("Flechas / Shift+flechas");
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);

@@ -20,7 +20,9 @@ import {
   deleteElements,
   deleteRelationships,
   duplicateElements,
+  insertElementCopies,
   moveElements,
+  snapshotDuplicableElements,
   renameElement,
   reparentUseCase,
   resizeBoundary,
@@ -885,6 +887,65 @@ describe("duplicateElements", () => {
       throw new Error("Falta el actor roto");
     }
     expectCode(duplicateElements(broken, [brokenActor.id]), "INVALID_GEOMETRY");
+  });
+});
+
+describe("snapshotDuplicableElements and insertElementCopies", () => {
+  it("omite el boundary y pega un caso sin padre si el boundary ya no existe", () => {
+    const createId = sequentialIds();
+    const document = emptyDocument(createId);
+    const boundary = boundaryOf(document);
+    let next = expectOk(
+      createElement(
+        document,
+        {
+          kind: "use-case",
+          name: "Login",
+          geometry: USE_CASE_GEOMETRY,
+          parentId: boundary.id,
+        },
+        { createId, now: () => UPDATED_AT },
+      ),
+    );
+    const useCase = next.elements.find(
+      (element) => element.kind === "use-case",
+    );
+    if (useCase === undefined) {
+      throw new Error("Falta el caso");
+    }
+
+    const snapshot = expectOk(
+      snapshotDuplicableElements(next, [useCase.id, boundary.id]),
+    );
+    expect(snapshot).toHaveLength(1);
+    expect(snapshot[0]).toMatchObject({
+      kind: "use-case",
+      name: "Login",
+      parentId: boundary.id,
+    });
+
+    next = expectOk(
+      deleteElements(next, [boundary.id], { createId, now: () => UPDATED_AT }),
+    );
+    const pasted = expectOk(
+      insertElementCopies(next, snapshot, DUPLICATE_OFFSET, {
+        createId,
+        now: () => UPDATED_AT,
+      }),
+    );
+    const copy = pasted.elements.find(
+      (element) => element.kind === "use-case" && element.id !== useCase.id,
+    );
+    expect(copy).toMatchObject({
+      kind: "use-case",
+      name: "Login",
+      geometry: {
+        x: USE_CASE_GEOMETRY.x + DUPLICATE_OFFSET,
+        y: USE_CASE_GEOMETRY.y + DUPLICATE_OFFSET,
+      },
+    });
+    expect(copy).not.toHaveProperty("parentId");
+    expectUnchanged(insertElementCopies(next, [], DUPLICATE_OFFSET), next);
   });
 });
 

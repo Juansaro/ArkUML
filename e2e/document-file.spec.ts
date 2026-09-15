@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { downloadBytes, placeElement } from "./support.ts";
+import { downloadBytes, canvasElementName, placeElement } from "./support.ts";
 
 const STORAGE_KEY = "arkuml:workspace:v1";
 const INVALID_MESSAGE = "El archivo no es un documento ArkUML válido.";
@@ -10,7 +10,7 @@ test.describe("archivo JSON de usuario", () => {
   }) => {
     await page.goto("/");
     const canvas = page.getByTestId("diagram-canvas");
-    await expect(canvas.getByText("Sistema")).toBeVisible();
+    await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
 
     await placeElement(page, "Actor", { x: 80, y: 480 }, "Actor");
 
@@ -66,7 +66,7 @@ test.describe("archivo JSON de usuario", () => {
     await newDialog
       .getByRole("button", { name: "Crear diagrama nuevo" })
       .click();
-    await expect(canvas.getByText("Actor", { exact: true })).toHaveCount(0);
+    await expect(canvasElementName(page, "Actor")).toHaveCount(0);
 
     await page.getByTestId("document-file-input").setInputFiles({
       name: "Diagrama de casos de uso.arkuml.json",
@@ -78,7 +78,7 @@ test.describe("archivo JSON de usuario", () => {
     await openDialog.getByRole("button", { name: "Abrir archivo" }).click();
     await expect(openDialog).toHaveCount(0);
 
-    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+    await expect(canvasElementName(page, "Actor")).toBeVisible();
     await expect(page.locator(".react-flow__viewport")).toHaveAttribute(
       "style",
       exportedViewport ?? "",
@@ -138,7 +138,7 @@ test.describe("archivo JSON de usuario", () => {
     await expect(invalid).toBeVisible();
     await invalid.getByRole("button", { name: "Cerrar" }).click();
     await expect(invalid).toHaveCount(0);
-    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+    await expect(canvasElementName(page, "Actor")).toBeVisible();
     expect(
       await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY),
     ).toBe(saved);
@@ -151,7 +151,7 @@ test.describe("archivo JSON de usuario", () => {
     await expect(
       page.getByRole("alertdialog", { name: INVALID_MESSAGE }),
     ).toBeVisible();
-    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+    await expect(canvasElementName(page, "Actor")).toBeVisible();
     expect(
       await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY),
     ).toBe(saved);
@@ -169,9 +169,7 @@ test.describe("archivo JSON de usuario", () => {
 
     await page.getByRole("button", { name: "Caso de uso" }).click();
     await canvas.click({ position: { x: 280, y: 180 } });
-    await expect(
-      canvas.getByText("Caso de uso", { exact: true }),
-    ).toBeVisible();
+    await expect(canvasElementName(page, "Caso de uso")).toBeVisible();
 
     await page.getByTestId("document-file-input").setInputFiles({
       name: "Diagrama de casos de uso.arkuml.json",
@@ -182,9 +180,7 @@ test.describe("archivo JSON de usuario", () => {
     await expect(dialog).toBeVisible();
     await dialog.getByRole("button", { name: "Cancelar" }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
-    await expect(
-      canvas.getByText("Caso de uso", { exact: true }),
-    ).toBeVisible();
+    await expect(canvasElementName(page, "Actor")).toBeVisible();
+    await expect(canvasElementName(page, "Caso de uso")).toBeVisible();
   });
 });

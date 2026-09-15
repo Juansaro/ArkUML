@@ -22,7 +22,7 @@ test.describe("diagrama de referencia", () => {
   }) => {
     await page.goto("/");
     const canvas = diagramCanvas(page);
-    await expect(canvas.getByText("Sistema")).toBeVisible();
+    await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
 
     const actor = await placeElement(page, "Actor", { x: 80, y: 480 }, "Actor");
     const including = await placeElement(
@@ -65,6 +65,7 @@ test.describe("diagrama de referencia", () => {
       mask: [
         canvas.locator(".react-flow__controls"),
         canvas.locator(".react-flow__attribution"),
+        canvas.getByTestId("diagram-minimap"),
       ],
     });
   });

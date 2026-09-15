@@ -30,7 +30,7 @@ Supuestos explícitos:
 | FR-10 | Autosave y restauración del único workspace local. | MVP |
 | FR-11 | «Nuevo diagrama» con confirmación; recuperación ante storage corrupto o cuota. | MVP |
 | FR-12 | Exportar el diagrama completo a PNG (transparente) y JPG (fondo blanco), 1x/2x. | MVP |
-| FR-13 | Duplicar actores y casos seleccionados, sin relaciones, offset 24 px. | MVP recomendado |
+| FR-13 | Duplicar, copiar y pegar actores y casos seleccionados, sin relaciones, offset 24 px. | MVP recomendado |
 | FR-14 | Operaciones esenciales por teclado y feedback accesible. | MVP recomendado |
 
 Los ítems «MVP recomendado» **sí se implementan** en este MVP. «Post-MVP» no.
@@ -120,6 +120,7 @@ El handle de salida es el origen persistido. En el inspector, Include usa «Orig
 - Eliminar boundary: los casos de uso hijos pasan a coordenadas absolutas equivalentes y pierden `parentId`.
 - Eliminar elemento: se eliminan todas las relaciones incidentes.
 - Duplicar: solo Actor y UseCase; offset `(24, 24)`; sin relaciones; boundary no se duplica.
+- Copiar/pegar: mismas reglas que duplicar. El portapapeles es interno al editor (no es el JSON de usuario ni la imagen de export). Cada pegado aplica un offset adicional de 24 px. Click derecho en el lienzo ofrece Copiar y Pegar.
 - Nombres: trim, longitud 1–80, duplicados permitidos. Vacío o inválido conserva el valor anterior y muestra error.
 - Boundary mínimo `320×240`. Actor y UseCase no se redimensionan en el MVP.
 - Confirmación rutinaria: no. Sí hay confirmación en «Nuevo diagrama» si hay cambios.
@@ -132,6 +133,9 @@ El handle de salida es el origen persistido. En el inspector, Include usa «Orig
 | Ctrl/Cmd+Z | Undo |
 | Ctrl/Cmd+Shift+Z o Ctrl/Cmd+Y | Redo |
 | Ctrl/Cmd+D | Duplicar actores/casos seleccionados |
+| Ctrl/Cmd+C | Copiar actores/casos seleccionados |
+| Ctrl/Cmd+V | Pegar actores/casos copiados |
+| Click derecho | Menú Copiar / Pegar |
 | F2 / Enter | Editar nombre; Enter confirma |
 | Escape | Cancelar edición, herramienta o conexión |
 | Flechas / Shift+flechas | Mover 1 px / 16 px |

@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { canvasElementName } from "./support.ts";
 
 async function connectHandles(
   page: Page,
@@ -27,13 +28,11 @@ async function createTwoUseCases(page: Page) {
   const canvas = page.getByTestId("diagram-canvas");
   await page.getByRole("button", { name: "Caso de uso" }).click();
   await canvas.click({ position: { x: 220, y: 160 } });
-  await expect(canvas.getByText("Caso de uso", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Caso de uso")).toBeVisible();
 
   await page.getByRole("button", { name: "Caso de uso" }).click();
   await canvas.click({ position: { x: 430, y: 160 } });
-  await expect(
-    canvas.getByText("Caso de uso 2", { exact: true }),
-  ).toBeVisible();
+  await expect(canvasElementName(page, "Caso de uso 2")).toBeVisible();
 
   const including = canvas.locator('[data-kind="use-case"]').filter({
     has: page.getByText("Caso de uso", { exact: true }),
@@ -239,7 +238,7 @@ test("un ciclo include avisa en el inspector y no bloquea la edición", async ({
   await canvas
     .locator(".react-flow__pane")
     .click({ position: { x: 700, y: 80 } });
-  await canvas.getByText("Caso de uso", { exact: true }).click();
+  await canvasElementName(page, "Caso de uso").click();
   const name = inspector.getByLabel("Nombre");
   await expect(name).toHaveValue("Caso de uso");
   await name.fill("Login");

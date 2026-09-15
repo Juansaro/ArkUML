@@ -7,7 +7,7 @@ test("pan, zoom y fit actualizan el lienzo sin perder el diagrama", async ({
 
   const canvas = page.getByTestId("diagram-canvas");
   await expect(canvas).toBeVisible();
-  await expect(canvas.getByText("Sistema")).toBeVisible();
+  await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
   await expect(page.getByRole("link", { name: /react flow/i })).toBeVisible();
 
   const viewport = page.locator(".react-flow__viewport");
@@ -36,6 +36,6 @@ test("pan, zoom y fit actualizan el lienzo sin perder el diagrama", async ({
   ).not.toHaveText(/Zoom 100%/);
 
   await page.getByRole("button", { name: "Ajustar vista" }).click();
-  await expect(canvas.getByText("Sistema")).toBeVisible();
+  await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
   await expect(page.getByTestId("diagram-canvas")).toBeVisible();
 });

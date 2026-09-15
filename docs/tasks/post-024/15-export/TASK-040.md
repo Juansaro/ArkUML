@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -83,14 +83,14 @@ igual. Schema `1` intacto.
 
 ## Criterios de aceptación
 
-- [ ] Copiar PNG 1x escribe `image/png` en el clipboard (test con mock o
+- [x] Copiar PNG 1x escribe `image/png` en el clipboard (test con mock o
       permiso Playwright).
-- [ ] Copiar usa el mismo bounding box + padding 32 y el mismo filtro de
+- [x] Copiar usa el mismo bounding box + padding 32 y el mismo filtro de
       chrome que descargar.
-- [ ] 2x que excede 4096/16 MP no copia a esa escala; la UI sugiere 1x.
-- [ ] Permiso denegado: mensaje visible; el documento no cambia.
-- [ ] El diálogo no añade chrome al raster.
-- [ ] Schema `1` / round-trip de workspace sin claves nuevas.
+- [x] 2x que excede 4096/16 MP no copia a esa escala; la UI sugiere 1x.
+- [x] Permiso denegado: mensaje visible; el documento no cambia.
+- [x] El diálogo no añade chrome al raster.
+- [x] Schema `1` / round-trip de workspace sin claves nuevas.
 
 ## Tests
 
@@ -121,4 +121,35 @@ FR-P05 observable; pin y ADR-006 intactos; criterios `[x]` con evidencia.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-09. FR-P05: **Copiar** en Exportar rasteriza con `exportDiagram`
+(bounds + padding 32, filtro de chrome, techos 4096/16 MP) y escribe
+`ClipboardItem`. PNG → `image/png`. JPG → `image/jpeg` o PNG del mismo
+raster si el tipo no es aceptado. Permiso/API ausente: «No se pudo
+copiar la imagen.»; Descargar sigue disponible. Éxito: `aria-live`
+«Imagen copiada.» Pin `html-to-image@1.11.11` y ADR-006 intactos.
+Schema `1`.
+
+Comandos realmente corridos:
+
+```bash
+npm run test -- src/export src/editor/components/ExportDialog.test.tsx
+npx playwright test e2e/export.spec.ts --project=chromium
+npm run test -- src/domain/diagram/schema.test.ts src/persistence/localStorageDiagramRepository.test.ts
+npx eslint src/export/copyExportImage.ts src/export/copyExportImage.test.ts src/editor/components/ExportDialog.tsx src/editor/components/ExportDialog.test.tsx e2e/export.spec.ts
+npm run test
+```
+
+Unidad: 31/31 en `src/export` + `ExportDialog.test.tsx` (helper clipboard
+7/7; diálogo 9/9). Suite 322/322. Schema/workspace round-trip 20/20.
+E2E Chromium: `export.spec.ts` 5/5 (Copiar PNG 1x escribe `image/png`,
+anuncia, no descarga, zoom intacto). Los archivos tocados pasan Prettier
+y ESLint. `html-to-image` sigue en `1.11.11`.
+
+Chrome DevTools: Copiar PNG 1x cierra el diálogo, anuncia «Imagen
+copiada.», zoom 85 % intacto, clipboard `image/png` (19900 bytes).
+Reabrir Exportar sigue mostrando Descargar.
+
+`npm run check` falla en `format:check` por los mismos archivos de
+chrome/tooltips de TASK-024 (028–039). Lint/typecheck/build fallan por
+`canvas` sin usar en `e2e/document-file.spec.ts` (TASK-038); esta TASK
+no lo tocó.

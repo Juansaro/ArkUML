@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { canvasElementName } from "./support.ts";
 
 test("arrastra un nodo y selecciona varios con marquee", async ({ page }) => {
   await page.goto("/");
@@ -11,7 +12,7 @@ test("arrastra un nodo y selecciona varios con marquee", async ({ page }) => {
 
   await page.getByRole("button", { name: "Actor" }).click();
   await canvas.click({ position: { x: 80, y: 480 } });
-  await expect(canvas.getByText("Actor", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Actor")).toBeVisible();
   await expect(inspector.getByTestId("inspector-type")).toHaveText("Actor");
   await expect(inspector.getByLabel("Nombre")).toHaveValue("Actor");
 
@@ -40,7 +41,7 @@ test("arrastra un nodo y selecciona varios con marquee", async ({ page }) => {
 
   await page.getByRole("button", { name: "Actor" }).click();
   await canvas.click({ position: { x: 200, y: 500 } });
-  await expect(canvas.getByText("Actor 2", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Actor 2")).toBeVisible();
 
   const canvasBox = await canvas.boundingBox();
   if (canvasBox === null) {
@@ -78,7 +79,7 @@ test("renombra desde el inspector y descarta un nombre inválido", async ({
 
   await name.fill("Cliente");
   await name.press("Enter");
-  await expect(canvas.getByText("Cliente", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Cliente")).toBeVisible();
   await expect(page.getByTestId("editor-live")).not.toHaveText(
     /entre 1 y 80 caracteres/,
   );
@@ -88,7 +89,7 @@ test("renombra desde el inspector y descarta un nombre inválido", async ({
   await expect(page.getByTestId("editor-live")).toHaveText(
     /entre 1 y 80 caracteres/,
   );
-  await expect(canvas.getByText("Cliente", { exact: true })).toBeVisible();
+  await expect(canvasElementName(page, "Cliente")).toBeVisible();
 
   await name.press("Escape");
   await expect(name).toHaveValue("Cliente");
