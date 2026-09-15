@@ -104,6 +104,45 @@ export function DiagramMinimapNode({
     );
   }
 
+  if (className === "lifeline") {
+    const headHeight = Math.min(height, 40);
+    return (
+      <g data-minimap-kind="lifeline" onClick={handleClick}>
+        <rect
+          x={x + inset}
+          y={y + inset}
+          width={Math.max(0, width - NOTATION_STROKE)}
+          height={Math.max(0, headHeight - NOTATION_STROKE)}
+          fill="var(--color-surface)"
+          stroke="var(--color-fg)"
+          strokeWidth={NOTATION_STROKE}
+        />
+        <line
+          x1={x + width / 2}
+          y1={y + headHeight}
+          x2={x + width / 2}
+          y2={y + height}
+          stroke="var(--color-fg)"
+          strokeDasharray="4 3"
+          strokeWidth={NOTATION_STROKE}
+        />
+        {name === "" ? null : (
+          <text
+            className={styles.minimapLabel}
+            x={x + width / 2}
+            y={y + headHeight / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize={NAME_FONT_SIZE}
+            aria-hidden="true"
+          >
+            {name}
+          </text>
+        )}
+      </g>
+    );
+  }
+
   const scale = Math.min(
     width / ACTOR_VIEWBOX.width,
     height / ACTOR_VIEWBOX.height,

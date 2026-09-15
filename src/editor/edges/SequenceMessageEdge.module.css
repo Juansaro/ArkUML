@@ -1,0 +1,46 @@
+.path {
+  fill: none;
+  stroke: var(--color-fg);
+  stroke-width: 2;
+}
+
+.reply {
+  stroke-dasharray: 8 6;
+}
+
+.marker {
+  pointer-events: none;
+  stroke: var(--color-fg);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.marker[data-kind="sync-message"] {
+  fill: var(--color-fg);
+  stroke: none;
+}
+
+.marker[data-kind="reply-message"] {
+  fill: none;
+}
+
+.labelBg {
+  fill: var(--color-surface);
+}
+
+.label {
+  fill: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+}
+
+:global(.react-flow__edge.selected) .path,
+:global(.react-flow__edge.selected) .marker[data-kind="reply-message"] {
+  stroke: var(--color-focus);
+  stroke-width: 3;
+}
+
+:global(.react-flow__edge.selected) .marker[data-kind="sync-message"] {
+  fill: var(--color-focus);
+}

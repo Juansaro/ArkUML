@@ -1,10 +1,14 @@
 import { z } from "zod";
+import { SCHEMA_VERSION_V1 } from "./defaults.ts";
 import type {
   DiagramDocument,
   DiagramDocumentV1,
   Result,
+  UseCaseElement,
+  UseCaseRelationship,
   Viewport,
 } from "./model.ts";
+import { isLifeline, isUseCaseRelationship } from "./model.ts";
 import { diagramDocumentV1Schema, viewportSchema } from "./schema.ts";
 
 export const DOCUMENT_FILE_FORMAT = "arkuml-usecase-json" as const;
@@ -58,9 +62,47 @@ export function serializeDocumentFile(
   return JSON.stringify({
     format: DOCUMENT_FILE_FORMAT,
     formatVersion: DOCUMENT_FILE_FORMAT_VERSION,
-    document,
+    document: toUseCaseFileDocument(document),
     view: { x: view.x, y: view.y, zoom: view.zoom },
   });
+}
+
+function toUseCaseFileDocument(
+  document: DiagramDocumentV1 | DiagramDocument,
+): DiagramDocumentV1 | DiagramDocument {
+  if (document.schemaVersion === SCHEMA_VERSION_V1) {
+    return document;
+  }
+  if (document.kind !== "use-case") {
+    return document;
+  }
+
+  const elements: UseCaseElement[] = [];
+  for (const element of document.elements) {
+    if (!isLifeline(element)) {
+      elements.push(element);
+    }
+  }
+
+  const relationships: UseCaseRelationship[] = [];
+  for (const relationship of document.relationships) {
+    if (isUseCaseRelationship(relationship)) {
+      relationships.push(relationship);
+    }
+  }
+
+  return {
+    schemaVersion: SCHEMA_VERSION_V1,
+    id: document.id,
+    kind: "use-case",
+    metadata: {
+      title: document.metadata.title,
+      createdAt: document.metadata.createdAt,
+      updatedAt: document.metadata.updatedAt,
+    },
+    elements,
+    relationships,
+  };
 }
 
 export function parseDocumentFileText(

@@ -203,7 +203,7 @@ export function DiagramCanvas({ onFitViewReady }: DiagramCanvasProps = {}) {
     ) => {
       if (!placing && !connecting) {
         const kind = node.data.kind;
-        if (kind === "actor" || kind === "use-case") {
+        if (kind === "actor" || kind === "use-case" || kind === "lifeline") {
           const selected = store.getState().selection.elementIds;
           if (!selected.includes(node.id)) {
             store.getState().setSelection({

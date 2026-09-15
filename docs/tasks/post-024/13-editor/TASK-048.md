@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -94,15 +94,15 @@ El usuario cambia de diagrama desde la top bar y encuentra por nombre.
 
 ## Criterios de aceptación
 
-- [ ] Combobox sustituye el título estático; tokens y radio del sistema.
-- [ ] Búsqueda filtra en vivo; Escape cierra el listbox, no Ayuda ni
+- [x] Combobox sustituye el título estático; tokens y radio del sistema.
+- [x] Búsqueda filtra en vivo; Escape cierra el listbox, no Ayuda ni
       Exportar.
-- [ ] Cambiar de fila restaura documento y viewport; undo no cruza.
-- [ ] Nuevo añade y activa; la lista crece en uno.
-- [ ] Borrar el último está indisponible; borrar otro pide confirmación
+- [x] Cambiar de fila restaura documento y viewport; undo no cruza.
+- [x] Nuevo añade y activa; la lista crece en uno.
+- [x] Borrar el último está indisponible; borrar otro pide confirmación
       y deja un activo válido.
-- [ ] Sin `<select>` nativo; sin paquetes nuevos.
-- [ ] Compacto (<1024): el combobox sigue usable (ellipsis, no se tapa
+- [x] Sin `<select>` nativo; sin paquetes nuevos.
+- [x] Compacto (<1024): el combobox sigue usable (ellipsis, no se tapa
       con los icon-only).
 
 ## Tests
@@ -115,7 +115,7 @@ El usuario cambia de diagrama desde la top bar y encuentra por nombre.
 
 ```bash
 npx vitest run src/editor
-npx playwright test e2e/shell-layout.spec.ts e2e/tooltips.spec.ts --project=chromium
+npx playwright test e2e/shell-layout.spec.ts e2e/tooltips.spec.ts e2e/diagram-switcher.spec.ts --project=chromium
 npx tsc -b --pretty false
 ```
 
@@ -134,4 +134,22 @@ Selector usable sobre la biblioteca; secuencia aún no se crea por UI.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-14. Combobox «Diagrama activo» en la top bar (FR-R02): trigger
+32 px, tokens y radio del sistema, sin `<select>` ni paquete. Listbox
+con búsqueda por `metadata.title` (recorte, sin mayúsculas); vacío
+«Sin coincidencias.» Activar restaura documento, viewport e historial
+por id. «Nuevo» añade del mismo kind (título por defecto) y activa;
+sin confirmación FR-11. Borrar pide confirmación de *ese* diagrama;
+el último queda `aria-disabled` («El workspace debe conservar al menos
+un diagrama.»). Icono `deleteDiagram` añadido al inventario de marca.
+Sin acción «Crear secuencia».
+
+Comandos: `npx vitest run src/editor` (198 tests). `npx playwright test
+e2e/shell-layout.spec.ts e2e/tooltips.spec.ts e2e/diagram-switcher.spec.ts
+--project=chromium` (15 passed; screenshots del shell actualizados).
+`npx tsc -b --pretty false`: app limpia; fallos previos en
+`e2e/include-extend.spec.ts` (`SVGPathElement` / `DOMPoint` sin DOM
+en `tsconfig.node.json`) — sucio anterior, no tocado.
+
+Desviación: a `max-width: 1023px` el tagline de la top bar se oculta
+para que el combobox no quede tapado por los icon-only / drawers.

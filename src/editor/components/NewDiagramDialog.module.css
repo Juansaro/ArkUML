@@ -56,3 +56,27 @@
 .confirm {
   border-color: var(--color-notice-border);
 }
+
+.kinds {
+  display: flex;
+  margin: 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  padding: 0;
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.kindOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 32px;
+  font-size: var(--font-size-sm);
+}

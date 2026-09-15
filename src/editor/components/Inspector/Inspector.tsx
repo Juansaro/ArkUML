@@ -42,7 +42,9 @@ export function Inspector({ headingId }: InspectorProps) {
         Inspector
       </h2>
       {createTool !== undefined ? <PlaceElementControl /> : null}
-      {relationshipTool !== undefined && view.status !== "relationship" ? (
+      {relationshipTool !== undefined &&
+      view.status !== "relationship" &&
+      view.status !== "message" ? (
         <>
           {connectionHelp !== undefined ? (
             <ConnectionHelp text={connectionHelp} />
@@ -110,6 +112,19 @@ function InspectorBody({
         ) : null}
         <TypeField label={view.typeLabel} />
         <RelationshipEndpoints view={view} labels={endpoints} />
+      </div>
+    );
+  }
+
+  if (view.status === "message") {
+    return (
+      <div className={styles.fields}>
+        {connectionHelp !== undefined ? (
+          <ConnectionHelp text={connectionHelp} />
+        ) : null}
+        <TypeField label={view.typeLabel} />
+        <MessageSignatureField view={view} />
+        <MessageEndpoints view={view} />
       </div>
     );
   }
@@ -209,6 +224,51 @@ function RelationshipEndpoints({
           ))}
         </select>
       </label>
+    </>
+  );
+}
+
+function MessageSignatureField({
+  view,
+}: {
+  view: Extract<ReturnType<typeof selectInspectorView>, { status: "message" }>;
+}) {
+  const store = useEditorStoreApi();
+
+  return (
+    <label className={styles.field}>
+      <span className={styles.label}>Firma</span>
+      <ElementNameField
+        key={view.id}
+        elementId={view.id}
+        name={view.name}
+        ariaLabel="Firma"
+        showError
+        commitName={(id, name) => store.getState().renameRelationship(id, name)}
+      />
+    </label>
+  );
+}
+
+function MessageEndpoints({
+  view,
+}: {
+  view: Extract<ReturnType<typeof selectInspectorView>, { status: "message" }>;
+}) {
+  return (
+    <>
+      <div className={styles.field}>
+        <p className={styles.label}>Origen</p>
+        <p className={styles.value} data-testid="inspector-source">
+          {view.sourceLabel}
+        </p>
+      </div>
+      <div className={styles.field}>
+        <p className={styles.label}>Destino</p>
+        <p className={styles.value} data-testid="inspector-target">
+          {view.targetLabel}
+        </p>
+      </div>
     </>
   );
 }

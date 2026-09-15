@@ -70,4 +70,49 @@ describe("NewDiagramDialog", () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(onConfirm).not.toHaveBeenCalled();
   });
+
+  it("Eliminar diagrama usa copy de pérdida de ese diagrama", () => {
+    render(
+      <NewDiagramDialog
+        title="Eliminar diagrama"
+        confirmLabel="Eliminar diagrama"
+        description="Se perderá este diagrama. Esta acción no se puede deshacer."
+        testId="delete-diagram-dialog"
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+      />,
+    );
+    const dialog = screen.getByRole("dialog", { name: "Eliminar diagrama" });
+    expect(dialog).toHaveAttribute("data-testid", "delete-diagram-dialog");
+    expect(dialog).toHaveTextContent(
+      "Se perderá este diagrama. Esta acción no se puede deshacer.",
+    );
+  });
+
+  it("permite elegir Casos de uso o Secuencia", async () => {
+    const user = userEvent.setup();
+    const onConfirm = vi.fn();
+    render(
+      <NewDiagramDialog
+        description="Se añade a la biblioteca y queda como diagrama activo."
+        kindOptions={[
+          { value: "use-case", label: "Casos de uso" },
+          { value: "sequence", label: "Secuencia" },
+        ]}
+        defaultKind="use-case"
+        onCancel={vi.fn()}
+        onConfirm={onConfirm}
+      />,
+    );
+
+    const useCase = screen.getByRole("radio", { name: "Casos de uso" });
+    const sequence = screen.getByRole("radio", { name: "Secuencia" });
+    expect(useCase).toBeChecked();
+    await user.click(sequence);
+    expect(sequence).toBeChecked();
+    await user.click(
+      screen.getByRole("button", { name: "Crear diagrama nuevo" }),
+    );
+    expect(onConfirm).toHaveBeenCalledWith("sequence");
+  });
 });

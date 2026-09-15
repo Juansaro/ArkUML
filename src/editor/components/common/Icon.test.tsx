@@ -44,4 +44,31 @@ describe("Icon", () => {
     expect(document.querySelector("svg")?.innerHTML).toContain("M12 10v6");
     expect(document.querySelector("svg")?.innerHTML).toContain("M9 13l3 3 3-3");
   });
+
+  it("distingue Borrar de Nuevo por el cubo, no por el documento con más", () => {
+    const { rerender } = render(<Icon name="newDiagram" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M12 11v6");
+    rerender(<Icon name="deleteDiagram" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M5 7h14");
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M8 7l1 13h6l1-13",
+    );
+  });
+
+  it("pinta los glifos de secuencia con cabeza, flecha llena y reply abierto", () => {
+    const { rerender } = render(<Icon name="lifeline" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      'x="7" y="3" width="10" height="6"',
+    );
+    expect(document.querySelector("svg")?.innerHTML).toContain("M12 9v12");
+    rerender(<Icon name="syncMessage" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      'fill="currentColor"',
+    );
+    rerender(<Icon name="replyMessage" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "stroke-dasharray=\"3 2\"",
+    );
+    expect(document.querySelector("svg")?.innerHTML).toContain("M16 8l5 4-5 4");
+  });
 });

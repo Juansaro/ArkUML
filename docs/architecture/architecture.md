@@ -30,8 +30,9 @@ src/
     store/             estado, acciones, historial, selectores
     adapters/          mapper modelo ↔ React Flow
     canvas/            contenedor React Flow
-    nodes/             Actor, UseCase, SystemBoundary
-    edges/             Association, Include, Extend
+    diagramKinds.ts    registry mínimo por `document.kind`
+    nodes/             Actor, UseCase, SystemBoundary, Lifeline
+    edges/             Association, Include, Extend, sync/reply
     tools/             creación y conexión
     interactions/      drag, selección, reparent, resize
     components/        shell, inspector, diálogos

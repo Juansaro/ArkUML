@@ -1,0 +1,57 @@
+.node {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  color: var(--color-fg);
+  font-size: var(--font-size-sm);
+}
+
+.head {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-fg);
+  background-color: var(--color-surface);
+  pointer-events: auto;
+}
+
+.node[data-selected="true"] .head {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stem {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.stem line {
+  stroke: currentColor;
+  stroke-dasharray: 6 4;
+  stroke-width: 2;
+}
+
+.stemHandle {
+  top: 50%;
+}

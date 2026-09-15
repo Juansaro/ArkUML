@@ -7,7 +7,7 @@ import type { DiagramNode } from "../adapters/reactFlowMapper.ts";
 import { selectTool } from "../store/selectors.ts";
 import { useEditorStore } from "../store/EditorStoreProvider.tsx";
 import { relationshipKindFromTool } from "../tools/relationshipTool.ts";
-import { openArrowPath } from "./markers.ts";
+import { filledArrowPath, openArrowPath } from "./markers.ts";
 import styles from "./RelationshipPreview.module.css";
 
 function RelationshipPreviewView({
@@ -26,7 +26,9 @@ function RelationshipPreviewView({
     targetY: toY,
   };
   const [path] = getStraightPath(line);
-  const directed = kind === "include" || kind === "extend";
+  const open =
+    kind === "include" || kind === "extend" || kind === "reply-message";
+  const filled = kind === "sync-message";
 
   return (
     <g data-kind={kind} data-testid="relationship-preview-group">
@@ -37,10 +39,17 @@ function RelationshipPreviewView({
         data-kind={kind}
         data-status={connectionStatus ?? "pending"}
       />
-      {directed ? (
+      {open ? (
         <path
           d={openArrowPath(line)}
           className={styles.marker}
+          data-testid="relationship-preview-arrow"
+        />
+      ) : null}
+      {filled ? (
+        <path
+          d={filledArrowPath(line)}
+          className={styles.filledMarker}
           data-testid="relationship-preview-arrow"
         />
       ) : null}

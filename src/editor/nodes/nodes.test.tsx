@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import {
   createDiagramDocument,
+  createEmptySequenceDocument,
   type IdFactory,
 } from "../../domain/diagram/factories.ts";
 import type {
@@ -9,7 +10,7 @@ import type {
   Geometry,
   Result,
 } from "../../domain/diagram/model.ts";
-import { createElement } from "../../domain/diagram/operations.ts";
+import { createElement, createLifeline } from "../../domain/diagram/operations.ts";
 import { DiagramCanvas } from "../canvas/DiagramCanvas.tsx";
 import { TooltipProvider } from "../components/common/Tooltip.tsx";
 import { createEditorStore } from "../store/editorStore.ts";
@@ -131,5 +132,45 @@ describe("nodos UML", () => {
     expect(
       globalThis.document.querySelector(".react-flow__resize-control"),
     ).toBeInTheDocument();
+  });
+
+  it("renderiza un lifeline con cabeza, stem y handles de mensaje", () => {
+    const deps = {
+      createId: sequentialIds(40),
+      now: () => CREATED_AT,
+    };
+    const empty = createEmptySequenceDocument(deps);
+    const document = expectOk(
+      createLifeline(
+        empty,
+        {
+          name: "Cliente",
+          geometry: { x: 40, y: 0, width: 120, height: 40 },
+        },
+        deps,
+      ),
+    );
+    const store = createEditorStore({ document });
+    render(
+      <TooltipProvider>
+        <EditorStoreProvider store={store}>
+          <div style={{ width: 800, height: 600 }}>
+            <DiagramCanvas />
+          </div>
+        </EditorStoreProvider>
+      </TooltipProvider>,
+    );
+
+    const lifeline = document.elements[0];
+    if (lifeline === undefined) {
+      throw new Error("Falta el lifeline");
+    }
+    const node = screen.getByTestId(`diagram-node-${lifeline.id}`);
+    expect(node).toHaveAttribute("data-kind", "lifeline");
+    expect(screen.getByLabelText("Lifeline Cliente")).toBeInTheDocument();
+    expect(screen.getByTestId("lifeline-head")).toBeInTheDocument();
+    expect(screen.getByTestId("lifeline-stem")).toBeInTheDocument();
+    expect(within(node).getByText("Cliente")).toBeInTheDocument();
+    expect(node.querySelectorAll(".react-flow__handle")).toHaveLength(2);
   });
 });

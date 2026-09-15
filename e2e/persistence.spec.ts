@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
-import { canvasElementName } from "./support.ts";
+import {
+  activeWorkspaceViewX,
+  canvasElementName,
+  createNewDiagram,
+} from "./support.ts";
 
 const STORAGE_KEY = "arkuml:workspace:v1";
 
@@ -42,22 +46,7 @@ test(
           (key) => localStorage.getItem(key),
           STORAGE_KEY,
         );
-        if (raw === null) {
-          return 0;
-        }
-        const parsed: unknown = JSON.parse(raw);
-        if (
-          typeof parsed !== "object" ||
-          parsed === null ||
-          !("view" in parsed)
-        ) {
-          return 0;
-        }
-        const view = parsed.view;
-        if (typeof view !== "object" || view === null || !("x" in view)) {
-          return 0;
-        }
-        return typeof view.x === "number" ? view.x : 0;
+        return activeWorkspaceViewX(raw);
       })
       .not.toBe(0);
 
@@ -81,7 +70,7 @@ test(
 );
 
 test(
-  "nuevo cancelado conserva; confirmado resetea a Sistema",
+  "nuevo añade un diagrama y conserva el anterior",
   { tag: "@smoke" },
   async ({ page }) => {
     await page.goto("/");
@@ -91,20 +80,18 @@ test(
     await canvas.click({ position: { x: 80, y: 480 } });
     await expect(canvasElementName(page, "Actor")).toBeVisible();
 
-    await page.getByRole("button", { name: "Nuevo" }).click();
-    const dialog = page.getByRole("dialog", { name: "Nuevo diagrama" });
-    await expect(dialog).toBeVisible();
-    await dialog.getByRole("button", { name: "Cancelar" }).click();
-    await expect(dialog).toHaveCount(0);
-    await expect(canvasElementName(page, "Actor")).toBeVisible();
-
-    await page.getByRole("button", { name: "Nuevo" }).click();
-    await expect(dialog).toBeVisible();
-    await dialog.getByRole("button", { name: "Crear diagrama nuevo" }).click();
-    await expect(dialog).toHaveCount(0);
+    await createNewDiagram(page, "Casos de uso");
     await expect(canvasElementName(page, "Actor")).toHaveCount(0);
     await expect(canvas.getByTestId("system-boundary-rect")).toBeVisible();
     await expect(page.getByRole("button", { name: "Deshacer" })).toBeDisabled();
+
+    await page.getByRole("combobox", { name: "Diagrama activo" }).click();
+    await expect(page.getByRole("option")).toHaveCount(2);
+    await page
+      .getByRole("option")
+      .nth(0)
+      .click({ position: { x: 12, y: 16 } });
+    await expect(canvasElementName(page, "Actor")).toBeVisible();
   },
 );
 
@@ -128,10 +115,7 @@ test("corrupción simulada no pisa hasta confirmar", async ({ page }) => {
     await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY),
   ).toBe("{not-json");
 
-  await page.getByRole("button", { name: "Nuevo" }).click();
-  const createDialog = page.getByRole("dialog", { name: "Nuevo diagrama" });
-  await expect(createDialog).toBeVisible();
-  await createDialog.getByRole("button", { name: "Cancelar" }).click();
+  await createNewDiagram(page, "Casos de uso");
   expect(
     await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY),
   ).toBe("{not-json");
@@ -148,9 +132,14 @@ test("corrupción simulada no pisa hasta confirmar", async ({ page }) => {
   );
   expect(raw).not.toBe("{not-json");
   expect(JSON.parse(raw ?? "")).toMatchObject({
-    document: {
-      elements: [{ kind: "system-boundary", name: "Sistema" }],
-    },
+    storageVersion: 2,
+    documents: [
+      {
+        document: {
+          elements: [{ kind: "system-boundary", name: "Sistema" }],
+        },
+      },
+    ],
   });
 });
 

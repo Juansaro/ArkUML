@@ -18,6 +18,7 @@ import {
   type ArkUmlDocumentFile,
 } from "../../../domain/diagram/documentFile.ts";
 import { createDiagramDocument } from "../../../domain/diagram/factories.ts";
+import type { DocumentKind } from "../../../domain/diagram/model.ts";
 import { migrateDocument } from "../../../domain/diagram/migrate.ts";
 import { downloadBlob } from "../../../export/download.ts";
 import { useCompactLayout } from "../../a11y/useCompactLayout.ts";
@@ -31,7 +32,7 @@ import {
 } from "../../store/EditorStoreProvider.tsx";
 import {
   selectDialogMode,
-  selectDocumentTitle,
+  selectDocumentKind,
   selectLiveAnnouncement,
   selectMessage,
   selectViewport,
@@ -50,7 +51,6 @@ import { TopBar } from "./TopBar.tsx";
 import styles from "./EditorShell.module.css";
 
 export type EditorShellProps = {
-  documentTitle?: string;
   zoomPercent?: number;
 };
 
@@ -66,21 +66,21 @@ export function EditorShell(props: EditorShellProps) {
   return <EditorShellLayout {...props} />;
 }
 
-function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
+function EditorShellLayout({ zoomPercent }: EditorShellProps) {
   const store = useEditorStoreApi();
   const session = useOptionalWorkspaceSession();
-  const storeTitle = useEditorStore(selectDocumentTitle);
   const viewport = useEditorStore(selectViewport);
+  const activeDocumentId = useEditorStore((state) => state.activeDocumentId);
   const dialogMode = useEditorStore(selectDialogMode);
+  const documentKind = useEditorStore(selectDocumentKind);
   const recoveryMessage = useEditorStore(selectMessage);
   const helpOpen = dialogMode === "help";
   const exportOpen = dialogMode === "export";
-  const newDiagramOpen = dialogMode === "new-diagram";
   const openFileOpen = dialogMode === "open-file";
   const invalidFileOpen = dialogMode === "invalid-document-file";
   const recoveryOpen = dialogMode === "recovery";
   const storageUpgradeOpen = dialogMode === "storage-upgrade";
-  const title = documentTitle ?? storeTitle;
+  const newDiagramOpen = dialogMode === "new-diagram";
   const zoom = zoomPercent ?? Math.round(viewport.zoom * 100);
   const paletteHeadingId = useId();
   const inspectorHeadingId = useId();
@@ -231,15 +231,13 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
   }
 
   function requestNewDiagram() {
-    const needsConfirmation = workspaceNeedsNewDiagramConfirmation(
-      store.getState(),
-      session?.coordinator.isOverwriteBlocked() === true,
-    );
-    if (needsConfirmation) {
-      store.getState().setDialogMode("new-diagram");
-      return;
-    }
-    void confirmNewWorkspace();
+    store.getState().setDialogMode("new-diagram");
+  }
+
+  function confirmNewDiagram(kind?: DocumentKind) {
+    store.getState().addNewDocument(kind ?? documentKind);
+    store.getState().setDialogMode("none");
+    setCanvasNonce((value) => value + 1);
   }
 
   function cancelDialog() {
@@ -330,7 +328,6 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
       >
         <header className={styles.topbar}>
           <TopBar
-            documentTitle={title}
             paletteOpen={paletteOpen}
             inspectorOpen={inspectorOpen}
             helpOpen={helpOpen}
@@ -381,7 +378,10 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
           <h2 id={canvasHeadingId} className={styles.canvasHeading}>
             Lienzo
           </h2>
-          <DiagramCanvas key={canvasNonce} onFitViewReady={registerFitView} />
+          <DiagramCanvas
+            key={`${activeDocumentId}:${canvasNonce}`}
+            onFitViewReady={registerFitView}
+          />
         </main>
         <div
           className={`${styles.inspectorSlot}${inspectorCollapsed ? ` ${styles.collapsed}` : ""}`}
@@ -432,10 +432,14 @@ function EditorShellLayout({ documentTitle, zoomPercent }: EditorShellProps) {
         ) : null}
         {newDiagramOpen ? (
           <NewDiagramDialog
+            description="Se añade a la biblioteca y queda como diagrama activo."
+            kindOptions={[
+              { value: "use-case", label: "Casos de uso" },
+              { value: "sequence", label: "Secuencia" },
+            ]}
+            defaultKind={documentKind}
             onCancel={cancelDialog}
-            onConfirm={() => {
-              void confirmNewWorkspace();
-            }}
+            onConfirm={confirmNewDiagram}
           />
         ) : null}
         {openFileOpen ? (

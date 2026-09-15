@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { NAME_MAX_LENGTH } from "../../../domain/diagram/defaults.ts";
 import {
   createDiagramDocument,
+  createEmptySequenceDocument,
   type IdFactory,
 } from "../../../domain/diagram/factories.ts";
 import type { Geometry, Result } from "../../../domain/diagram/model.ts";
@@ -742,5 +743,104 @@ describe("Inspector", () => {
       targetId: logout.id,
     });
     expect(store.getState().ui.message).toBe("Se creó include.");
+  });
+
+  it("muestra firma, tipo y extremos de un mensaje de secuencia", async () => {
+    const user = userEvent.setup();
+    const createId = sequentialIds(90);
+    const deps = { createId, now: () => CREATED_AT };
+    const store = createEditorStore({
+      document: createEmptySequenceDocument(deps),
+      deps: { createId, now: () => new Date("2026-09-08T08:00:00.000Z") },
+    });
+    expectOk(
+      store.getState().createLifeline({
+        name: "Cliente",
+        geometry: { x: 0, y: 0, width: 120, height: 40 },
+      }),
+    );
+    expectOk(
+      store.getState().createLifeline({
+        name: "Servidor",
+        geometry: { x: 240, y: 0, width: 120, height: 40 },
+      }),
+    );
+    const source = store.getState().document.elements[0];
+    const target = store.getState().document.elements[1];
+    if (source === undefined || target === undefined) {
+      throw new Error("Faltan lifelines");
+    }
+    expectOk(
+      store.getState().connect({
+        kind: "sync-message",
+        sourceId: source.id,
+        targetId: target.id,
+        name: "ping()",
+        y: 80,
+      }),
+    );
+    const message = store.getState().document.relationships[0];
+    if (message === undefined) {
+      throw new Error("Falta el mensaje");
+    }
+    store.getState().setSelection({
+      elementIds: [],
+      relationshipIds: [message.id],
+    });
+
+    renderInspector(store);
+
+    expect(screen.getByTestId("inspector-type")).toHaveTextContent(
+      "Mensaje síncrono",
+    );
+    expect(screen.getByLabelText("Firma")).toHaveValue("ping()");
+    expect(screen.getByTestId("inspector-source")).toHaveTextContent(
+      "Lifeline Cliente",
+    );
+    expect(screen.getByTestId("inspector-target")).toHaveTextContent(
+      "Lifeline Servidor",
+    );
+
+    await user.clear(screen.getByLabelText("Firma"));
+    await user.type(screen.getByLabelText("Firma"), "pong()");
+    await user.keyboard("{Enter}");
+    expect(store.getState().document.relationships[0]).toMatchObject({
+      name: "pong()",
+    });
+  });
+
+  it("conecta un reply desde el inspector, incluido a sí mismo", async () => {
+    const user = userEvent.setup();
+    const createId = sequentialIds(110);
+    const deps = { createId, now: () => CREATED_AT };
+    const store = createEditorStore({
+      document: createEmptySequenceDocument(deps),
+      deps: { createId, now: () => new Date("2026-09-08T08:00:00.000Z") },
+    });
+    expectOk(
+      store.getState().createLifeline({
+        name: "A",
+        geometry: { x: 0, y: 0, width: 120, height: 40 },
+      }),
+    );
+    const lifeline = store.getState().document.elements[0];
+    if (lifeline === undefined) {
+      throw new Error("Falta el lifeline");
+    }
+    store.getState().setTool("reply-message");
+    renderInspector(store);
+
+    await user.selectOptions(screen.getByTestId("connect-source"), lifeline.id);
+    await user.selectOptions(screen.getByTestId("connect-target"), lifeline.id);
+    await user.click(screen.getByRole("button", { name: "Conectar" }));
+
+    expect(store.getState().document.relationships).toHaveLength(1);
+    expect(store.getState().document.relationships[0]).toMatchObject({
+      kind: "reply-message",
+      sourceId: lifeline.id,
+      targetId: lifeline.id,
+    });
+    expect(store.getState().tool).toBe("select");
+    expect(store.getState().ui.message).toBe("Se creó reply.");
   });
 });

@@ -84,6 +84,9 @@ describe("EditorShell", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(DEFAULT_DOCUMENT_TITLE)).toBeInTheDocument();
     expect(
+      screen.getByRole("combobox", { name: "Diagrama activo" }),
+    ).toBeInTheDocument();
+    expect(
       screen.getByText("Editor de diagramas de casos de uso"),
     ).toBeInTheDocument();
     const mark = screen
@@ -431,7 +434,7 @@ describe("EditorShell", () => {
     expect(toggle).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("Nuevo cancelado conserva el documento; confirmado resetea a Sistema", async () => {
+  it("Nuevo añade un diagrama y conserva el anterior", async () => {
     const user = userEvent.setup();
     const createId = sequentialIds();
     const deps = {
@@ -455,6 +458,7 @@ describe("EditorShell", () => {
           .createActor({ name: "Usuario", geometry: ACTOR_GEOMETRY }),
       );
     });
+    const firstId = store.getState().document.id;
     expect(
       store
         .getState()
@@ -464,24 +468,13 @@ describe("EditorShell", () => {
     await user.click(screen.getByRole("button", { name: "Nuevo" }));
     const dialog = screen.getByRole("dialog", { name: "Nuevo diagrama" });
     expect(dialog).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Cancelar" }));
-    expect(
-      screen.queryByRole("dialog", { name: "Nuevo diagrama" }),
-    ).not.toBeInTheDocument();
-    expect(
-      store
-        .getState()
-        .document.elements.some((element) => element.kind === "actor"),
-    ).toBe(true);
-
-    await user.click(screen.getByRole("button", { name: "Nuevo" }));
+    expect(screen.getByRole("radio", { name: "Casos de uso" })).toBeChecked();
     await user.click(
       screen.getByRole("button", { name: "Crear diagrama nuevo" }),
     );
-    expect(
-      screen.queryByRole("dialog", { name: "Nuevo diagrama" }),
-    ).not.toBeInTheDocument();
+    expect(dialog).not.toBeInTheDocument();
+    expect(store.getState().documents).toHaveLength(2);
+    expect(store.getState().activeDocumentId).not.toBe(firstId);
     expect(
       store
         .getState()
@@ -494,10 +487,64 @@ describe("EditorShell", () => {
         ?.name,
     ).toBe("Sistema");
     expect(store.getState().history.past).toHaveLength(0);
-    expect(screen.getByRole("button", { name: "Deshacer" })).toHaveAttribute(
-      "aria-disabled",
-      "true",
+
+    expect(store.getState().activateDocument(firstId)).toBe(true);
+    expect(
+      store
+        .getState()
+        .document.elements.some((element) => element.kind === "actor"),
+    ).toBe(true);
+  });
+
+  it("Nuevo con Secuencia añade el kind y cambia la paleta", async () => {
+    const user = userEvent.setup();
+    const createId = sequentialIds(80);
+    const deps = {
+      createId,
+      now: () => new Date("2026-09-07T12:00:00.000Z"),
+    };
+    const store = createEditorStore({
+      document: createDiagramDocument(deps),
+      deps: { ...deps, now: () => new Date("2026-09-08T08:00:00.000Z") },
+    });
+    render(
+      <EditorStoreProvider store={store}>
+        <EditorShell />
+      </EditorStoreProvider>,
     );
+
+    await user.click(screen.getByRole("button", { name: "Nuevo" }));
+    await user.click(screen.getByRole("radio", { name: "Secuencia" }));
+    await user.click(
+      screen.getByRole("button", { name: "Crear diagrama nuevo" }),
+    );
+
+    expect(store.getState().document.kind).toBe("sequence");
+    expect(store.getState().document.metadata.title).toBe(
+      "Diagrama de secuencia",
+    );
+    expect(
+      screen.getByRole("button", { name: "Lifeline" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Mensaje síncrono" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reply" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Actor" }),
+    ).not.toBeInTheDocument();
+
+    const previousId = store.getState().documents[0]?.document.id;
+    if (previousId === undefined) {
+      throw new Error("Falta el documento de casos de uso");
+    }
+    act(() => {
+      store.getState().activateDocument(previousId);
+    });
+    expect(screen.getByRole("button", { name: "Actor" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Lifeline" }),
+    ).not.toBeInTheDocument();
   });
 
   it("devuelve el foco al control que abrió el diálogo", async () => {

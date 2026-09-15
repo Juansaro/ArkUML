@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_BOUNDARY_GEOMETRY } from "../../domain/diagram/defaults.ts";
 import {
   createDiagramDocument,
+  createEmptySequenceDocument,
   type IdFactory,
 } from "../../domain/diagram/factories.ts";
 import {
@@ -562,6 +563,47 @@ describe("biblioteca local", () => {
     expect(store.getState().activeDocumentId).toBe(second.id);
     expect(store.getState().deleteDocument(second.id)).toBe(false);
     expect(store.getState().documents).toHaveLength(1);
+  });
+
+  it("addNewDocument añade del mismo kind y lo activa", () => {
+    const store = createStore();
+    const firstId = store.getState().document.id;
+    expect(store.getState().addNewDocument()).toBe(true);
+    expect(store.getState().documents).toHaveLength(2);
+    expect(store.getState().activeDocumentId).not.toBe(firstId);
+    expect(store.getState().document.kind).toBe("use-case");
+    expect(store.getState().document.metadata.title).toBe(
+      "Diagrama de casos de uso",
+    );
+    expect(
+      store.getState().documents.some((entry) => entry.document.id === firstId),
+    ).toBe(true);
+  });
+
+  it("addNewDocument de un secuencia añade otra secuencia", () => {
+    const createId = sequentialIds(80);
+    const store = createEditorStore({
+      document: createEmptySequenceDocument({
+        createId,
+        now: () => CREATED_AT,
+      }),
+      deps: { createId, now: () => CREATED_AT },
+    });
+    expect(store.getState().addNewDocument()).toBe(true);
+    expect(store.getState().documents).toHaveLength(2);
+    expect(
+      store
+        .getState()
+        .documents.every((entry) => entry.document.kind === "sequence"),
+    ).toBe(true);
+  });
+
+  it("addNewDocument(sequence) desde casos de uso crea el módulo secuencia", () => {
+    const store = createStore();
+    expect(store.getState().addNewDocument("sequence")).toBe(true);
+    expect(store.getState().document.kind).toBe("sequence");
+    expect(store.getState().tool).toBe("select");
+    expect(store.getState().documents).toHaveLength(2);
   });
 
   it("aisla el historial por document.id", () => {

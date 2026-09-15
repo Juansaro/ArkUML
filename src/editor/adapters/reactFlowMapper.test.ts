@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   createDiagramDocument,
+  createEmptySequenceDocument,
   type IdFactory,
 } from "../../domain/diagram/factories.ts";
 import type { DiagramDocument, Geometry } from "../../domain/diagram/model.ts";
 import {
   createElement,
+  createLifeline,
   createRelationship,
   moveElements,
 } from "../../domain/diagram/operations.ts";
@@ -330,5 +332,83 @@ describe("mapDocumentToReactFlow", () => {
     expect(projection.nodes).toHaveLength(100);
     expect(projection.edges).toHaveLength(150);
     expect(projection.nodes.some((node) => node.selected)).toBe(false);
+  });
+
+  it("proyecta lifelines con stem y mensajes horizontales sin anclas", () => {
+    const deps = { createId: sequentialIds(80), now: () => CREATED_AT };
+    const empty = createEmptySequenceDocument(deps);
+    const withA = expectOk(
+      createLifeline(
+        empty,
+        { name: "A", geometry: { x: 0, y: 0, width: 120, height: 40 } },
+        deps,
+      ),
+    );
+    const withB = expectOk(
+      createLifeline(
+        withA,
+        { name: "B", geometry: { x: 240, y: 0, width: 120, height: 40 } },
+        deps,
+      ),
+    );
+    const a = withB.elements[0];
+    const b = withB.elements[1];
+    if (a === undefined || b === undefined) {
+      throw new Error("Faltan lifelines");
+    }
+    const withSync = expectOk(
+      createRelationship(
+        withB,
+        {
+          kind: "sync-message",
+          sourceId: a.id,
+          targetId: b.id,
+          name: "ping()",
+          y: 80,
+        },
+        deps,
+      ),
+    );
+    const withReply = expectOk(
+      createRelationship(
+        withSync,
+        {
+          kind: "reply-message",
+          sourceId: a.id,
+          targetId: a.id,
+          y: 120,
+        },
+        deps,
+      ),
+    );
+
+    const { nodes, edges } = mapDocumentToReactFlow(withReply, {
+      elementIds: [a.id],
+      relationshipIds: [withReply.relationships[0]?.id ?? ""],
+    });
+
+    expect(nodes).toHaveLength(2);
+    expect(nodes[0]).toMatchObject({
+      type: "lifeline",
+      width: 120,
+      height: 320,
+      data: { kind: "lifeline", name: "A", stemLength: 280 },
+      selected: true,
+    });
+    expect(edges).toHaveLength(2);
+    expect(edges[0]).toMatchObject({
+      type: "sync-message",
+      sourceHandle: "stem",
+      targetHandle: "stem",
+      reconnectable: false,
+      data: { kind: "sync-message", name: "ping()", y: 80 },
+      selected: true,
+    });
+    expect(edges[1]).toMatchObject({
+      type: "reply-message",
+      source: a.id,
+      target: a.id,
+      data: { kind: "reply-message", name: "", y: 120 },
+    });
   });
 });

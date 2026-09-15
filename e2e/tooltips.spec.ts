@@ -38,6 +38,14 @@ test.describe("tooltips del chrome", () => {
     await expect(page.getByRole("button", { name: "Nuevo" })).toBeFocused();
     await expect(page.getByRole("dialog")).toHaveCount(0);
 
+    const switcher = page.getByRole("combobox", { name: "Diagrama activo" });
+    await switcher.focus();
+    await expect(page.getByTestId("editor-tooltip")).toBeVisible();
+    await expect(page.getByTestId("editor-tooltip")).toHaveText(
+      "Cambiar de diagrama.",
+    );
+    await expect(switcher).not.toHaveAttribute("title");
+
     await expectTooltipCopy(page, "Paleta", "Cerrar paleta.");
     await expectTooltipCopy(page, "Inspector", "Cerrar inspector.");
 

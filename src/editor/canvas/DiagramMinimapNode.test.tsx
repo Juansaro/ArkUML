@@ -17,6 +17,7 @@ describe("DiagramMinimapNode", () => {
     );
     expect(minimapNodeClassName(typed("use-case"))).toBe("use-case");
     expect(minimapNodeClassName(typed("actor"))).toBe("actor");
+    expect(minimapNodeClassName(typed("lifeline"))).toBe("lifeline");
   });
 
   it("pinta rectángulo, elipse y figura de palo", () => {
@@ -92,5 +93,26 @@ describe("DiagramMinimapNode", () => {
     const actor = container.querySelector('[data-minimap-kind="actor"]');
     expect(actor?.querySelectorAll("circle")).toHaveLength(1);
     expect(actor?.querySelectorAll("line")).toHaveLength(4);
+
+    rerender(
+      <svg>
+        <DiagramMinimapNode
+          id="lifeline"
+          x={0}
+          y={0}
+          width={120}
+          height={320}
+          className="lifeline"
+          name="A"
+          borderRadius={0}
+          shapeRendering="auto"
+          selected={false}
+        />
+      </svg>,
+    );
+    const lifeline = container.querySelector('[data-minimap-kind="lifeline"]');
+    expect(lifeline?.querySelector("rect")).not.toBeNull();
+    expect(lifeline?.querySelector("line")).not.toBeNull();
+    expect(lifeline?.textContent).toBe("A");
   });
 });

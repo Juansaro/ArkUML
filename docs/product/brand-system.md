@@ -211,6 +211,16 @@ cual.
 <path d="M9 14h6" />
 ```
 
+**`deleteDiagram`** — cubo de basura (listbox del combobox):
+
+```text
+<path d="M5 7h14" />
+<path d="M9 7V4h6v2" />
+<path d="M8 7l1 13h6l1-13" />
+<path d="M10 11v5" />
+<path d="M14 11v5" />
+```
+
 **`openFile`** — documento con flecha de entrada:
 
 ```text
@@ -356,10 +366,32 @@ Include y Extend no se distinguen solo por color ni solo por la flecha: la
 letra permanece visible. Estos iconos no sustituyen línea, flecha ni
 estereotipo del diagrama.
 
+**`lifeline`** — cabeza + vida:
+
+```text
+<rect x="7" y="3" width="10" height="6" />
+<path d="M12 9v12" stroke-dasharray="2 2" />
+```
+
+**`syncMessage`** — flecha continua:
+
+```text
+<path d="M4 12h14" />
+<path d="M15 8l5 4-5 4z" fill="currentColor" stroke="none" />
+```
+
+**`replyMessage`** — flecha discontinua abierta:
+
+```text
+<path d="M4 12h14" stroke-dasharray="3 2" />
+<path d="M16 8l5 4-5 4" />
+```
+
 Los ids de `Icon` van en camelCase. En paleta se conectan a los `EditorTool`
 existentes sin renombrar ni el icono ni la herramienta: `useCase` →
-`use-case`, `systemBoundary` → `system-boundary`. El resto coincide (`select`,
-`actor`, `association`, `include`, `extend`).
+`use-case`, `systemBoundary` → `system-boundary`, `syncMessage` →
+`sync-message`, `replyMessage` → `reply-message`. El resto coincide
+(`select`, `actor`, `association`, `include`, `extend`, `lifeline`).
 
 ## Matriz de controles
 
@@ -388,6 +420,9 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Paleta | `association` | Icono + etiqueta | Asociación | «Unir un actor y un caso de uso.» | — |
 | Paleta | `include` | Icono + etiqueta | Include | «Origen: caso que incluye. Destino: caso incluido. Arrastra del origen al destino; el sentido no se invierte.» | — |
 | Paleta | `extend` | Icono + etiqueta | Extend | «Origen: caso que extiende. Destino: caso base. Arrastra del origen al destino; el sentido no se invierte.» | — |
+| Paleta | `lifeline` | Icono + etiqueta. Solo `document.kind` `"sequence"` | Lifeline | «Crear línea de vida.» | — |
+| Paleta | `syncMessage` | Icono + etiqueta. Solo secuencia | Mensaje síncrono | «Mensaje síncrono (llamada).» | — |
+| Paleta | `replyMessage` | Icono + etiqueta. Solo secuencia | Reply | «Mensaje de respuesta.» | — |
 | Lienzo | `zoomIn` | Icon-only | Acercar | «Acercar.» | «El zoom ya está en el máximo (200%).» cuando `zoom >= 2` |
 | Lienzo | `zoomOut` | Icon-only | Alejar | «Alejar.» | «El zoom ya está en el mínimo (50%).» cuando `zoom <= 0.5` |
 | Lienzo | `fitView` | Icon-only | Ajustar vista | «Ajustar todo el diagrama (Ctrl/Cmd+0).» | — |
@@ -510,12 +545,13 @@ Chrome de FR-R02. No es notación UML. Sin paquete de combobox, sin
   `--color-brand` en el borde izquierdo 2 px o `aria-selected`. Hit
   mínimo 32 px.
 - **Vacío:** «Sin coincidencias.» en `--color-muted`.
-- **Borrar** (si la fila no es la única): icon-only en la fila, nombre
-  «Eliminar diagrama», no usa un kit nuevo (reutilizar trazo de borrar
-  si ya existe en paleta/inspector; si no, addendum en TASK-048).
+- **Borrar** (si la fila no es la única): icon-only `deleteDiagram` en la
+  fila, nombre «Eliminar diagrama». Indisponible (último): «El workspace
+  debe conservar al menos un diagrama.» (`aria-disabled`, tooltip).
 
-Iconos de paleta de secuencia: TASK-049, mismo contrato SVG que el resto
-de esta matriz.
+Los iconos de paleta de secuencia (`lifeline`, `syncMessage`,
+`replyMessage`) usan el mismo contrato SVG que el resto de esta matriz.
+No hay kit externo. El combobox no ofrece un kind sin módulo.
 
 ## Límites
 

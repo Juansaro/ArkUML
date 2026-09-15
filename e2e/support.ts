@@ -21,7 +21,7 @@ export function canvasElementName(page: Page, name: string): Locator {
 
 export function diagramElement(
   page: Page,
-  kind: "actor" | "use-case",
+  kind: "actor" | "use-case" | "lifeline",
   name: string,
 ): Locator {
   return diagramCanvas(page)
@@ -107,4 +107,81 @@ export async function downloadBytes(download: {
     throw new Error("La descarga no produjo un archivo");
   }
   return readFile(filePath);
+}
+
+export async function createNewDiagram(
+  page: Page,
+  kind: "Casos de uso" | "Secuencia" = "Casos de uso",
+): Promise<void> {
+  await page.getByRole("button", { name: "Nuevo" }).click();
+  const dialog = page.getByRole("dialog", { name: "Nuevo diagrama" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("radio", { name: kind }).click();
+  await dialog.getByRole("button", { name: "Crear diagrama nuevo" }).click();
+  await expect(dialog).toHaveCount(0);
+}
+
+export async function confirmWorkspaceUpgrade(page: Page): Promise<void> {
+  const dialog = page.getByRole("dialog", { name: "Actualizar el workspace" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "Guardar como 2.0" }).click();
+  await expect(dialog).toHaveCount(0);
+}
+
+export function activeWorkspaceViewX(raw: string | null): number {
+  if (raw === null) {
+    return 0;
+  }
+  const parsed: unknown = JSON.parse(raw);
+  if (typeof parsed !== "object" || parsed === null) {
+    return 0;
+  }
+  const record = parsed as Record<string, unknown>;
+  const legacyView = numberFromViewX(record.view);
+  if (legacyView !== undefined) {
+    return legacyView;
+  }
+  if (!Array.isArray(record.documents)) {
+    return 0;
+  }
+  const activeId =
+    typeof record.activeDocumentId === "string"
+      ? record.activeDocumentId
+      : undefined;
+  const documents: unknown[] = record.documents;
+  const matched = documents.find((candidate) => {
+    const id = documentIdFromEntry(candidate);
+    return id !== undefined && id === activeId;
+  });
+  const selected = matched ?? documents[0];
+  return numberFromViewX(viewFromEntry(selected)) ?? 0;
+}
+
+function documentIdFromEntry(value: unknown): string | undefined {
+  if (typeof value !== "object" || value === null || !("document" in value)) {
+    return undefined;
+  }
+  const document = value.document;
+  if (
+    typeof document !== "object" ||
+    document === null ||
+    !("id" in document)
+  ) {
+    return undefined;
+  }
+  return typeof document.id === "string" ? document.id : undefined;
+}
+
+function viewFromEntry(value: unknown): unknown {
+  if (typeof value !== "object" || value === null || !("view" in value)) {
+    return undefined;
+  }
+  return value.view;
+}
+
+function numberFromViewX(value: unknown): number | undefined {
+  if (typeof value !== "object" || value === null || !("x" in value)) {
+    return undefined;
+  }
+  return typeof value.x === "number" ? value.x : undefined;
 }

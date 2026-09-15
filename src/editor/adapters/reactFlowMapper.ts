@@ -5,7 +5,11 @@ import type {
   Relationship,
   RelationshipKind,
 } from "../../domain/diagram/model.ts";
-import { isUseCaseRelationship } from "../../domain/diagram/model.ts";
+import {
+  isLifeline,
+  isSequenceMessage,
+  isUseCaseRelationship,
+} from "../../domain/diagram/model.ts";
 import {
   elementAccessibleName,
   relationshipAccessibleName,
@@ -17,10 +21,13 @@ export type DiagramNodeData = {
   kind: DiagramElement["kind"];
   name: string;
   editing?: boolean;
+  stemLength?: number;
 };
 
 export type DiagramEdgeData = {
   kind: RelationshipKind;
+  name?: string;
+  y?: number;
 };
 
 export type DiagramNode = Node<DiagramNodeData, DiagramElement["kind"]>;
@@ -175,6 +182,24 @@ function mapElement(element: DiagramElement): DiagramNode {
     };
   }
 
+  if (isLifeline(element)) {
+    const height = element.geometry.height + element.stemLength;
+    return {
+      ...node,
+      height,
+      data: {
+        kind: element.kind,
+        name: element.name,
+        stemLength: element.stemLength,
+      },
+      style: {
+        width: element.geometry.width,
+        height,
+        overflow: "visible",
+      },
+    };
+  }
+
   if (element.kind === "use-case" && element.parentId !== undefined) {
     return {
       ...node,
@@ -189,6 +214,26 @@ function mapEdge(
   relationship: Relationship,
   elementsById: ReadonlyMap<string, DiagramElement>,
 ): DiagramEdge | undefined {
+  if (isSequenceMessage(relationship)) {
+    return {
+      id: relationship.id,
+      type: relationship.kind,
+      source: relationship.sourceId,
+      target: relationship.targetId,
+      sourceHandle: "stem",
+      targetHandle: "stem",
+      className: `diagram-edge diagram-edge-${relationship.kind}`,
+      data: {
+        kind: relationship.kind,
+        name: relationship.name,
+        y: relationship.y,
+      },
+      selected: false,
+      reconnectable: false,
+      ariaLabel: relationshipAriaLabel(relationship, elementsById, false),
+    };
+  }
+
   if (!isUseCaseRelationship(relationship)) {
     return undefined;
   }

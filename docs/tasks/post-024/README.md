@@ -30,8 +30,9 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 (W17-01, W17-13). TASK-037 congeló la Wave 2
 (**Intercambio y distribución sobre schema 1**). TASK-038–041 están
 `Hecha`. Wave 2 cerrada. TASK-042–044 son remediación 1.x. TASK-045
-congeló **Release 1** (biblioteca + secuencia, schema 2). TASK-046 y
-TASK-047 están `Hecha`. El próximo contrato ejecutable es TASK-048.
+congeló **Release 1** (biblioteca + secuencia, schema 2). TASK-046,
+TASK-047 y TASK-048 están `Hecha`. TASK-049 está `Hecha`. El próximo
+contrato ejecutable es TASK-050.
 
 ## Estado
 
@@ -60,8 +61,8 @@ TASK-047 están `Hecha`. El próximo contrato ejecutable es TASK-048.
 | 045 | [`11-governance/TASK-045.md`](11-governance/TASK-045.md) | Hecha | P0 | 036, 037, 044 | 2026-09-14: freeze **Release 1** (schema 2); ADR-007; `sequence-model.md`; TASK-046–050 |
 | 046 | [`12-uml/TASK-046.md`](12-uml/TASK-046.md) | Hecha | P0 | 045 | 2026-09-14: schema 2; `migrateDocument` 1→2; secuencia (lifeline, sync/reply); mezclas `UNKNOWN_KIND` |
 | 047 | [`14-persistence/TASK-047.md`](14-persistence/TASK-047.md) | Hecha | P0 | 046 | 2026-09-14: biblioteca `storageVersion` 2; `migrateWorkspace` 1→2; historial por id; confirmación overwrite 2.0 |
-| 048 | [`13-editor/TASK-048.md`](13-editor/TASK-048.md) | Lista | P0 | 047 | Combobox + búsqueda (FR-R02) |
-| 049 | [`13-editor/TASK-049.md`](13-editor/TASK-049.md) | Lista | P0 | 046, 048 | Módulo secuencia (FR-R03, FR-P07) |
+| 048 | [`13-editor/TASK-048.md`](13-editor/TASK-048.md) | Hecha | P0 | 047 | 2026-09-14: combobox + búsqueda (FR-R02); Nuevo añade; borrar el último indisponible |
+| 049 | [`13-editor/TASK-049.md`](13-editor/TASK-049.md) | Hecha | P0 | 046, 048 | 2026-09-14: módulo secuencia (paleta, lienzo, inspector, Nuevo kind); use-case intacto |
 | 050 | [`14-persistence/TASK-050.md`](14-persistence/TASK-050.md) | Lista | P0 | 049 | Envelope `arkuml-document-json` v2 |
 
 ## Fases y gates
@@ -128,9 +129,11 @@ no como 94 features pendientes.
 
 Wave 2 (**Intercambio y distribución sobre schema 1**) está `Hecha`
 (TASK-038–041). TASK-042–044 (remediación 1.x) están `Hecha`. TASK-045
-congeló **Release 1**. TASK-046 (schema 2 y dominio de secuencia) y
-TASK-047 (biblioteca `storageVersion` 2) están `Hecha`. El próximo
-contrato es [TASK-048](13-editor/TASK-048.md) (combobox + búsqueda).
+congeló **Release 1**. TASK-046 (schema 2 y dominio de secuencia),
+TASK-047 (biblioteca `storageVersion` 2) y TASK-048 (combobox + búsqueda)
+están `Hecha`. TASK-049 (módulo secuencia) está `Hecha`. El próximo
+contrato es [TASK-050](14-persistence/TASK-050.md) (envelope
+`arkuml-document-json` v2).
 W17-13 clases sigue bloqueada. IndexedDB: no elegido (condicional
 C-QUOTA). No implementar Generalization, PDF, temas, fragmentos de
 secuencia ni un class diagram en estos chats.

@@ -29,7 +29,8 @@
   box-shadow: none;
 }
 
-.flow :global(.react-flow__node-system-boundary) {
+.flow :global(.react-flow__node-system-boundary),
+.flow :global(.react-flow__node-lifeline) {
   overflow: visible;
   pointer-events: none;
 }

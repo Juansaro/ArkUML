@@ -1,5 +1,8 @@
 import type { Ref } from "react";
 import { useShallow } from "zustand/react/shallow";
+import type { WorkspaceDocumentEntry } from "../../../domain/diagram/model.ts";
+import { DiagramSwitcher } from "../DiagramSwitcher/DiagramSwitcher.tsx";
+import type { LibraryDocument } from "../DiagramSwitcher/library.ts";
 import { Icon } from "../common/Icon.tsx";
 import { ToolButton } from "../common/ToolButton.tsx";
 import { selectCanRedo, selectCanUndo } from "../../store/selectors.ts";
@@ -10,7 +13,6 @@ import {
 import styles from "./TopBar.module.css";
 
 type TopBarProps = {
-  documentTitle: string;
   paletteOpen: boolean;
   inspectorOpen: boolean;
   helpOpen: boolean;
@@ -28,7 +30,6 @@ type TopBarProps = {
 };
 
 export function TopBar({
-  documentTitle,
   paletteOpen,
   inspectorOpen,
   helpOpen,
@@ -51,6 +52,8 @@ export function TopBar({
       canRedo: selectCanRedo(state),
     })),
   );
+  const documents = useEditorStore((state) => state.documents);
+  const activeDocumentId = useEditorStore((state) => state.activeDocumentId);
 
   return (
     <>
@@ -61,7 +64,16 @@ export function TopBar({
           </span>
           <h1 className={styles.product}>ArkUML</h1>
         </div>
-        <p className={styles.documentTitle}>{documentTitle}</p>
+        <DiagramSwitcher
+          documents={libraryDocuments(documents)}
+          activeDocumentId={activeDocumentId}
+          onActivate={(documentId) => {
+            store.getState().activateDocument(documentId);
+          }}
+          onDelete={(documentId) => {
+            store.getState().deleteDocument(documentId);
+          }}
+        />
       </div>
       <p className={styles.help}>Editor de diagramas de casos de uso</p>
       {showDrawerToggles ? (
@@ -163,4 +175,14 @@ export function TopBar({
       </div>
     </>
   );
+}
+
+function libraryDocuments(
+  entries: readonly WorkspaceDocumentEntry[],
+): LibraryDocument[] {
+  return entries.map((entry) => ({
+    id: entry.document.id,
+    title: entry.document.metadata.title,
+    kind: entry.document.kind,
+  }));
 }

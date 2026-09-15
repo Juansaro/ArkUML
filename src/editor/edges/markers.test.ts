@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { openArrowPath, openArrowPoints } from "./markers.ts";
+import { filledArrowPath, openArrowPath, openArrowPoints } from "./markers.ts";
 
 describe("openArrowPoints", () => {
   it("apunta al target y deja las alas detrás en un trazo horizontal", () => {
@@ -58,5 +58,19 @@ describe("openArrowPath", () => {
     expect(path).toMatch(/^M /);
     expect(path).toContain(" L 40 0 L ");
     expect(path).not.toMatch(/Z$/i);
+  });
+});
+
+describe("filledArrowPath", () => {
+  it("cierra el triángulo de la punta síncrona", () => {
+    const path = filledArrowPath({
+      sourceX: 0,
+      sourceY: 0,
+      targetX: 40,
+      targetY: 0,
+    });
+    expect(path).toMatch(/^M /);
+    expect(path).toMatch(/Z$/i);
+    expect(path).toContain(" L 40 0 L ");
   });
 });

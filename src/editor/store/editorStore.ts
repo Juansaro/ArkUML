@@ -26,6 +26,9 @@ export const EDITOR_TOOLS = [
   "association",
   "include",
   "extend",
+  "lifeline",
+  "sync-message",
+  "reply-message",
 ] as const;
 
 export type EditorTool = (typeof EDITOR_TOOLS)[number];

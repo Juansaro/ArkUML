@@ -12,8 +12,15 @@
 }
 
 .line[data-kind="include"],
-.line[data-kind="extend"] {
+.line[data-kind="extend"],
+.line[data-kind="reply-message"] {
   stroke-dasharray: 8 6;
+}
+
+.filledMarker {
+  fill: var(--color-focus);
+  pointer-events: none;
+  stroke: none;
 }
 
 .line[data-status="invalid"] {

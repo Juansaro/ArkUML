@@ -2,7 +2,12 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PNG_SIGNATURE, diagramCanvas, downloadBytes } from "./support.ts";
+import {
+  PNG_SIGNATURE,
+  confirmWorkspaceUpgrade,
+  diagramCanvas,
+  downloadBytes,
+} from "./support.ts";
 
 const STORAGE_KEY = "arkuml:workspace:v1";
 const TARGET_NODE_COUNT = 100;
@@ -26,6 +31,7 @@ test.describe("presupuesto de rendimiento", { tag: "@perf" }, () => {
     await seedWorkspace(page, "perf-target.json");
     const navigationStarted = Date.now();
     await page.goto("/");
+    await confirmWorkspaceUpgrade(page);
     const canvas = diagramCanvas(page);
     await expect(page.getByText("Rendimiento 100/150")).toBeVisible();
     await expect(page.locator(".react-flow__node")).toHaveCount(
@@ -128,6 +134,7 @@ test.describe("presupuesto de rendimiento", { tag: "@perf" }, () => {
     await seedWorkspace(page, "perf-stress.json");
     const navigationStarted = Date.now();
     await page.goto("/");
+    await confirmWorkspaceUpgrade(page);
     await expect(page.getByText("Rendimiento 200/300")).toBeVisible();
     await expect(page.locator(".react-flow__node")).toHaveCount(
       STRESS_NODE_COUNT,
@@ -152,6 +159,7 @@ test.describe("presupuesto de rendimiento", { tag: "@perf" }, () => {
 
     await seedWorkspace(page, "perf-stress.json");
     await page.goto("/");
+    await confirmWorkspaceUpgrade(page);
     await expect(page.getByText("Rendimiento 200/300")).toBeVisible();
     await expect(page.locator(".react-flow__node")).toHaveCount(
       STRESS_NODE_COUNT,
@@ -234,11 +242,20 @@ async function savedUpdatedAt(page: Page): Promise<string> {
       if (
         typeof parsed !== "object" ||
         parsed === null ||
-        !("document" in parsed)
+        !("documents" in parsed) ||
+        !Array.isArray(parsed.documents)
       ) {
         return "";
       }
-      const document = parsed.document;
+      const entry = parsed.documents[0];
+      if (
+        typeof entry !== "object" ||
+        entry === null ||
+        !("document" in entry)
+      ) {
+        return "";
+      }
+      const document = entry.document;
       if (
         typeof document !== "object" ||
         document === null ||

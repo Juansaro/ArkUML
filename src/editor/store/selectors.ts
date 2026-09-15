@@ -2,10 +2,15 @@ import type {
   Anchor,
   DiagramDocument,
   DiagramElement,
+  DocumentKind,
+  SequenceMessageKind,
   UseCaseRelationshipKind,
   Viewport,
 } from "../../domain/diagram/model.ts";
-import { isUseCaseRelationship } from "../../domain/diagram/model.ts";
+import {
+  isSequenceMessage,
+  isUseCaseRelationship,
+} from "../../domain/diagram/model.ts";
 import {
   elementAccessibleName,
   elementTypeLabel,
@@ -27,6 +32,10 @@ import type {
 import { canRedo, canUndo } from "./history.ts";
 
 export { shallow } from "zustand/vanilla/shallow";
+
+export function selectDocumentKind(state: EditorStore): DocumentKind {
+  return state.document.kind;
+}
 
 export function selectDocument(state: EditorStore): DiagramDocument {
   return state.document;
@@ -187,6 +196,17 @@ export type InspectorView =
       targetAnchor: Anchor;
       sourceLabel: string;
       targetLabel: string;
+    }
+  | {
+      status: "message";
+      id: string;
+      kind: SequenceMessageKind;
+      typeLabel: string;
+      name: string;
+      sourceId: string;
+      targetId: string;
+      sourceLabel: string;
+      targetLabel: string;
     };
 
 const EMPTY_INSPECTOR_VIEW: InspectorView = { status: "empty" };
@@ -227,6 +247,19 @@ export function selectInspectorView(state: EditorStore): InspectorView {
   );
   if (relationship === undefined) {
     return EMPTY_INSPECTOR_VIEW;
+  }
+  if (isSequenceMessage(relationship)) {
+    return {
+      status: "message",
+      id: relationship.id,
+      kind: relationship.kind,
+      typeLabel: relationshipTypeLabel(relationship.kind),
+      name: relationship.name,
+      sourceId: relationship.sourceId,
+      targetId: relationship.targetId,
+      sourceLabel: endpointLabel(state.document, relationship.sourceId),
+      targetLabel: endpointLabel(state.document, relationship.targetId),
+    };
   }
   if (!isUseCaseRelationship(relationship)) {
     return EMPTY_INSPECTOR_VIEW;

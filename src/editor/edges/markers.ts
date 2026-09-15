@@ -43,3 +43,8 @@ export function openArrowPath(line: EdgeLine, size = OPEN_ARROW_SIZE): string {
   const arrow = openArrowPoints(line, size);
   return `M ${arrow.leftX} ${arrow.leftY} L ${arrow.tipX} ${arrow.tipY} L ${arrow.rightX} ${arrow.rightY}`;
 }
+
+export function filledArrowPath(line: EdgeLine, size = OPEN_ARROW_SIZE): string {
+  const arrow = openArrowPoints(line, size);
+  return `M ${arrow.leftX} ${arrow.leftY} L ${arrow.tipX} ${arrow.tipY} L ${arrow.rightX} ${arrow.rightY} Z`;
+}

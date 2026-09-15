@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -124,14 +124,14 @@ selector junto a los de casos de uso. El kind use-case no se rompe.
 
 ## Criterios de aceptación
 
-- [ ] Documento secuencia vacío se abre con paleta y lienzo propios.
-- [ ] Crear/mover/borrar lifelines y mensajes; self-message visible.
-- [ ] Inspector y selección alineados con el modelo.
-- [ ] Nuevo con kind Secuencia añade a la biblioteca.
-- [ ] Export PNG del diagrama secuencia no incluye shell.
-- [ ] Casos de uso: paleta y matriz del MVP intactas al volver al
+- [x] Documento secuencia vacío se abre con paleta y lienzo propios.
+- [x] Crear/mover/borrar lifelines y mensajes; self-message visible.
+- [x] Inspector y selección alineados con el modelo.
+- [x] Nuevo con kind Secuencia añade a la biblioteca.
+- [x] Export PNG del diagrama secuencia no incluye shell.
+- [x] Casos de uso: paleta y matriz del MVP intactas al volver al
       documento use-case.
-- [ ] Iconos en addendum de marca; sin kit.
+- [x] Iconos en addendum de marca; sin kit.
 
 ## Tests
 
@@ -161,4 +161,22 @@ Módulo secuencia completo y acoplado al selector; use-case intacto.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-14. Módulo secuencia acoplado al selector: paleta
+Selección / Lifeline / Mensaje síncrono / Reply; nodos cabeza+stem;
+sync (continuo, punta llena) y reply (discontinuo, punta abierta);
+self-message en U; inspector con nombre, firma y extremos de mensaje
+de solo lectura. «Nuevo» elige Casos de uso o Secuencia y **añade** a
+la biblioteca. Iconos `lifeline` / `syncMessage` / `replyMessage` en
+el addendum de marca. PNG/JPG reutilizan `exportDiagram`; pin
+`html-to-image@1.11.11` intacto. Envelope 2.x no implementado
+(TASK-050): Guardar JSON de use-case sigue el envelope v1 (schema 1).
+
+Comandos: `npx vitest run src/editor src/domain` (337 passed).
+`npx playwright test --project=chromium` (67 passed).
+`npx tsc -b --pretty false`: app limpia; fallos previos en
+`e2e/include-extend.spec.ts` (`SVGPathElement` / `DOMPoint` sin DOM
+en `tsconfig.node.json`) — sucio anterior, no tocado.
+
+Desviación: el self-message E2E se crea con el formulario Conectar del
+inspector (React Flow no dispara `onConnect` al mismo nodo); el
+producto también intenta el gesto handle→handle vía `onConnectEnd`.

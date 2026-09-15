@@ -135,6 +135,34 @@ describe("serializeDocumentFile / parseDocumentFile", () => {
     });
   });
 
+  it("exporta un documento use-case schema 2 como envelope schema 1", () => {
+    const snapshot = createWorkspaceSnapshot({
+      createId: sequentialIds(40),
+      now: () => FIXED_NOW,
+    });
+    const entry = snapshot.documents[0];
+    if (entry === undefined) {
+      throw new Error("Falta el documento");
+    }
+    expect(entry.document.schemaVersion).toBe(2);
+
+    const parsedJson: unknown = JSON.parse(
+      serializeDocumentFile(entry.document, VIEW),
+    );
+    expect(parsedJson).toEqual(
+      expect.objectContaining({
+        format: DOCUMENT_FILE_FORMAT,
+        formatVersion: DOCUMENT_FILE_FORMAT_VERSION,
+        document: expect.objectContaining({
+          schemaVersion: 1,
+          kind: "use-case",
+        }),
+      }),
+    );
+    const parsed = parseDocumentFile(parsedJson);
+    expect(parsed.ok).toBe(true);
+  });
+
   it("acepta un envelope válido construido a mano", () => {
     const snapshot = sampleFileSnapshot();
     const file = toDocumentFile(snapshot.document, snapshot.view);

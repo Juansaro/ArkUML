@@ -62,13 +62,13 @@ test("arrastrar el mapa mueve el viewport sin mutar el documento ni el historial
   );
   const after = parseSnapshot(afterRaw);
   expect(Object.keys(after.snapshot).sort()).toEqual([
-    "document",
+    "activeDocumentId",
+    "documents",
     "storageVersion",
-    "view",
   ]);
-  expect(after.document.schemaVersion).toBe(1);
+  expect(after.document.schemaVersion).toBe(2);
   expect(after.document).toEqual(before.document);
-  expect(after.snapshot.view).not.toEqual(before.snapshot.view);
+  expect(after.view).not.toEqual(before.view);
 
   const styleAfterPan = await viewport.getAttribute("style");
   await page.keyboard.press("ControlOrMeta+z");
@@ -94,9 +94,7 @@ test("el mapa muestra el plano completo y se duplica al ampliar", async ({
   await expect(expandChrome).toHaveCSS("opacity", "1");
   await expect(expand).toBeVisible();
 
-  await expect(
-    minimap.locator('[data-minimap-kind="actor"]'),
-  ).toHaveCount(1);
+  await expect(minimap.locator('[data-minimap-kind="actor"]')).toHaveCount(1);
   const svg = minimap.locator("svg.react-flow__minimap-svg");
   const mask = minimap.locator(".react-flow__minimap-mask");
   await expect(mask).toBeVisible();
@@ -130,9 +128,9 @@ test("el mapa muestra el plano completo y se duplica al ampliar", async ({
     { steps: 8 },
   );
   await page.mouse.up({ button: "middle" });
-  await expect.poll(async () => svg.getAttribute("viewBox")).not.toBe(
-    viewBoxBeforePan,
-  );
+  await expect
+    .poll(async () => svg.getAttribute("viewBox"))
+    .not.toBe(viewBoxBeforePan);
 
   await page.getByRole("button", { name: "Alejar" }).click();
   await page.getByRole("button", { name: "Alejar" }).click();
@@ -142,9 +140,7 @@ test("el mapa muestra el plano completo y se duplica al ampliar", async ({
   expect(zoomedOutHole.width * zoomedOutHole.height).toBeGreaterThan(
     zoomedInHole.width * zoomedInHole.height,
   );
-  await expect(
-    minimap.locator('[data-minimap-kind="actor"]'),
-  ).toHaveCount(1);
+  await expect(minimap.locator('[data-minimap-kind="actor"]')).toHaveCount(1);
 
   await minimap.hover();
   const before = await minimap.boundingBox();
@@ -217,6 +213,7 @@ function parseMaskHole(path: string | null): { width: number; height: number } {
 function parseSnapshot(raw: string | null): {
   snapshot: Record<string, unknown>;
   document: { schemaVersion: number };
+  view: unknown;
 } {
   if (raw === null) {
     throw new Error("Falta el workspace");
@@ -226,7 +223,16 @@ function parseSnapshot(raw: string | null): {
     throw new Error("Workspace inválido");
   }
   const record = snapshot as Record<string, unknown>;
-  const document = record.document;
+  const documents = record.documents;
+  if (!Array.isArray(documents) || documents.length === 0) {
+    throw new Error("Falta schemaVersion");
+  }
+  const entry = documents[0];
+  if (typeof entry !== "object" || entry === null) {
+    throw new Error("Falta schemaVersion");
+  }
+  const entryRecord = entry as Record<string, unknown>;
+  const document = entryRecord.document;
   if (
     typeof document !== "object" ||
     document === null ||
@@ -238,5 +244,6 @@ function parseSnapshot(raw: string | null): {
   return {
     snapshot: record,
     document: document as { schemaVersion: number },
+    view: entryRecord.view,
   };
 }

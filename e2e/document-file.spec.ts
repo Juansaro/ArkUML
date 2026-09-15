@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { downloadBytes, canvasElementName, placeElement } from "./support.ts";
+import {
+  downloadBytes,
+  canvasElementName,
+  createNewDiagram,
+  placeElement,
+} from "./support.ts";
 
 const STORAGE_KEY = "arkuml:workspace:v1";
 const INVALID_MESSAGE = "El archivo no es un documento ArkUML válido.";
@@ -60,13 +65,9 @@ test.describe("archivo JSON de usuario", () => {
     expect(parsed).not.toHaveProperty("storageVersion");
     expect(parsed).not.toHaveProperty("history");
 
-    await page.getByRole("button", { name: "Nuevo" }).click();
-    const newDialog = page.getByRole("dialog", { name: "Nuevo diagrama" });
-    await expect(newDialog).toBeVisible();
-    await newDialog
-      .getByRole("button", { name: "Crear diagrama nuevo" })
-      .click();
+    await createNewDiagram(page, "Casos de uso");
     await expect(canvasElementName(page, "Actor")).toHaveCount(0);
+    await page.keyboard.press("ControlOrMeta+s");
 
     await page.getByTestId("document-file-input").setInputFiles({
       name: "Diagrama de casos de uso.arkuml.json",
@@ -99,15 +100,11 @@ test.describe("archivo JSON de usuario", () => {
           typeof snapshot !== "object" ||
           snapshot === null ||
           !("storageVersion" in snapshot) ||
-          !("document" in snapshot)
+          !("documents" in snapshot)
         ) {
           return false;
         }
-        const document = snapshot.document;
-        if (typeof document !== "object" || document === null) {
-          return false;
-        }
-        return JSON.stringify(document).includes("Actor");
+        return JSON.stringify(snapshot.documents).includes("Actor");
       })
       .toBe(true);
   });
@@ -116,7 +113,6 @@ test.describe("archivo JSON de usuario", () => {
     page,
   }) => {
     await page.goto("/");
-    const canvas = page.getByTestId("diagram-canvas");
     await placeElement(page, "Actor", { x: 80, y: 480 }, "Actor");
     await page.keyboard.press("ControlOrMeta+s");
     await expect(page.getByTestId("save-status")).toHaveAttribute(

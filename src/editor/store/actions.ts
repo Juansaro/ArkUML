@@ -1,8 +1,16 @@
 import type { StoreApi } from "zustand/vanilla";
-import { DEFAULT_VIEWPORT } from "../../domain/diagram/defaults.ts";
-import type { DiagramFactoryDeps } from "../../domain/diagram/factories.ts";
+import {
+  DEFAULT_VIEWPORT,
+  SEQUENCE_DOCUMENT_KIND,
+} from "../../domain/diagram/defaults.ts";
+import {
+  createDiagramDocument,
+  createEmptySequenceDocument,
+  type DiagramFactoryDeps,
+} from "../../domain/diagram/factories.ts";
 import type {
   DiagramDocument,
+  DocumentKind,
   Geometry,
   Result,
   Viewport,
@@ -11,14 +19,17 @@ import type {
 } from "../../domain/diagram/model.ts";
 import {
   createElement,
+  createLifeline as createLifelineOperation,
   createRelationship,
   deleteElements as deleteElementsOperation,
   deleteRelationships as deleteRelationshipsOperation,
   duplicateElements as duplicateElementsOperation,
   insertElementCopies as insertElementCopiesOperation,
   moveElements,
+  moveMessage as moveMessageOperation,
   reconnectRelationship as reconnectRelationshipOperation,
   renameElement as renameElementOperation,
+  renameRelationship as renameRelationshipOperation,
   reparentUseCase as reparentUseCaseOperation,
   resizeBoundary,
   type CreateElementInput,
@@ -38,6 +49,7 @@ import type {
   SelectionState,
   UiState,
 } from "./editorStore.ts";
+import { isToolForDocumentKind } from "../diagramKinds.ts";
 import {
   emptyHistory,
   recordMutation,
@@ -63,8 +75,18 @@ export type EditorActions = {
     name: string;
     geometry: Geometry;
   }) => Result<DiagramDocument>;
+  createLifeline: (input: {
+    name: string;
+    geometry?: Geometry;
+    stemLength?: number;
+  }) => Result<DiagramDocument>;
   renameElement: (elementId: string, name: string) => Result<DiagramDocument>;
+  renameRelationship: (
+    relationshipId: string,
+    name: string,
+  ) => Result<DiagramDocument>;
   commitMove: (moves: readonly ElementMove[]) => Result<DiagramDocument>;
+  moveMessage: (input: { id: string; y: number }) => Result<DiagramDocument>;
   commitResize: (input: {
     id: string;
     geometry: Geometry;
@@ -104,6 +126,7 @@ export type EditorActions = {
   hydrateWorkspace: (document: DiagramDocument, viewport?: Viewport) => void;
   hydrateWorkspaceSnapshot: (snapshot: WorkspaceSnapshot) => void;
   addDocument: (document: DiagramDocument, viewport?: Viewport) => boolean;
+  addNewDocument: (kind?: DocumentKind) => boolean;
   activateDocument: (documentId: string) => boolean;
   deleteDocument: (documentId: string) => boolean;
 };
@@ -155,12 +178,20 @@ export function createEditorActions(
           deps,
         ),
       ),
+    createLifeline: (input) =>
+      apply((document) => createLifelineOperation(document, input, deps)),
     renameElement: (elementId, name) =>
       apply((document) =>
         renameElementOperation(document, elementId, name, deps),
       ),
+    renameRelationship: (relationshipId, name) =>
+      apply((document) =>
+        renameRelationshipOperation(document, relationshipId, name, deps),
+      ),
     commitMove: (moves) =>
       apply((document) => moveElements(document, moves, deps)),
+    moveMessage: (input) =>
+      apply((document) => moveMessageOperation(document, input, deps)),
     commitResize: (input) =>
       apply((document) => resizeBoundary(document, input, deps)),
     reparentUseCase: (useCaseId, parentId) =>
@@ -337,7 +368,10 @@ export function createEditorActions(
       });
     },
     setTool: (tool) => {
-      set({ tool });
+      const state = get();
+      set({
+        tool: isToolForDocumentKind(state.document.kind, tool) ? tool : "select",
+      });
     },
     setHover: (hover) => {
       set({
@@ -400,6 +434,7 @@ export function createEditorActions(
           editingElementId: undefined,
         },
         clipboard: EMPTY_CLIPBOARD,
+        tool: "select",
       });
     },
     hydrateWorkspaceSnapshot: (snapshot) => {
@@ -433,6 +468,7 @@ export function createEditorActions(
           editingElementId: undefined,
         },
         clipboard: EMPTY_CLIPBOARD,
+        tool: "select",
       });
     },
     addDocument: (document, viewport) => {
@@ -467,8 +503,18 @@ export function createEditorActions(
           message: undefined,
           editingElementId: undefined,
         },
+        tool: "select",
       });
       return true;
+    },
+    addNewDocument: (kind) => {
+      const state = get();
+      const nextKind = kind ?? state.document.kind;
+      const document =
+        nextKind === SEQUENCE_DOCUMENT_KIND
+          ? createEmptySequenceDocument(deps)
+          : createDiagramDocument(deps);
+      return get().addDocument(document);
     },
     activateDocument: (documentId) => {
       const state = get();
@@ -504,6 +550,7 @@ export function createEditorActions(
           message: undefined,
           editingElementId: undefined,
         },
+        tool: "select",
       });
       return true;
     },
@@ -559,6 +606,7 @@ export function createEditorActions(
           message: undefined,
           editingElementId: undefined,
         },
+        tool: "select",
       });
       return true;
     },

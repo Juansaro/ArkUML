@@ -3,11 +3,15 @@ import { ToolButton } from "../common/ToolButton.tsx";
 import type { IconName } from "../common/icons.tsx";
 import {
   BOUNDARY_EXISTS_REASON,
-  PALETTE_ELEMENT_TOOLS,
-  PALETTE_RELATIONSHIP_TOOLS,
   PALETTE_SELECT_TOOL,
+  paletteElementTools,
+  paletteRelationshipTools,
 } from "./paletteTools.ts";
-import { selectHasSystemBoundary, selectTool } from "../../store/selectors.ts";
+import {
+  selectDocumentKind,
+  selectHasSystemBoundary,
+  selectTool,
+} from "../../store/selectors.ts";
 import {
   useEditorStore,
   useEditorStoreApi,
@@ -15,12 +19,7 @@ import {
 import type { EditorTool } from "../../store/editorStore.ts";
 import styles from "./Palette.module.css";
 
-const PALETTE_ICONS: Record<
-  | (typeof PALETTE_SELECT_TOOL)["id"]
-  | (typeof PALETTE_ELEMENT_TOOLS)[number]["id"]
-  | (typeof PALETTE_RELATIONSHIP_TOOLS)[number]["id"],
-  IconName
-> = {
+const PALETTE_ICONS: Record<string, IconName> = {
   select: "select",
   actor: "actor",
   "use-case": "useCase",
@@ -28,14 +27,12 @@ const PALETTE_ICONS: Record<
   association: "association",
   include: "include",
   extend: "extend",
+  lifeline: "lifeline",
+  "sync-message": "syncMessage",
+  "reply-message": "replyMessage",
 };
 
-const PALETTE_DESCRIPTIONS: Record<
-  | (typeof PALETTE_SELECT_TOOL)["id"]
-  | (typeof PALETTE_ELEMENT_TOOLS)[number]["id"]
-  | (typeof PALETTE_RELATIONSHIP_TOOLS)[number]["id"],
-  string
-> = {
+const PALETTE_DESCRIPTIONS: Record<string, string> = {
   select:
     "Seleccionar elementos y relaciones. Copiar, pegar o eliminar lo seleccionado.",
   actor: "Crear actor.",
@@ -46,7 +43,18 @@ const PALETTE_DESCRIPTIONS: Record<
     "Origen: caso que incluye. Destino: caso incluido. Arrastra del origen al destino; el sentido no se invierte.",
   extend:
     "Origen: caso que extiende. Destino: caso base. Arrastra del origen al destino; el sentido no se invierte.",
+  lifeline: "Crear línea de vida.",
+  "sync-message": "Mensaje síncrono (llamada).",
+  "reply-message": "Mensaje de respuesta.",
 };
+
+function paletteIcon(id: string): IconName {
+  return PALETTE_ICONS[id] ?? "select";
+}
+
+function paletteDescription(id: string): string {
+  return PALETTE_DESCRIPTIONS[id] ?? "";
+}
 
 type PaletteProps = {
   headingId: string;
@@ -55,7 +63,10 @@ type PaletteProps = {
 export function Palette({ headingId }: PaletteProps) {
   const store = useEditorStoreApi();
   const tool = useEditorStore(selectTool);
+  const kind = useEditorStore(selectDocumentKind);
   const hasBoundary = useEditorStore(selectHasSystemBoundary);
+  const elementTools = paletteElementTools(kind);
+  const relationshipTools = paletteRelationshipTools(kind);
 
   function selectElementTool(next: EditorTool) {
     store.getState().setTool(tool === next ? "select" : next);
@@ -71,9 +82,9 @@ export function Palette({ headingId }: PaletteProps) {
           <li>
             <ToolButton
               variant="row"
-              icon={PALETTE_ICONS[PALETTE_SELECT_TOOL.id]}
+              icon={paletteIcon(PALETTE_SELECT_TOOL.id)}
               label={PALETTE_SELECT_TOOL.label}
-              description={PALETTE_DESCRIPTIONS[PALETTE_SELECT_TOOL.id]}
+              description={paletteDescription(PALETTE_SELECT_TOOL.id)}
               placement="right"
               pressed={tool === PALETTE_SELECT_TOOL.id}
               onClick={() => {
@@ -86,11 +97,11 @@ export function Palette({ headingId }: PaletteProps) {
       <section className={styles.group}>
         <h3 className={styles.groupTitle}>Elementos</h3>
         <ul className={styles.list}>
-          {PALETTE_ELEMENT_TOOLS.map((item) => (
+          {elementTools.map((item) => (
             <li key={item.id}>
               {item.id === "system-boundary" && hasBoundary ? (
                 <InertButton
-                  icon={PALETTE_ICONS[item.id]}
+                  icon={paletteIcon(item.id)}
                   reason={BOUNDARY_EXISTS_REASON}
                 >
                   {item.label}
@@ -98,9 +109,9 @@ export function Palette({ headingId }: PaletteProps) {
               ) : (
                 <ToolButton
                   variant="row"
-                  icon={PALETTE_ICONS[item.id]}
+                  icon={paletteIcon(item.id)}
                   label={item.label}
-                  description={PALETTE_DESCRIPTIONS[item.id]}
+                  description={paletteDescription(item.id)}
                   placement="right"
                   pressed={tool === item.id}
                   onClick={() => {
@@ -115,14 +126,16 @@ export function Palette({ headingId }: PaletteProps) {
       <section className={styles.group}>
         <h3 className={styles.groupTitle}>Relaciones</h3>
         <ul className={styles.list}>
-          {PALETTE_RELATIONSHIP_TOOLS.map((item) => (
+          {relationshipTools.map((item) => (
             <li key={item.id}>
               <ToolButton
                 variant="row"
-                icon={PALETTE_ICONS[item.id]}
+                icon={paletteIcon(item.id)}
                 label={item.label}
                 description={
-                  "hint" in item ? item.hint : PALETTE_DESCRIPTIONS[item.id]
+                  "hint" in item && item.hint !== undefined
+                    ? item.hint
+                    : paletteDescription(item.id)
                 }
                 placement="right"
                 pressed={tool === item.id}

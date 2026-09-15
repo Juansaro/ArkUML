@@ -9,6 +9,10 @@ type ElementNameFieldProps = {
   className?: string;
   autoFocus?: boolean;
   showError?: boolean;
+  commitName?: (
+    id: string,
+    name: string,
+  ) => { ok: true } | { ok: false; error: { message: string } };
   onCommitted?: () => void;
   onCancel?: () => void;
   onInvalidBlur?: () => void;
@@ -21,6 +25,7 @@ export function ElementNameField({
   className,
   autoFocus = false,
   showError = false,
+  commitName,
   onCommitted,
   onCancel,
   onInvalidBlur,
@@ -38,7 +43,9 @@ export function ElementNameField({
   }
 
   function commit(): boolean {
-    const result = store.getState().renameElement(elementId, draft);
+    const result = commitName
+      ? commitName(elementId, draft)
+      : store.getState().renameElement(elementId, draft);
     if (!result.ok) {
       setError(result.error.message);
       return false;

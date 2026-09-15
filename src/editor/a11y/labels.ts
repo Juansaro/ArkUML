@@ -10,6 +10,9 @@ export function elementTypeLabel(kind: DiagramElement["kind"]): string {
   if (kind === "use-case") {
     return "Caso de uso";
   }
+  if (kind === "lifeline") {
+    return "Lifeline";
+  }
   return "Límite del sistema";
 }
 
@@ -19,6 +22,12 @@ export function relationshipTypeLabel(kind: RelationshipKind): string {
   }
   if (kind === "include") {
     return "Include";
+  }
+  if (kind === "sync-message") {
+    return "Mensaje síncrono";
+  }
+  if (kind === "reply-message") {
+    return "Reply";
   }
   return "Extend";
 }

@@ -11,6 +11,7 @@ describe("accessible labels", () => {
     expect(elementTypeLabel("actor")).toBe("Actor");
     expect(elementTypeLabel("use-case")).toBe("Caso de uso");
     expect(elementTypeLabel("system-boundary")).toBe("Límite del sistema");
+    expect(elementTypeLabel("lifeline")).toBe("Lifeline");
     expect(elementAccessibleName({ kind: "actor", name: "Usuario" })).toBe(
       "Actor Usuario",
     );
@@ -23,6 +24,8 @@ describe("accessible labels", () => {
     expect(relationshipTypeLabel("association")).toBe("Asociación");
     expect(relationshipTypeLabel("include")).toBe("Include");
     expect(relationshipTypeLabel("extend")).toBe("Extend");
+    expect(relationshipTypeLabel("sync-message")).toBe("Mensaje síncrono");
+    expect(relationshipTypeLabel("reply-message")).toBe("Reply");
     expect(relationshipAccessibleName("association", "Usuario", "Login")).toBe(
       "Asociación entre Usuario y Login",
     );

@@ -1,4 +1,8 @@
-import { DEFAULT_BOUNDARY_GEOMETRY } from "../../domain/diagram/defaults.ts";
+import {
+  DEFAULT_BOUNDARY_GEOMETRY,
+  DEFAULT_LIFELINE_GEOMETRY,
+  DEFAULT_LIFELINE_WIDTH,
+} from "../../domain/diagram/defaults.ts";
 import type {
   DiagramDocument,
   Geometry,
@@ -12,6 +16,7 @@ export const CREATE_ELEMENT_TOOLS = [
   "actor",
   "use-case",
   "system-boundary",
+  "lifeline",
 ] as const;
 
 export type CreateElementTool = (typeof CREATE_ELEMENT_TOOLS)[number];
@@ -20,6 +25,7 @@ export const DEFAULT_ELEMENT_NAMES = {
   actor: "Actor",
   "use-case": "Caso de uso",
   "system-boundary": "Sistema",
+  lifeline: "Lifeline",
 } as const;
 
 export const DEFAULT_ELEMENT_SIZES: Record<
@@ -32,12 +38,21 @@ export const DEFAULT_ELEMENT_SIZES: Record<
     width: DEFAULT_BOUNDARY_GEOMETRY.width,
     height: DEFAULT_BOUNDARY_GEOMETRY.height,
   },
+  lifeline: {
+    width: DEFAULT_LIFELINE_GEOMETRY.width,
+    height: DEFAULT_LIFELINE_GEOMETRY.height,
+  },
 };
 
 export function isCreateElementTool(
   tool: EditorTool,
 ): tool is CreateElementTool {
-  return tool === "actor" || tool === "use-case" || tool === "system-boundary";
+  return (
+    tool === "actor" ||
+    tool === "use-case" ||
+    tool === "system-boundary" ||
+    tool === "lifeline"
+  );
 }
 
 export function nextDefaultName(
@@ -102,6 +117,16 @@ export function defaultPlacementPosition(
     return {
       x: originX - DEFAULT_ELEMENT_SIZES.actor.width - 48,
       y: originY + 40 + offset,
+    };
+  }
+
+  if (kind === "lifeline") {
+    const count = document.elements.filter(
+      (element) => element.kind === "lifeline",
+    ).length;
+    return {
+      x: count * (DEFAULT_LIFELINE_WIDTH + 40),
+      y: 0,
     };
   }
 
@@ -186,6 +211,13 @@ function createByKind(
 ): Result<DiagramDocument> {
   if (kind === "actor") {
     return state.createActor({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "lifeline") {
+    return state.createLifeline({
       name,
       geometry: geometryAt(kind, flowPosition),
     });

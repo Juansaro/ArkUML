@@ -3,6 +3,7 @@ export const ICON_NAMES = [
   "palette",
   "inspector",
   "newDiagram",
+  "deleteDiagram",
   "openFile",
   "saveJson",
   "undo",
@@ -20,6 +21,9 @@ export const ICON_NAMES = [
   "association",
   "include",
   "extend",
+  "lifeline",
+  "syncMessage",
+  "replyMessage",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -56,6 +60,16 @@ export function IconPaths({ name }: { name: IconName }) {
           <path d="M14 3v5h5" />
           <path d="M12 11v6" />
           <path d="M9 14h6" />
+        </>
+      );
+    case "deleteDiagram":
+      return (
+        <>
+          <path d="M5 7h14" />
+          <path d="M9 7V4h6v2" />
+          <path d="M8 7l1 13h6l1-13" />
+          <path d="M10 11v5" />
+          <path d="M14 11v5" />
         </>
       );
     case "openFile":
@@ -189,6 +203,27 @@ export function IconPaths({ name }: { name: IconName }) {
           <path d="M17 8h3.5" />
           <path d="M17 12h2.5" />
           <path d="M17 16h3.5" />
+        </>
+      );
+    case "lifeline":
+      return (
+        <>
+          <rect x="7" y="3" width="10" height="6" />
+          <path d="M12 9v12" strokeDasharray="2 2" />
+        </>
+      );
+    case "syncMessage":
+      return (
+        <>
+          <path d="M4 12h14" />
+          <path d="M15 8l5 4-5 4z" fill="currentColor" stroke="none" />
+        </>
+      );
+    case "replyMessage":
+      return (
+        <>
+          <path d="M4 12h14" strokeDasharray="3 2" />
+          <path d="M16 8l5 4-5 4" />
         </>
       );
   }

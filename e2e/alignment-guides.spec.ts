@@ -39,11 +39,11 @@ test("muestra guías al alinear un actor y las quita al soltar", async ({
   expect(raw).not.toBeNull();
   const snapshot: unknown = JSON.parse(raw ?? "");
   expect(snapshotKeys(snapshot).sort()).toEqual([
-    "document",
+    "activeDocumentId",
+    "documents",
     "storageVersion",
-    "view",
   ]);
-  expect(documentSchemaVersion(snapshot)).toBe(1);
+  expect(documentSchemaVersion(snapshot)).toBe(2);
 
   await page.keyboard.press("ControlOrMeta+z");
   await expect
@@ -119,45 +119,51 @@ type SeedOptions = {
 };
 
 async function seedWorkspace(page: Page, options: SeedOptions): Promise<void> {
-  const snapshot = {
-    storageVersion: 1,
-    document: {
-      schemaVersion: 1,
-      id: "aaaaaaaa-0000-4000-8000-000000000000",
-      kind: "use-case",
-      metadata: {
-        title: "Guías",
-        createdAt: "2026-09-09T00:00:00.000Z",
-        updatedAt: "2026-09-09T00:00:00.000Z",
-      },
-      elements: [
-        {
-          id: "aaaaaaaa-0000-4000-8000-000000000001",
-          kind: "system-boundary",
-          name: "Sistema",
-          geometry: { x: 0, y: 0, width: 640, height: 400 },
-        },
-        {
-          id: "aaaaaaaa-0000-4000-8000-000000000002",
-          kind: "actor",
-          name: "Ancla",
-          geometry: { x: 40, y: options.anclaY, width: 72, height: 112 },
-        },
-        {
-          id: "aaaaaaaa-0000-4000-8000-000000000003",
-          kind: "actor",
-          name: "Arrastre",
-          geometry: {
-            x: options.arrastreX,
-            y: options.arrastreY,
-            width: 72,
-            height: 112,
-          },
-        },
-      ],
-      relationships: [],
+  const document = {
+    schemaVersion: 2,
+    id: "aaaaaaaa-0000-4000-8000-000000000000",
+    kind: "use-case",
+    metadata: {
+      title: "Guías",
+      createdAt: "2026-09-09T00:00:00.000Z",
+      updatedAt: "2026-09-09T00:00:00.000Z",
     },
-    view: { x: 80, y: -24, zoom: 1 },
+    elements: [
+      {
+        id: "aaaaaaaa-0000-4000-8000-000000000001",
+        kind: "system-boundary",
+        name: "Sistema",
+        geometry: { x: 0, y: 0, width: 640, height: 400 },
+      },
+      {
+        id: "aaaaaaaa-0000-4000-8000-000000000002",
+        kind: "actor",
+        name: "Ancla",
+        geometry: { x: 40, y: options.anclaY, width: 72, height: 112 },
+      },
+      {
+        id: "aaaaaaaa-0000-4000-8000-000000000003",
+        kind: "actor",
+        name: "Arrastre",
+        geometry: {
+          x: options.arrastreX,
+          y: options.arrastreY,
+          width: 72,
+          height: 112,
+        },
+      },
+    ],
+    relationships: [],
+  };
+  const snapshot = {
+    storageVersion: 2,
+    activeDocumentId: document.id,
+    documents: [
+      {
+        document,
+        view: { x: 80, y: -24, zoom: 1 },
+      },
+    ],
   };
 
   await page.addInitScript(
@@ -193,10 +199,18 @@ function snapshotKeys(value: unknown): string[] {
 }
 
 function documentSchemaVersion(value: unknown): number | undefined {
-  if (typeof value !== "object" || value === null || !("document" in value)) {
+  if (typeof value !== "object" || value === null || !("documents" in value)) {
     return undefined;
   }
-  const document = value.document;
+  const documents = value.documents;
+  if (!Array.isArray(documents) || documents.length === 0) {
+    return undefined;
+  }
+  const entry = documents[0];
+  if (typeof entry !== "object" || entry === null || !("document" in entry)) {
+    return undefined;
+  }
+  const document = entry.document;
   if (
     typeof document !== "object" ||
     document === null ||

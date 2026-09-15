@@ -8,6 +8,8 @@ import {
   commitRelationship,
   connectionRejectionMessage,
   connectableEndpointOptions,
+  defaultMessageY,
+  isSequenceRelationshipTool,
   relationshipEndpointFieldLabels,
   type RelationshipTool,
 } from "../../tools/relationshipTool.ts";
@@ -48,6 +50,15 @@ export function ConnectForm({ kind }: ConnectFormProps) {
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSubmit) {
+      return;
+    }
+    if (isSequenceRelationshipTool(kind)) {
+      commitRelationship(store, {
+        kind,
+        sourceId: source,
+        targetId: selectedTarget,
+        y: defaultMessageY(document, source, selectedTarget),
+      });
       return;
     }
     commitRelationship(store, {

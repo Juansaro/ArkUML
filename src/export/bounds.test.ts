@@ -2,10 +2,16 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_BOUNDARY_GEOMETRY } from "../domain/diagram/defaults.ts";
 import {
   createDiagramDocument,
+  createEmptySequenceDocument,
   type IdFactory,
 } from "../domain/diagram/factories.ts";
 import type { Result } from "../domain/diagram/model.ts";
-import { createElement, deleteElements } from "../domain/diagram/operations.ts";
+import {
+  createElement,
+  createLifeline,
+  createRelationship,
+  deleteElements,
+} from "../domain/diagram/operations.ts";
 import {
   diagramContentBounds,
   evaluateExportScale,
@@ -112,6 +118,52 @@ describe("export bounds", () => {
       y: -32,
       width: 64,
       height: 64,
+    });
+  });
+
+  it("incluye la cabeza, el stem y los mensajes de secuencia", () => {
+    const createId = sequentialIds(40);
+    const deps = {
+      createId,
+      now: () => new Date("2026-09-07T12:00:00.000Z"),
+    };
+    const empty = createEmptySequenceDocument(deps);
+    const withA = expectOk(
+      createLifeline(
+        empty,
+        { name: "A", geometry: { x: 0, y: 0, width: 120, height: 40 } },
+        deps,
+      ),
+    );
+    const withB = expectOk(
+      createLifeline(
+        withA,
+        { name: "B", geometry: { x: 240, y: 0, width: 120, height: 40 } },
+        deps,
+      ),
+    );
+    const a = withB.elements[0];
+    const b = withB.elements[1];
+    if (a === undefined || b === undefined) {
+      throw new Error("Faltan lifelines");
+    }
+    const withMessage = expectOk(
+      createRelationship(
+        withB,
+        {
+          kind: "sync-message",
+          sourceId: a.id,
+          targetId: b.id,
+          y: 80,
+        },
+        deps,
+      ),
+    );
+    expect(diagramContentBounds(withMessage)).toEqual({
+      x: 0,
+      y: 0,
+      width: 360,
+      height: 320,
     });
   });
 

@@ -21,6 +21,9 @@ test("expone landmarks del shell", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "ArkUML", level: 1 }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("combobox", { name: "Diagrama activo" }),
+  ).toBeVisible();
 });
 
 test("drawers de paleta e inspector entre 768 y 1023 px", async ({ page }) => {

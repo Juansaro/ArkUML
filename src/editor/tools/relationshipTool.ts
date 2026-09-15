@@ -4,7 +4,11 @@ import type {
   DiagramElement,
   Result,
 } from "../../domain/diagram/model.ts";
-import { isUseCaseRelationship } from "../../domain/diagram/model.ts";
+import {
+  isLifeline,
+  isSequenceMessage,
+  isUseCaseRelationship,
+} from "../../domain/diagram/model.ts";
 import { canConnect } from "../../domain/diagram/rules.ts";
 import type {
   CreateRelationshipInput,
@@ -13,7 +17,13 @@ import type {
 import { elementAccessibleName } from "../a11y/labels.ts";
 import type { EditorStoreApi, EditorTool } from "../store/editorStore.ts";
 
-export const RELATIONSHIP_TOOLS = ["association", "include", "extend"] as const;
+export const RELATIONSHIP_TOOLS = [
+  "association",
+  "include",
+  "extend",
+  "sync-message",
+  "reply-message",
+] as const;
 
 export type RelationshipTool = (typeof RELATIONSHIP_TOOLS)[number];
 
@@ -29,7 +39,19 @@ export type RelationshipConnection = {
 const ANCHORS: readonly Anchor[] = ["top", "right", "bottom", "left"];
 
 export function isRelationshipTool(tool: EditorTool): tool is RelationshipTool {
-  return tool === "association" || tool === "include" || tool === "extend";
+  return (
+    tool === "association" ||
+    tool === "include" ||
+    tool === "extend" ||
+    tool === "sync-message" ||
+    tool === "reply-message"
+  );
+}
+
+export function isSequenceRelationshipTool(
+  tool: EditorTool,
+): tool is "sync-message" | "reply-message" {
+  return tool === "sync-message" || tool === "reply-message";
 }
 
 export function relationshipKindFromTool(
@@ -62,6 +84,12 @@ export function createdRelationshipAnnouncement(
   if (kind === "include") {
     return "Se creó include.";
   }
+  if (kind === "sync-message") {
+    return "Se creó el mensaje síncrono.";
+  }
+  if (kind === "reply-message") {
+    return "Se creó reply.";
+  }
   return "Se creó extend.";
 }
 
@@ -88,6 +116,12 @@ export function relationshipConnectionHelp(
   }
   if (tool === "extend") {
     return "Origen: caso que extiende. Destino: caso base. Arrastra del origen al destino; el sentido no se invierte.";
+  }
+  if (tool === "sync-message") {
+    return "Mensaje síncrono (llamada).";
+  }
+  if (tool === "reply-message") {
+    return "Mensaje de respuesta.";
   }
   return undefined;
 }
@@ -184,6 +218,9 @@ function isConnectableEndpoint(
   kind: RelationshipTool,
   element: DiagramElement,
 ): boolean {
+  if (kind === "sync-message" || kind === "reply-message") {
+    return isLifeline(element);
+  }
   if (element.kind === "system-boundary") {
     return false;
   }
@@ -222,7 +259,16 @@ export function isValidRelationshipConnection(
 export function relationshipInputFromConnection(
   kind: RelationshipTool,
   connection: RelationshipConnection,
+  y?: number,
 ): CreateRelationshipInput {
+  if (kind === "sync-message" || kind === "reply-message") {
+    return {
+      kind,
+      sourceId: connection.source,
+      targetId: connection.target,
+      y: y ?? 0,
+    };
+  }
   return {
     kind,
     sourceId: connection.source,
@@ -230,6 +276,30 @@ export function relationshipInputFromConnection(
     sourceAnchor: anchorFromHandle(connection.sourceHandle),
     targetAnchor: anchorFromHandle(connection.targetHandle),
   };
+}
+
+export function defaultMessageY(
+  document: DiagramDocument,
+  sourceId: string,
+  targetId: string,
+): number {
+  const source = document.elements.find((element) => element.id === sourceId);
+  const target = document.elements.find((element) => element.id === targetId);
+  const bottoms: number[] = [];
+  if (source !== undefined && isLifeline(source)) {
+    bottoms.push(source.geometry.y + source.geometry.height);
+  }
+  if (target !== undefined && isLifeline(target)) {
+    bottoms.push(target.geometry.y + target.geometry.height);
+  }
+  const minY = bottoms.length === 0 ? 0 : Math.max(...bottoms);
+  const existing = document.relationships.flatMap((relationship) =>
+    isSequenceMessage(relationship) ? [relationship.y] : [],
+  );
+  if (existing.length === 0) {
+    return minY;
+  }
+  return Math.max(minY, Math.max(...existing) + 24);
 }
 
 export function announceInvalidConnection(
@@ -266,12 +336,14 @@ export function commitRelationship(
   const created = result.value.relationships.find(
     (relationship) => !idsBefore.has(relationship.id),
   );
-  if (created !== undefined && isUseCaseRelationship(created)) {
+  if (created !== undefined) {
     store.getState().setSelection({
       elementIds: [],
       relationshipIds: [created.id],
     });
-    store.getState().setMessage(createdRelationshipAnnouncement(created.kind));
+    if (isUseCaseRelationship(created) || isSequenceMessage(created)) {
+      store.getState().setMessage(createdRelationshipAnnouncement(created.kind));
+    }
     store.getState().setTool("select");
   }
   return result;

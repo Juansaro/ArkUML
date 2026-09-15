@@ -83,11 +83,14 @@ describe("DiagramCanvas", () => {
       "actor",
       "use-case",
       "system-boundary",
+      "lifeline",
     ]);
     expect(Object.keys(edgeTypes)).toEqual([
       "association",
       "include",
       "extend",
+      "sync-message",
+      "reply-message",
     ]);
   });
 

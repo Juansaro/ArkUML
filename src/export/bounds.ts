@@ -3,11 +3,14 @@ import type {
   DiagramElement,
   Geometry,
 } from "../domain/diagram/model.ts";
+import { isLifeline, isSequenceMessage } from "../domain/diagram/model.ts";
 
 export const EXPORT_PADDING = 32;
 export const MAX_EXPORT_SIDE = 4096;
 export const MAX_EXPORT_PIXELS = 16_000_000;
 export const EXPORT_SCALES = [1, 2] as const;
+const SELF_MESSAGE_EXTENT_X = 40;
+const SELF_MESSAGE_EXTENT_Y = 24;
 
 export type ExportScale = (typeof EXPORT_SCALES)[number];
 
@@ -26,7 +29,7 @@ export type ExportScaleCheck = {
 };
 
 export function diagramContentBounds(document: DiagramDocument): ExportBounds {
-  if (document.elements.length === 0) {
+  if (document.elements.length === 0 && document.relationships.length === 0) {
     return { x: 0, y: 0, width: 0, height: 0 };
   }
 
@@ -34,13 +37,59 @@ export function diagramContentBounds(document: DiagramDocument): ExportBounds {
   let minY = Number.POSITIVE_INFINITY;
   let maxX = Number.NEGATIVE_INFINITY;
   let maxY = Number.NEGATIVE_INFINITY;
+  let found = false;
 
-  for (const element of document.elements) {
-    const box = absoluteElementGeometry(element, document);
+  function includeBox(box: Geometry): void {
+    found = true;
     minX = Math.min(minX, box.x);
     minY = Math.min(minY, box.y);
     maxX = Math.max(maxX, box.x + box.width);
     maxY = Math.max(maxY, box.y + box.height);
+  }
+
+  for (const element of document.elements) {
+    includeBox(absoluteElementGeometry(element, document));
+  }
+
+  for (const relationship of document.relationships) {
+    if (!isSequenceMessage(relationship)) {
+      continue;
+    }
+    const source = document.elements.find(
+      (element) => element.id === relationship.sourceId,
+    );
+    if (source === undefined || !isLifeline(source)) {
+      includeBox({ x: 0, y: relationship.y, width: 0, height: 0 });
+      continue;
+    }
+    const stemX = source.geometry.x + source.geometry.width / 2;
+    if (relationship.sourceId === relationship.targetId) {
+      includeBox({
+        x: stemX,
+        y: relationship.y,
+        width: SELF_MESSAGE_EXTENT_X,
+        height: SELF_MESSAGE_EXTENT_Y,
+      });
+      continue;
+    }
+    const target = document.elements.find(
+      (element) => element.id === relationship.targetId,
+    );
+    if (target === undefined || !isLifeline(target)) {
+      includeBox({ x: stemX, y: relationship.y, width: 0, height: 0 });
+      continue;
+    }
+    const targetX = target.geometry.x + target.geometry.width / 2;
+    includeBox({
+      x: Math.min(stemX, targetX),
+      y: relationship.y,
+      width: Math.abs(targetX - stemX),
+      height: 0,
+    });
+  }
+
+  if (!found) {
+    return { x: 0, y: 0, width: 0, height: 0 };
   }
 
   return {
@@ -115,6 +164,15 @@ function absoluteElementGeometry(
   element: DiagramElement,
   document: DiagramDocument,
 ): Geometry {
+  if (isLifeline(element)) {
+    return {
+      x: element.geometry.x,
+      y: element.geometry.y,
+      width: element.geometry.width,
+      height: element.geometry.height + element.stemLength,
+    };
+  }
+
   if (element.kind !== "use-case" || element.parentId === undefined) {
     return copyGeometry(element.geometry);
   }
