@@ -1,15 +1,18 @@
 import type { StoreApi } from "zustand/vanilla";
 import {
   DEFAULT_VIEWPORT,
+  CLASS_DOCUMENT_KIND,
   SEQUENCE_DOCUMENT_KIND,
 } from "../../domain/diagram/defaults.ts";
 import {
   createDiagramDocument,
+  createEmptyClassDocument,
   createEmptySequenceDocument,
   createUuid,
   type DiagramFactoryDeps,
 } from "../../domain/diagram/factories.ts";
 import type {
+  AssociationMultiplicity,
   DiagramDocument,
   DocumentKind,
   Geometry,
@@ -21,6 +24,7 @@ import type {
 import {
   createElement,
   createLifeline as createLifelineOperation,
+  createClass as createClassOperation,
   createRelationship,
   deleteElements as deleteElementsOperation,
   deleteRelationships as deleteRelationshipsOperation,
@@ -33,6 +37,8 @@ import {
   renameRelationship as renameRelationshipOperation,
   reparentUseCase as reparentUseCaseOperation,
   resizeBoundary,
+  setAssociationEnds as setAssociationEndsOperation,
+  setClassMembers as setClassMembersOperation,
   type CreateElementInput,
   type CreateRelationshipInput,
   type ElementCopy,
@@ -81,6 +87,10 @@ export type EditorActions = {
     geometry?: Geometry;
     stemLength?: number;
   }) => Result<DiagramDocument>;
+  createClass: (input: {
+    name: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
   renameElement: (elementId: string, name: string) => Result<DiagramDocument>;
   renameRelationship: (
     relationshipId: string,
@@ -98,6 +108,16 @@ export type EditorActions = {
   ) => Result<DiagramDocument>;
   connect: (input: CreateRelationshipInput) => Result<DiagramDocument>;
   reconnect: (input: ReconnectRelationshipInput) => Result<DiagramDocument>;
+  setClassMembers: (input: {
+    id: string;
+    attributes: readonly string[];
+    operations: readonly string[];
+  }) => Result<DiagramDocument>;
+  setAssociationEnds: (input: {
+    id: string;
+    sourceMultiplicity: AssociationMultiplicity;
+    targetMultiplicity: AssociationMultiplicity;
+  }) => Result<DiagramDocument>;
   deleteElements: (elementIds: readonly string[]) => Result<DiagramDocument>;
   deleteRelationships: (
     relationshipIds: readonly string[],
@@ -182,6 +202,8 @@ export function createEditorActions(
       ),
     createLifeline: (input) =>
       apply((document) => createLifelineOperation(document, input, deps)),
+    createClass: (input) =>
+      apply((document) => createClassOperation(document, input, deps)),
     renameElement: (elementId, name) =>
       apply((document) =>
         renameElementOperation(document, elementId, name, deps),
@@ -206,6 +228,10 @@ export function createEditorActions(
       apply((document) =>
         reconnectRelationshipOperation(document, input, deps),
       ),
+    setClassMembers: (input) =>
+      apply((document) => setClassMembersOperation(document, input, deps)),
+    setAssociationEnds: (input) =>
+      apply((document) => setAssociationEndsOperation(document, input, deps)),
     deleteElements: (elementIds) =>
       apply((document) => deleteElementsOperation(document, elementIds, deps)),
     deleteRelationships: (relationshipIds) =>
@@ -525,7 +551,9 @@ export function createEditorActions(
       const document =
         nextKind === SEQUENCE_DOCUMENT_KIND
           ? createEmptySequenceDocument(deps)
-          : createDiagramDocument(deps);
+          : nextKind === CLASS_DOCUMENT_KIND
+            ? createEmptyClassDocument(deps)
+            : createDiagramDocument(deps);
       return get().addDocument(document);
     },
     activateDocument: (documentId) => {

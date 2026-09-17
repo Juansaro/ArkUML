@@ -1,15 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
   createDiagramDocument,
+  createEmptyClassDocument,
   createEmptySequenceDocument,
   type IdFactory,
 } from "../../domain/diagram/factories.ts";
 import type { DiagramDocument, Geometry } from "../../domain/diagram/model.ts";
 import {
+  createClass,
   createElement,
   createLifeline,
   createRelationship,
   moveElements,
+  setClassMembers,
 } from "../../domain/diagram/operations.ts";
 import { createPerformanceDocument } from "../../test/performanceFixture.ts";
 import { mapDocumentToReactFlow } from "./reactFlowMapper.ts";
@@ -410,5 +413,87 @@ describe("mapDocumentToReactFlow", () => {
       target: a.id,
       data: { kind: "reply-message", name: "", y: 120 },
     });
+  });
+
+  it("proyecta clases con compartimentos y relaciones con multiplicidad", () => {
+    const deps = { createId: sequentialIds(90), now: () => CREATED_AT };
+    const empty = createEmptyClassDocument(deps);
+    const withPedido = expectOk(
+      createClass(empty, { name: "Pedido", geometry: { x: 0, y: 0, width: 180, height: 96 } }, deps),
+    );
+    const withCliente = expectOk(
+      createClass(
+        withPedido,
+        { name: "Cliente", geometry: { x: 280, y: 0, width: 180, height: 96 } },
+        deps,
+      ),
+    );
+    const pedido = withCliente.elements[0];
+    const cliente = withCliente.elements[1];
+    if (pedido === undefined || cliente === undefined) {
+      throw new Error("Faltan clases");
+    }
+    const withMembers = expectOk(
+      setClassMembers(
+        withCliente,
+        { id: pedido.id, attributes: ["id: UUID"], operations: ["total()"] },
+        deps,
+      ),
+    );
+    const withAssoc = expectOk(
+      createRelationship(
+        withMembers,
+        {
+          kind: "class-association",
+          sourceId: pedido.id,
+          targetId: cliente.id,
+        },
+        deps,
+      ),
+    );
+    const withGen = expectOk(
+      createRelationship(
+        withAssoc,
+        {
+          kind: "generalization",
+          sourceId: pedido.id,
+          targetId: cliente.id,
+        },
+        deps,
+      ),
+    );
+
+    const { nodes, edges } = mapDocumentToReactFlow(withGen, {
+      elementIds: [pedido.id],
+      relationshipIds: [withGen.relationships[0]?.id ?? ""],
+    });
+
+    expect(nodes[0]).toMatchObject({
+      type: "class",
+      width: 180,
+      height: 96,
+      data: {
+        kind: "class",
+        name: "Pedido",
+        attributes: ["id: UUID"],
+        operations: ["total()"],
+      },
+      selected: true,
+    });
+    expect(edges[0]).toMatchObject({
+      type: "class-association",
+      reconnectable: false,
+      data: {
+        kind: "class-association",
+        sourceMultiplicity: "1",
+        targetMultiplicity: "1",
+      },
+      selected: true,
+    });
+    expect(edges[1]).toMatchObject({
+      type: "generalization",
+      data: { kind: "generalization" },
+    });
+    expect(edges[1]?.data).not.toHaveProperty("sourceMultiplicity");
   });
 });

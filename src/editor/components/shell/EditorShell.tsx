@@ -18,6 +18,7 @@ import {
 } from "../../../domain/diagram/documentFile.ts";
 import { createDiagramDocument } from "../../../domain/diagram/factories.ts";
 import type { DocumentKind } from "../../../domain/diagram/model.ts";
+import { CREATABLE_DOCUMENT_KINDS } from "../DiagramSwitcher/library.ts";
 import { downloadBlob } from "../../../export/download.ts";
 import { useCompactLayout } from "../../a11y/useCompactLayout.ts";
 import { DiagramCanvas } from "../../canvas/DiagramCanvas.tsx";
@@ -404,10 +405,7 @@ function EditorShellLayout({ zoomPercent }: EditorShellProps) {
         {newDiagramOpen ? (
           <NewDiagramDialog
             description="Se añade a la biblioteca y queda como diagrama activo."
-            kindOptions={[
-              { value: "use-case", label: "Casos de uso" },
-              { value: "sequence", label: "Secuencia" },
-            ]}
+            kindOptions={[...CREATABLE_DOCUMENT_KINDS]}
             defaultKind={documentKind}
             onCancel={cancelDialog}
             onConfirm={confirmNewDiagram}

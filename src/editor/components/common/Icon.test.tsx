@@ -71,4 +71,25 @@ describe("Icon", () => {
     );
     expect(document.querySelector("svg")?.innerHTML).toContain("M16 8l5 4-5 4");
   });
+
+  it("pinta los glifos de clases con compartimentos, diamante y triángulo", () => {
+    const { rerender } = render(<Icon name="class" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M5 4h14v16H5z");
+    expect(document.querySelector("svg")?.innerHTML).toContain("M5 9h14");
+    rerender(<Icon name="classAssociation" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M3 8h5v8H3z");
+    rerender(<Icon name="aggregation" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M3 12l4-4 4 4-4 4z",
+    );
+    expect(document.querySelector("svg")?.innerHTML).not.toContain(
+      'fill="currentColor"',
+    );
+    rerender(<Icon name="composition" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      'fill="currentColor"',
+    );
+    rerender(<Icon name="generalization" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M13 7l8 5-8 5z");
+  });
 });

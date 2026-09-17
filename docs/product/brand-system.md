@@ -387,11 +387,56 @@ estereotipo del diagrama.
 <path d="M16 8l5 4-5 4" />
 ```
 
+**`class`** — rectángulo de tres compartimentos:
+
+```text
+<path d="M5 4h14v16H5z" />
+<path d="M5 9h14" />
+<path d="M5 14h14" />
+```
+
+**`classAssociation`** — segmento continuo entre dos clasificadores
+(rectángulos, no los círculos de `association`):
+
+```text
+<path d="M3 8h5v8H3z" />
+<path d="M16 8h5v8h-5z" />
+<path d="M8 12h8" />
+```
+
+**`aggregation`** — diamante vacío en el origen + trazo:
+
+```text
+<path d="M3 12l4-4 4 4-4 4z" />
+<path d="M11 12h10" />
+```
+
+**`composition`** — diamante relleno en el origen + trazo:
+
+```text
+<path d="M3 12l4-4 4 4-4 4z" fill="currentColor" stroke="none" />
+<path d="M11 12h10" />
+```
+
+**`generalization`** — trazo + triángulo vacío hacia el general:
+
+```text
+<path d="M3 12h10" />
+<path d="M13 7l8 5-8 5z" />
+```
+
+Agregación y composición no se distinguen solo por color: vacío vs
+relleno. Generalization no se distingue solo por la flecha de Include:
+el triángulo cerrado permanece visible. Estos iconos no sustituyen
+compartimentos, diamante ni triángulo del lienzo.
+
 Los ids de `Icon` van en camelCase. En paleta se conectan a los `EditorTool`
 existentes sin renombrar ni el icono ni la herramienta: `useCase` →
 `use-case`, `systemBoundary` → `system-boundary`, `syncMessage` →
-`sync-message`, `replyMessage` → `reply-message`. El resto coincide
-(`select`, `actor`, `association`, `include`, `extend`, `lifeline`).
+`sync-message`, `replyMessage` → `reply-message`, `classAssociation` →
+`class-association`. El resto coincide (`select`, `actor`, `association`,
+`include`, `extend`, `lifeline`, `class`, `aggregation`, `composition`,
+`generalization`).
 
 ## Matriz de controles
 
@@ -423,6 +468,11 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Paleta | `lifeline` | Icono + etiqueta. Solo `document.kind` `"sequence"` | Lifeline | «Crear línea de vida.» | — |
 | Paleta | `syncMessage` | Icono + etiqueta. Solo secuencia | Mensaje síncrono | «Mensaje síncrono (llamada).» | — |
 | Paleta | `replyMessage` | Icono + etiqueta. Solo secuencia | Reply | «Mensaje de respuesta.» | — |
+| Paleta | `class` | Icono + etiqueta. Solo `document.kind` `"class"` | Clase | «Crear clase.» | — |
+| Paleta | `classAssociation` | Icono + etiqueta. Solo clases | Asociación | «Unir dos clases.» | — |
+| Paleta | `aggregation` | Icono + etiqueta. Solo clases | Agregación | «Origen: todo (diamante vacío). Destino: parte. Arrastra del origen al destino.» | — |
+| Paleta | `composition` | Icono + etiqueta. Solo clases | Composición | «Origen: compuesto (diamante relleno). Destino: parte. Arrastra del origen al destino.» | — |
+| Paleta | `generalization` | Icono + etiqueta. Solo clases | Generalización | «Origen: específico. Destino: general. Arrastra del origen al destino; el sentido no se invierte.» | — |
 | Lienzo | `zoomIn` | Icon-only | Acercar | «Acercar.» | «El zoom ya está en el máximo (200%).» cuando `zoom >= 2` |
 | Lienzo | `zoomOut` | Icon-only | Alejar | «Alejar.» | «El zoom ya está en el mínimo (50%).» cuando `zoom <= 0.5` |
 | Lienzo | `fitView` | Icon-only | Ajustar vista | «Ajustar todo el diagrama (Ctrl/Cmd+0).» | — |

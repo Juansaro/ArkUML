@@ -5,7 +5,12 @@ import { DiagramSwitcher } from "../DiagramSwitcher/DiagramSwitcher.tsx";
 import type { LibraryDocument } from "../DiagramSwitcher/library.ts";
 import { Icon } from "../common/Icon.tsx";
 import { ToolButton } from "../common/ToolButton.tsx";
-import { selectCanRedo, selectCanUndo } from "../../store/selectors.ts";
+import {
+  selectCanRedo,
+  selectCanUndo,
+  selectDocumentKind,
+} from "../../store/selectors.ts";
+import { documentKindTagline } from "../DiagramSwitcher/library.ts";
 import {
   useEditorStore,
   useEditorStoreApi,
@@ -54,6 +59,7 @@ export function TopBar({
   );
   const documents = useEditorStore((state) => state.documents);
   const activeDocumentId = useEditorStore((state) => state.activeDocumentId);
+  const documentKind = useEditorStore(selectDocumentKind);
 
   return (
     <>
@@ -75,7 +81,7 @@ export function TopBar({
           }}
         />
       </div>
-      <p className={styles.help}>Editor de diagramas de casos de uso</p>
+      <p className={styles.help}>{documentKindTagline(documentKind)}</p>
       {showDrawerToggles ? (
         <div className={styles.drawerToggles}>
           <ToolButton

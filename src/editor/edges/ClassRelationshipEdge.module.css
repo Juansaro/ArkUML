@@ -1,0 +1,36 @@
+.path {
+  fill: none;
+  stroke: var(--color-fg);
+  stroke-width: 2;
+}
+
+.marker {
+  pointer-events: none;
+  stroke: var(--color-fg);
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.hollow {
+  fill: var(--color-surface);
+}
+
+.filled {
+  fill: var(--color-fg);
+}
+
+.multiplicity {
+  fill: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+}
+
+:global(.react-flow__edge.selected) .path,
+:global(.react-flow__edge.selected) .marker {
+  stroke: var(--color-focus);
+  stroke-width: 3;
+}
+
+:global(.react-flow__edge.selected) .filled {
+  fill: var(--color-focus);
+}

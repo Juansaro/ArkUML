@@ -1,4 +1,9 @@
+import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
+import {
+  ASSOCIATION_MULTIPLICITIES,
+  isAssociationMultiplicity,
+} from "../../../domain/diagram/model.ts";
 import { ElementNameField } from "../../interactions/ElementNameField.tsx";
 import {
   selectDiagramWarnings,
@@ -44,7 +49,8 @@ export function Inspector({ headingId }: InspectorProps) {
       {createTool !== undefined ? <PlaceElementControl /> : null}
       {relationshipTool !== undefined &&
       view.status !== "relationship" &&
-      view.status !== "message" ? (
+      view.status !== "message" &&
+      view.status !== "class-relationship" ? (
         <>
           {connectionHelp !== undefined ? (
             <ConnectionHelp text={connectionHelp} />
@@ -129,6 +135,22 @@ function InspectorBody({
     );
   }
 
+  if (view.status === "class-relationship") {
+    const endpoints = relationshipEndpointFieldLabels(view.kind);
+    return (
+      <div className={styles.fields}>
+        {connectionHelp !== undefined ? (
+          <ConnectionHelp text={connectionHelp} />
+        ) : null}
+        <TypeField label={view.typeLabel} />
+        <ClassRelationshipEndpoints view={view} labels={endpoints} />
+        {view.kind === "generalization" ? null : (
+          <ClassMultiplicityFields view={view} />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={styles.fields}>
       <TypeField label={view.typeLabel} />
@@ -142,6 +164,7 @@ function InspectorBody({
           showError
         />
       </label>
+      {view.kind === "class" ? <ClassMembersFields view={view} /> : null}
     </div>
   );
 }
@@ -271,6 +294,201 @@ function MessageEndpoints({
       </div>
     </>
   );
+}
+
+function ClassRelationshipEndpoints({
+  view,
+  labels,
+}: {
+  view: Extract<
+    ReturnType<typeof selectInspectorView>,
+    { status: "class-relationship" }
+  >;
+  labels: { source: string; target: string };
+}) {
+  return (
+    <>
+      <div className={styles.field}>
+        <p className={styles.label}>{labels.source}</p>
+        <p className={styles.value} data-testid="inspector-source">
+          {view.sourceLabel}
+        </p>
+      </div>
+      <div className={styles.field}>
+        <p className={styles.label}>{labels.target}</p>
+        <p className={styles.value} data-testid="inspector-target">
+          {view.targetLabel}
+        </p>
+      </div>
+    </>
+  );
+}
+
+function ClassMultiplicityFields({
+  view,
+}: {
+  view: Extract<
+    ReturnType<typeof selectInspectorView>,
+    { status: "class-relationship" }
+  >;
+}) {
+  const store = useEditorStoreApi();
+  const source = view.sourceMultiplicity ?? "1";
+  const target = view.targetMultiplicity ?? "1";
+
+  return (
+    <>
+      <label className={styles.field}>
+        <span className={styles.label}>Multiplicidad origen</span>
+        <select
+          className={styles.select}
+          value={source}
+          data-testid="inspector-source-multiplicity"
+          aria-label="Multiplicidad origen"
+          onChange={(event) => {
+            if (!isAssociationMultiplicity(event.target.value)) {
+              return;
+            }
+            store.getState().setAssociationEnds({
+              id: view.id,
+              sourceMultiplicity: event.target.value,
+              targetMultiplicity: target,
+            });
+          }}
+        >
+          {ASSOCIATION_MULTIPLICITIES.map((value) => (
+            <option key={`source-${value}`} value={value}>
+              {value}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className={styles.field}>
+        <span className={styles.label}>Multiplicidad destino</span>
+        <select
+          className={styles.select}
+          value={target}
+          data-testid="inspector-target-multiplicity"
+          aria-label="Multiplicidad destino"
+          onChange={(event) => {
+            if (!isAssociationMultiplicity(event.target.value)) {
+              return;
+            }
+            store.getState().setAssociationEnds({
+              id: view.id,
+              sourceMultiplicity: source,
+              targetMultiplicity: event.target.value,
+            });
+          }}
+        >
+          {ASSOCIATION_MULTIPLICITIES.map((value) => (
+            <option key={`target-${value}`} value={value}>
+              {value}
+            </option>
+          ))}
+        </select>
+      </label>
+    </>
+  );
+}
+
+function ClassMembersFields({
+  view,
+}: {
+  view: Extract<ReturnType<typeof selectInspectorView>, { status: "element" }>;
+}) {
+  const store = useEditorStoreApi();
+  const attributes = view.attributes ?? [];
+  const operations = view.operations ?? [];
+
+  return (
+    <>
+      <MembersTextarea
+        key={`${view.id}-attributes`}
+        label="Atributos"
+        testId="inspector-attributes"
+        value={attributes.join("\n")}
+        onCommit={(text) =>
+          store.getState().setClassMembers({
+            id: view.id,
+            attributes: splitMembers(text),
+            operations,
+          })
+        }
+      />
+      <MembersTextarea
+        key={`${view.id}-operations`}
+        label="Operaciones"
+        testId="inspector-operations"
+        value={operations.join("\n")}
+        onCommit={(text) =>
+          store.getState().setClassMembers({
+            id: view.id,
+            attributes,
+            operations: splitMembers(text),
+          })
+        }
+      />
+    </>
+  );
+}
+
+function MembersTextarea({
+  label,
+  testId,
+  value,
+  onCommit,
+}: {
+  label: string;
+  testId: string;
+  value: string;
+  onCommit: (text: string) => { ok: true } | { ok: false; error: { message: string } };
+}) {
+  const [draft, setDraft] = useState(value);
+  const [error, setError] = useState<string | undefined>(undefined);
+  const [source, setSource] = useState(value);
+
+  if (source !== value) {
+    setSource(value);
+    setDraft(value);
+    setError(undefined);
+  }
+
+  function commit() {
+    const result = onCommit(draft);
+    if (!result.ok) {
+      setError(result.error.message);
+      return;
+    }
+    setError(undefined);
+  }
+
+  return (
+    <label className={styles.field}>
+      <span className={styles.label}>{label}</span>
+      <textarea
+        className={styles.textarea}
+        value={draft}
+        rows={4}
+        spellCheck={false}
+        aria-label={label}
+        aria-invalid={error !== undefined}
+        data-testid={testId}
+        onChange={(event) => {
+          setDraft(event.target.value);
+          if (error !== undefined) {
+            setError(undefined);
+          }
+        }}
+        onBlur={commit}
+      />
+      {error !== undefined ? <p className={styles.error}>{error}</p> : null}
+    </label>
+  );
+}
+
+function splitMembers(text: string): string[] {
+  return text.split("\n");
 }
 
 function PlaceElementControl() {

@@ -9,6 +9,7 @@ import {
   connectionRejectionMessage,
   connectableEndpointOptions,
   defaultMessageY,
+  isClassRelationshipTool,
   isSequenceRelationshipTool,
   relationshipEndpointFieldLabels,
   type RelationshipTool,
@@ -58,6 +59,14 @@ export function ConnectForm({ kind }: ConnectFormProps) {
         sourceId: source,
         targetId: selectedTarget,
         y: defaultMessageY(document, source, selectedTarget),
+      });
+      return;
+    }
+    if (isClassRelationshipTool(kind)) {
+      commitRelationship(store, {
+        kind,
+        sourceId: source,
+        targetId: selectedTarget,
       });
       return;
     }

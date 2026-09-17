@@ -1,13 +1,18 @@
 import type { Edge, Node } from "@xyflow/react";
 import type {
+  Anchor,
+  AssociationMultiplicity,
   DiagramDocument,
   DiagramElement,
   Relationship,
   RelationshipKind,
 } from "../../domain/diagram/model.ts";
 import {
+  isClassAssociation,
+  isClassRelationship,
   isLifeline,
   isSequenceMessage,
+  isUmlClass,
   isUseCaseRelationship,
 } from "../../domain/diagram/model.ts";
 import {
@@ -22,12 +27,16 @@ export type DiagramNodeData = {
   name: string;
   editing?: boolean;
   stemLength?: number;
+  attributes?: readonly string[];
+  operations?: readonly string[];
 };
 
 export type DiagramEdgeData = {
   kind: RelationshipKind;
   name?: string;
   y?: number;
+  sourceMultiplicity?: AssociationMultiplicity;
+  targetMultiplicity?: AssociationMultiplicity;
 };
 
 export type DiagramNode = Node<DiagramNodeData, DiagramElement["kind"]>;
@@ -200,6 +209,23 @@ function mapElement(element: DiagramElement): DiagramNode {
     };
   }
 
+  if (isUmlClass(element)) {
+    return {
+      ...node,
+      data: {
+        kind: element.kind,
+        name: element.name,
+        attributes: element.attributes,
+        operations: element.operations,
+      },
+      style: {
+        width: element.geometry.width,
+        height: element.geometry.height,
+        overflow: "visible",
+      },
+    };
+  }
+
   if (element.kind === "use-case" && element.parentId !== undefined) {
     return {
       ...node,
@@ -227,6 +253,37 @@ function mapEdge(
         kind: relationship.kind,
         name: relationship.name,
         y: relationship.y,
+      },
+      selected: false,
+      reconnectable: false,
+      ariaLabel: relationshipAriaLabel(relationship, elementsById, false),
+    };
+  }
+
+  if (isClassRelationship(relationship)) {
+    const source = elementsById.get(relationship.sourceId);
+    const target = elementsById.get(relationship.targetId);
+    const anchors =
+      source === undefined || target === undefined
+        ? { source: "right" as const, target: "left" as const }
+        : inferredAnchors(source.geometry, target.geometry);
+    return {
+      id: relationship.id,
+      type: relationship.kind,
+      source: relationship.sourceId,
+      target: relationship.targetId,
+      sourceHandle: anchors.source,
+      targetHandle: anchors.target,
+      className: `diagram-edge diagram-edge-${relationship.kind}`,
+      data: {
+        kind: relationship.kind,
+        name: relationship.name,
+        ...(isClassAssociation(relationship)
+          ? {
+              sourceMultiplicity: relationship.sourceMultiplicity,
+              targetMultiplicity: relationship.targetMultiplicity,
+            }
+          : {}),
       },
       selected: false,
       reconnectable: false,
@@ -278,6 +335,22 @@ function orderElementsForSubflows(
   }
 
   return ordered;
+}
+
+function inferredAnchors(
+  source: { x: number; y: number; width: number; height: number },
+  target: { x: number; y: number; width: number; height: number },
+): { source: Anchor; target: Anchor } {
+  const dx = target.x + target.width / 2 - (source.x + source.width / 2);
+  const dy = target.y + target.height / 2 - (source.y + source.height / 2);
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    return dx >= 0
+      ? { source: "right", target: "left" }
+      : { source: "left", target: "right" };
+  }
+  return dy >= 0
+    ? { source: "bottom", target: "top" }
+    : { source: "top", target: "bottom" };
 }
 
 function relationshipAriaLabel(

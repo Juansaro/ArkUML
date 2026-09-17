@@ -8,6 +8,15 @@ export const SEQUENCE_RELATIONSHIP_TOOLS = [
   "reply-message",
 ] as const;
 
+export const CLASS_CREATE_TOOLS = ["class"] as const;
+
+export const CLASS_RELATIONSHIP_TOOLS = [
+  "class-association",
+  "aggregation",
+  "composition",
+  "generalization",
+] as const;
+
 export function isToolForDocumentKind(
   kind: DocumentKind,
   tool: EditorTool,
@@ -20,6 +29,15 @@ export function isToolForDocumentKind(
       tool === "lifeline" ||
       tool === "sync-message" ||
       tool === "reply-message"
+    );
+  }
+  if (kind === "class") {
+    return (
+      tool === "class" ||
+      tool === "class-association" ||
+      tool === "aggregation" ||
+      tool === "composition" ||
+      tool === "generalization"
     );
   }
   return (

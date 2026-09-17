@@ -7,8 +7,30 @@ export type LibraryDocument = {
 };
 
 export function documentKindLabel(kind: DocumentKind): string {
-  return kind === "sequence" ? "Secuencia" : "Casos de uso";
+  if (kind === "sequence") {
+    return "Secuencia";
+  }
+  if (kind === "class") {
+    return "Clases";
+  }
+  return "Casos de uso";
 }
+
+export function documentKindTagline(kind: DocumentKind): string {
+  if (kind === "sequence") {
+    return "Editor de diagramas de secuencia";
+  }
+  if (kind === "class") {
+    return "Editor de diagramas de clases";
+  }
+  return "Editor de diagramas de casos de uso";
+}
+
+export const CREATABLE_DOCUMENT_KINDS = [
+  { value: "use-case", label: "Casos de uso" },
+  { value: "sequence", label: "Secuencia" },
+  { value: "class", label: "Clases" },
+] as const satisfies readonly { value: DocumentKind; label: string }[];
 
 export function filterLibraryDocuments(
   documents: readonly LibraryDocument[],

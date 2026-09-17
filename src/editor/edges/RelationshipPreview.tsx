@@ -7,7 +7,14 @@ import type { DiagramNode } from "../adapters/reactFlowMapper.ts";
 import { selectTool } from "../store/selectors.ts";
 import { useEditorStore } from "../store/EditorStoreProvider.tsx";
 import { relationshipKindFromTool } from "../tools/relationshipTool.ts";
-import { filledArrowPath, openArrowPath } from "./markers.ts";
+import {
+  CLASS_MARKER_SIZE,
+  filledArrowPath,
+  openArrowPath,
+  shortenLine,
+  sourceDiamondPath,
+  targetTrianglePath,
+} from "./markers.ts";
 import styles from "./RelationshipPreview.module.css";
 
 function RelationshipPreviewView({
@@ -25,10 +32,17 @@ function RelationshipPreviewView({
     targetX: toX,
     targetY: toY,
   };
-  const [path] = getStraightPath(line);
   const open =
     kind === "include" || kind === "extend" || kind === "reply-message";
   const filled = kind === "sync-message";
+  const diamond = kind === "aggregation" || kind === "composition";
+  const triangle = kind === "generalization";
+  const trimmed = shortenLine(
+    line,
+    diamond ? CLASS_MARKER_SIZE : 0,
+    triangle ? CLASS_MARKER_SIZE : 0,
+  );
+  const [path] = getStraightPath(trimmed);
 
   return (
     <g data-kind={kind} data-testid="relationship-preview-group">
@@ -51,6 +65,22 @@ function RelationshipPreviewView({
           d={filledArrowPath(line)}
           className={styles.filledMarker}
           data-testid="relationship-preview-arrow"
+        />
+      ) : null}
+      {diamond ? (
+        <path
+          d={sourceDiamondPath(line)}
+          className={
+            kind === "composition" ? styles.filledMarker : styles.marker
+          }
+          data-testid="relationship-preview-diamond"
+        />
+      ) : null}
+      {triangle ? (
+        <path
+          d={targetTrianglePath(line)}
+          className={styles.marker}
+          data-testid="relationship-preview-triangle"
         />
       ) : null}
     </g>

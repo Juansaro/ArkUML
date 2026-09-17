@@ -30,6 +30,11 @@ const PALETTE_ICONS: Record<string, IconName> = {
   lifeline: "lifeline",
   "sync-message": "syncMessage",
   "reply-message": "replyMessage",
+  class: "class",
+  "class-association": "classAssociation",
+  aggregation: "aggregation",
+  composition: "composition",
+  generalization: "generalization",
 };
 
 const PALETTE_DESCRIPTIONS: Record<string, string> = {
@@ -46,6 +51,14 @@ const PALETTE_DESCRIPTIONS: Record<string, string> = {
   lifeline: "Crear línea de vida.",
   "sync-message": "Mensaje síncrono (llamada).",
   "reply-message": "Mensaje de respuesta.",
+  class: "Crear clase.",
+  "class-association": "Unir dos clases.",
+  aggregation:
+    "Origen: todo (diamante vacío). Destino: parte. Arrastra del origen al destino.",
+  composition:
+    "Origen: compuesto (diamante relleno). Destino: parte. Arrastra del origen al destino.",
+  generalization:
+    "Origen: específico. Destino: general. Arrastra del origen al destino; el sentido no se invierte.",
 };
 
 function paletteIcon(id: string): IconName {

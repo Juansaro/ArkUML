@@ -13,11 +13,14 @@ export function elementTypeLabel(kind: DiagramElement["kind"]): string {
   if (kind === "lifeline") {
     return "Lifeline";
   }
+  if (kind === "class") {
+    return "Clase";
+  }
   return "Límite del sistema";
 }
 
 export function relationshipTypeLabel(kind: RelationshipKind): string {
-  if (kind === "association") {
+  if (kind === "association" || kind === "class-association") {
     return "Asociación";
   }
   if (kind === "include") {
@@ -28,6 +31,15 @@ export function relationshipTypeLabel(kind: RelationshipKind): string {
   }
   if (kind === "reply-message") {
     return "Reply";
+  }
+  if (kind === "aggregation") {
+    return "Agregación";
+  }
+  if (kind === "composition") {
+    return "Composición";
+  }
+  if (kind === "generalization") {
+    return "Generalización";
   }
   return "Extend";
 }

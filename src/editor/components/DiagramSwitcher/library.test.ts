@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   documentKindLabel,
+  documentKindTagline,
   filterLibraryDocuments,
   type LibraryDocument,
 } from "./library.ts";
@@ -15,6 +16,21 @@ describe("documentKindLabel", () => {
   it("nombra los kinds persistidos", () => {
     expect(documentKindLabel("use-case")).toBe("Casos de uso");
     expect(documentKindLabel("sequence")).toBe("Secuencia");
+    expect(documentKindLabel("class")).toBe("Clases");
+  });
+});
+
+describe("documentKindTagline", () => {
+  it("resuelve el chrome por kind", () => {
+    expect(documentKindTagline("use-case")).toBe(
+      "Editor de diagramas de casos de uso",
+    );
+    expect(documentKindTagline("sequence")).toBe(
+      "Editor de diagramas de secuencia",
+    );
+    expect(documentKindTagline("class")).toBe(
+      "Editor de diagramas de clases",
+    );
   });
 });
 
