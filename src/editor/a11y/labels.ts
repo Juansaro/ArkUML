@@ -19,6 +19,12 @@ export function elementTypeLabel(kind: DiagramElement["kind"]): string {
   if (kind === "component") {
     return "Componente";
   }
+  if (kind === "node") {
+    return "Nodo";
+  }
+  if (kind === "artifact") {
+    return "Artefacto";
+  }
   return "Límite del sistema";
 }
 
@@ -49,6 +55,12 @@ export function relationshipTypeLabel(kind: RelationshipKind): string {
   }
   if (kind === "assembly-connector") {
     return "Ensamblaje";
+  }
+  if (kind === "communication-path") {
+    return "Camino de comunicación";
+  }
+  if (kind === "deploy") {
+    return "Deploy";
   }
   return "Extend";
 }

@@ -4,6 +4,7 @@ import {
   DEFAULT_BOUNDARY_NAME,
   DEFAULT_CLASS_DOCUMENT_TITLE,
   DEFAULT_COMPONENT_DOCUMENT_TITLE,
+  DEFAULT_DEPLOYMENT_DOCUMENT_TITLE,
   DEFAULT_DOCUMENT_TITLE,
   DEFAULT_SEQUENCE_DOCUMENT_TITLE,
   DEFAULT_VIEWPORT,
@@ -13,6 +14,7 @@ import {
   createDiagramDocument,
   createEmptyClassDocument,
   createEmptyComponentDocument,
+  createEmptyDeploymentDocument,
   createEmptySequenceDocument,
   createRelationship,
   createSystemBoundary,
@@ -188,6 +190,22 @@ describe("createEmptyComponentDocument", () => {
     expect(document.schemaVersion).toBe(3);
     expect(document.kind).toBe("component");
     expect(document.metadata.title).toBe(DEFAULT_COMPONENT_DOCUMENT_TITLE);
+    expect(document.elements).toEqual([]);
+    expect(document.relationships).toEqual([]);
+  });
+});
+
+describe("createEmptyDeploymentDocument", () => {
+  it("crea un documento deployment vacío con título por defecto", () => {
+    const createId = sequentialIds();
+    const document = createEmptyDeploymentDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+
+    expect(document.schemaVersion).toBe(3);
+    expect(document.kind).toBe("deployment");
+    expect(document.metadata.title).toBe(DEFAULT_DEPLOYMENT_DOCUMENT_TITLE);
     expect(document.elements).toEqual([]);
     expect(document.relationships).toEqual([]);
   });

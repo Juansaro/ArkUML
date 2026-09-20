@@ -16,6 +16,9 @@ export function documentKindLabel(kind: DocumentKind): string {
   if (kind === "component") {
     return "Componentes";
   }
+  if (kind === "deployment") {
+    return "Despliegue";
+  }
   return "Casos de uso";
 }
 
@@ -28,6 +31,9 @@ export function documentKindTagline(kind: DocumentKind): string {
   }
   if (kind === "component") {
     return "Editor de diagramas de componentes";
+  }
+  if (kind === "deployment") {
+    return "Editor de diagramas de despliegue";
   }
   return "Editor de diagramas de casos de uso";
 }

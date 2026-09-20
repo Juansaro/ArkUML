@@ -1,6 +1,8 @@
 import {
   DEFAULT_ASSOCIATION_MULTIPLICITY,
   DUPLICATE_OFFSET,
+  MIN_ARTIFACT_HEIGHT,
+  MIN_ARTIFACT_WIDTH,
   MIN_BOUNDARY_HEIGHT,
   MIN_BOUNDARY_WIDTH,
   MIN_CLASS_HEIGHT,
@@ -10,16 +12,21 @@ import {
   MIN_LIFELINE_HEIGHT,
   MIN_LIFELINE_STEM_LENGTH,
   MIN_LIFELINE_WIDTH,
+  MIN_NODE_HEIGHT,
+  MIN_NODE_WIDTH,
   NAME_MAX_LENGTH,
   NAME_MIN_LENGTH,
 } from "./defaults.ts";
 import {
   createActor,
+  createArtifact as buildArtifact,
   createClass as buildClass,
   createClassRelationship as buildClassRelationship,
   createComponent as buildComponent,
   createComponentRelationship as buildComponentRelationship,
+  createDeploymentRelationship as buildDeploymentRelationship,
   createLifeline as buildLifeline,
+  createNode as buildNode,
   createRelationship as buildRelationship,
   createSequenceMessage as buildSequenceMessage,
   createSystemBoundary,
@@ -28,10 +35,13 @@ import {
 } from "./factories.ts";
 import {
   err,
+  isArtifact,
   isAssociationMultiplicity,
   isClassAssociation,
   isClassRelationship,
   isComponentRelationship,
+  isDeploymentNode,
+  isDeploymentRelationship,
   isGeneralization,
   isLifeline,
   isSequenceMessage,
@@ -43,6 +53,7 @@ import {
   type AssociationMultiplicity,
   type ClassRelationshipKind,
   type ComponentRelationshipKind,
+  type DeploymentRelationshipKind,
   type DiagramDocument,
   type DiagramElement,
   type Geometry,
@@ -101,11 +112,19 @@ export type CreateComponentRelationshipInput = {
   name?: string;
 };
 
+export type CreateDeploymentRelationshipInput = {
+  kind: DeploymentRelationshipKind;
+  sourceId: string;
+  targetId: string;
+  name?: string;
+};
+
 export type CreateRelationshipInput =
   | CreateUseCaseRelationshipInput
   | CreateSequenceMessageInput
   | CreateClassRelationshipInput
-  | CreateComponentRelationshipInput;
+  | CreateComponentRelationshipInput
+  | CreateDeploymentRelationshipInput;
 
 export type ReconnectRelationshipInput = CreateUseCaseRelationshipInput & {
   id: string;
@@ -133,21 +152,29 @@ const SEQUENCE_ELEMENT_MESSAGE =
 const CLASS_ELEMENT_MESSAGE = "El documento de clases no admite este elemento.";
 const COMPONENT_ELEMENT_MESSAGE =
   "El documento de componentes no admite este elemento.";
+const DEPLOYMENT_ELEMENT_MESSAGE =
+  "El documento de despliegue no admite este elemento.";
 const USE_CASE_LIFELINE_MESSAGE =
   "El documento de casos de uso no admite lifelines.";
 const USE_CASE_CLASS_MESSAGE = "El documento de casos de uso no admite clases.";
 const USE_CASE_COMPONENT_MESSAGE =
   "El documento de casos de uso no admite componentes.";
+const USE_CASE_DEPLOYMENT_MESSAGE =
+  "El documento de casos de uso no admite nodos ni artefactos.";
 const CLASS_DOCUMENT_MESSAGE =
   "Solo un documento de clases admite este elemento.";
 const COMPONENT_DOCUMENT_MESSAGE =
   "Solo un documento de componentes admite este elemento.";
+const DEPLOYMENT_DOCUMENT_MESSAGE =
+  "Solo un documento de despliegue admite este elemento.";
 const RENAME_RELATIONSHIP_MESSAGE =
-  "Solo se puede renombrar un mensaje de secuencia o una relación de clases o componentes.";
+  "Solo se puede renombrar un mensaje de secuencia o una relación de clases, componentes o despliegue.";
 const CLASS_SIZE_MESSAGE = "La clase debe medir al menos 120×72.";
 const COMPONENT_SIZE_MESSAGE = "El componente debe medir al menos 120×72.";
+const NODE_SIZE_MESSAGE = "El nodo debe medir al menos 120×72.";
+const ARTIFACT_SIZE_MESSAGE = "El artefacto debe medir al menos 96×48.";
 const RESIZE_TARGET_ELEMENT_MESSAGE =
-  "Solo se puede redimensionar una clase o un componente.";
+  "Solo se puede redimensionar una clase, un componente, un nodo o un artefacto.";
 const GENERALIZATION_ENDS_MESSAGE = "Generalization no admite multiplicidades.";
 const ASSOCIATION_ENDS_MESSAGE =
   "Solo se pueden editar extremos de asociación, agregación o composición.";
@@ -173,6 +200,9 @@ export function createElement(
   }
   if (document.kind === "component") {
     return err("UNKNOWN_KIND", COMPONENT_ELEMENT_MESSAGE);
+  }
+  if (document.kind === "deployment") {
+    return err("UNKNOWN_KIND", DEPLOYMENT_ELEMENT_MESSAGE);
   }
 
   const name = normalizeName(input.name);
@@ -390,6 +420,92 @@ export function createComponent(
   );
 }
 
+export function createNode(
+  document: DiagramDocument,
+  input: { name: string; geometry?: Geometry },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  if (document.kind !== "deployment") {
+    return err("UNKNOWN_KIND", DEPLOYMENT_DOCUMENT_MESSAGE);
+  }
+
+  const name = normalizeName(input.name);
+  if (!name.ok) {
+    return name;
+  }
+
+  const geometry = input.geometry;
+  if (geometry !== undefined) {
+    if (!isFiniteGeometry(geometry)) {
+      return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+    }
+    const sizeError = nodeSizeError(geometry);
+    if (sizeError !== undefined) {
+      return sizeError;
+    }
+  }
+
+  return commit(
+    document,
+    {
+      elements: [
+        ...document.elements,
+        buildNode(
+          {
+            name: name.value,
+            ...(geometry === undefined ? {} : { geometry }),
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
+}
+
+export function createArtifact(
+  document: DiagramDocument,
+  input: { name: string; geometry?: Geometry },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  if (document.kind !== "deployment") {
+    return err("UNKNOWN_KIND", DEPLOYMENT_DOCUMENT_MESSAGE);
+  }
+
+  const name = normalizeName(input.name);
+  if (!name.ok) {
+    return name;
+  }
+
+  const geometry = input.geometry;
+  if (geometry !== undefined) {
+    if (!isFiniteGeometry(geometry)) {
+      return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+    }
+    const sizeError = artifactSizeError(geometry);
+    if (sizeError !== undefined) {
+      return sizeError;
+    }
+  }
+
+  return commit(
+    document,
+    {
+      elements: [
+        ...document.elements,
+        buildArtifact(
+          {
+            name: name.value,
+            ...(geometry === undefined ? {} : { geometry }),
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
+}
+
 export function renameElement(
   document: DiagramDocument,
   elementId: string,
@@ -588,7 +704,12 @@ export function resizeElement(
   if (element === undefined) {
     return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
   }
-  if (!isUmlClass(element) && !isUmlComponent(element)) {
+  if (
+    !isUmlClass(element) &&
+    !isUmlComponent(element) &&
+    !isDeploymentNode(element) &&
+    !isArtifact(element)
+  ) {
     return err("INVALID_GEOMETRY", RESIZE_TARGET_ELEMENT_MESSAGE);
   }
   if (!isFiniteGeometry(input.geometry)) {
@@ -596,7 +717,11 @@ export function resizeElement(
   }
   const sizeError = isUmlClass(element)
     ? classSizeError(input.geometry)
-    : componentSizeError(input.geometry);
+    : isUmlComponent(element)
+      ? componentSizeError(input.geometry)
+      : isDeploymentNode(element)
+        ? nodeSizeError(input.geometry)
+        : artifactSizeError(input.geometry);
   if (sizeError !== undefined) {
     return sizeError;
   }
@@ -757,7 +882,9 @@ export type ElementCopy =
       attributes: string[];
       operations: string[];
     }
-  | { kind: "component"; name: string; geometry: Geometry };
+  | { kind: "component"; name: string; geometry: Geometry }
+  | { kind: "node"; name: string; geometry: Geometry }
+  | { kind: "artifact"; name: string; geometry: Geometry };
 
 export function snapshotDuplicableElements(
   document: DiagramDocument,
@@ -814,6 +941,22 @@ export function snapshotDuplicableElements(
       });
       continue;
     }
+    if (element.kind === "node") {
+      copies.push({
+        kind: "node",
+        name: element.name,
+        geometry,
+      });
+      continue;
+    }
+    if (element.kind === "artifact") {
+      copies.push({
+        kind: "artifact",
+        name: element.name,
+        geometry,
+      });
+      continue;
+    }
 
     if (element.parentId !== undefined) {
       copies.push({
@@ -853,6 +996,13 @@ export function insertElementCopies(
       return err("UNKNOWN_KIND", COMPONENT_ELEMENT_MESSAGE);
     }
     if (
+      document.kind === "deployment" &&
+      copy.kind !== "node" &&
+      copy.kind !== "artifact"
+    ) {
+      return err("UNKNOWN_KIND", DEPLOYMENT_ELEMENT_MESSAGE);
+    }
+    if (
       document.kind === "use-case" &&
       copy.kind !== "actor" &&
       copy.kind !== "use-case"
@@ -863,7 +1013,9 @@ export function insertElementCopies(
           ? USE_CASE_CLASS_MESSAGE
           : copy.kind === "component"
             ? USE_CASE_COMPONENT_MESSAGE
-            : USE_CASE_LIFELINE_MESSAGE,
+            : copy.kind === "node" || copy.kind === "artifact"
+              ? USE_CASE_DEPLOYMENT_MESSAGE
+              : USE_CASE_LIFELINE_MESSAGE,
       );
     }
     if (!isFiniteGeometry(copy.geometry)) {
@@ -902,6 +1054,14 @@ export function insertElementCopies(
       created.push(
         buildComponent({ name: copy.name, geometry }, deps),
       );
+      continue;
+    }
+    if (copy.kind === "node") {
+      created.push(buildNode({ name: copy.name, geometry }, deps));
+      continue;
+    }
+    if (copy.kind === "artifact") {
+      created.push(buildArtifact({ name: copy.name, geometry }, deps));
       continue;
     }
 
@@ -950,6 +1110,9 @@ export function createRelationship(
   }
   if (isComponentRelationshipInput(input)) {
     return createComponentDiagramRelationship(document, input, deps);
+  }
+  if (isDeploymentRelationshipInput(input)) {
+    return createDeploymentDiagramRelationship(document, input, deps);
   }
   if (isSequenceMessageInput(input)) {
     return createSequenceRelationship(document, input, deps);
@@ -1185,6 +1348,26 @@ export function renameRelationship(
       deps,
     );
   }
+  if (isDeploymentRelationship(existing)) {
+    const normalized = normalizeMessageName(name);
+    if (!normalized.ok) {
+      return normalized;
+    }
+    if (existing.name === normalized.value) {
+      return ok(document);
+    }
+    return commit(
+      document,
+      {
+        relationships: document.relationships.map((relationship) =>
+          relationship.id === relationshipId
+            ? { ...existing, name: normalized.value }
+            : relationship,
+        ),
+      },
+      deps,
+    );
+  }
   if (!isSequenceMessage(existing)) {
     return err("UNKNOWN_KIND", RENAME_RELATIONSHIP_MESSAGE);
   }
@@ -1322,6 +1505,12 @@ function isComponentRelationshipInput(
   );
 }
 
+function isDeploymentRelationshipInput(
+  input: CreateRelationshipInput,
+): input is CreateDeploymentRelationshipInput {
+  return input.kind === "communication-path" || input.kind === "deploy";
+}
+
 function createClassDiagramRelationship(
   document: DiagramDocument,
   input: CreateClassRelationshipInput,
@@ -1406,6 +1595,41 @@ function createComponentDiagramRelationship(
       relationships: [
         ...document.relationships,
         buildComponentRelationship(
+          {
+            kind: input.kind,
+            sourceId: allowed.value.sourceId,
+            targetId: allowed.value.targetId,
+            name: name.value,
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
+}
+
+function createDeploymentDiagramRelationship(
+  document: DiagramDocument,
+  input: CreateDeploymentRelationshipInput,
+  deps: OperationDeps | undefined,
+): Result<DiagramDocument> {
+  const name = normalizeMessageName(input.name ?? "");
+  if (!name.ok) {
+    return name;
+  }
+
+  const allowed = canConnect(document, input);
+  if (!allowed.ok) {
+    return allowed;
+  }
+
+  return commit(
+    document,
+    {
+      relationships: [
+        ...document.relationships,
+        buildDeploymentRelationship(
           {
             kind: input.kind,
             sourceId: allowed.value.sourceId,
@@ -1605,6 +1829,23 @@ function componentSizeError(geometry: Geometry): Result<never> | undefined {
     geometry.height < MIN_COMPONENT_HEIGHT
   ) {
     return err("INVALID_GEOMETRY", COMPONENT_SIZE_MESSAGE);
+  }
+  return undefined;
+}
+
+function nodeSizeError(geometry: Geometry): Result<never> | undefined {
+  if (geometry.width < MIN_NODE_WIDTH || geometry.height < MIN_NODE_HEIGHT) {
+    return err("INVALID_GEOMETRY", NODE_SIZE_MESSAGE);
+  }
+  return undefined;
+}
+
+function artifactSizeError(geometry: Geometry): Result<never> | undefined {
+  if (
+    geometry.width < MIN_ARTIFACT_WIDTH ||
+    geometry.height < MIN_ARTIFACT_HEIGHT
+  ) {
+    return err("INVALID_GEOMETRY", ARTIFACT_SIZE_MESSAGE);
   }
   return undefined;
 }

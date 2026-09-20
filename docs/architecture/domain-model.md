@@ -5,7 +5,7 @@ El dominio es independiente de React, del DOM y de React Flow. Las pruebas de `s
 ## Tipos conceptuales
 
 Release 1 (schema **2**). Release 2 (TASK-052+): schema **3**, unión
-`"use-case" | "sequence" | "class" | "component"`. `storageVersion` permanece 2. El
+`"use-case" | "sequence" | "class" | "component" | "deployment"`. `storageVersion` permanece 2. El
 árbol v1 del MVP permanece el origen de `migrateDocument` `1→2`. `2→3`
 copia el documento 2 y solo escribe `schemaVersion: 3`.
 
@@ -17,7 +17,7 @@ WorkspaceSnapshot
    └─ document
       ├─ schemaVersion: 3
       ├─ id: UUID
-      ├─ kind: "use-case" | "sequence" | "class" | "component"
+      ├─ kind: "use-case" | "sequence" | "class" | "component" | "deployment"
       ├─ metadata: { title, createdAt, updatedAt }
       ├─ elements: DiagramElement[]
       └─ relationships: Relationship[]
@@ -36,6 +36,8 @@ coincide con exactamente un `document.id`. Envelope v1 (un `document` +
 - `Lifeline`: `{ id, kind: "lifeline", name, geometry, stemLength }` (solo `kind: "sequence"`)
 - `Class`: `{ id, kind: "class", name, geometry, attributes, operations }` (solo `kind: "class"`)
 - `Component`: `{ id, kind: "component", name, geometry }` (solo `kind: "component"`)
+- `Node`: `{ id, kind: "node", name, geometry }` (solo `kind: "deployment"`)
+- `Artifact`: `{ id, kind: "artifact", name, geometry }` (solo `kind: "deployment"`)
 
 `Relationship` es una unión discriminada por `kind`.
 
@@ -90,13 +92,28 @@ Componentes (forma cerrada en [component-model.md](component-model.md)):
 }
 ```
 
+Despliegue (forma cerrada en [deployment-model.md](deployment-model.md)):
+
+```text
+{
+  id,
+  kind: "communication-path" | "deploy",
+  sourceId,
+  targetId,
+  name   // 0–80; vacío = sin etiqueta
+}
+```
+
 Un documento `use-case` no contiene lifelines ni mensajes. Un documento
 `sequence` no contiene actor, caso, boundary ni Association/Include/Extend.
 Un documento `class` no contiene actor, caso, boundary, lifeline ni
 mensajes; un `use-case` o `sequence` no contiene `class` ni relaciones
 de clases. Un documento `component` no mezcla con use-case, sequence ni
 class; un `use-case`, `sequence` o `class` no contiene `component` ni
-`component-usage` / `assembly-connector`. Violación al validar:
+`component-usage` / `assembly-connector`. Un documento `deployment` no
+mezcla con use-case, sequence, class ni component; un `use-case`,
+`sequence`, `class` o `component` no contiene `node` / `artifact` ni
+`communication-path` / `deploy`. Violación al validar:
 `UNKNOWN_KIND` (el loader de persistencia sigue mapeando a
 `PARSE_INVALID`).
 
@@ -119,7 +136,7 @@ No se persisten: `selected`, `measured`, internals de React Flow, CSS, component
 ## Tiempos y títulos
 
 - `createdAt` / `updatedAt`: ISO-8601.
-- `metadata.title`: string 1–80 tras trim. Default casos de uso: «Diagrama de casos de uso». Default secuencia: «Diagrama de secuencia». Default clases: «Diagrama de clases». Default componentes: «Diagrama de componentes».
+- `metadata.title`: string 1–80 tras trim. Default casos de uso: «Diagrama de casos de uso». Default secuencia: «Diagrama de secuencia». Default clases: «Diagrama de clases». Default componentes: «Diagrama de componentes». Default despliegue: «Diagrama de despliegue».
 - Nombres de elementos: 1–80 tras trim. Duplicados permitidos.
 
 ## Documento por defecto
@@ -149,6 +166,13 @@ Un documento component nuevo (`createEmptyComponentDocument`) tiene título
 «Diagrama de componentes», sin componentes ni relaciones. Operaciones:
 [component-model.md](component-model.md). `duplicateElements` solo copia
 componentes (offset 24, sin relaciones). `sourceId === targetId` es
+`SELF_RELATIONSHIP`. Duplicados de la misma tupla están permitidos.
+
+Un documento deployment nuevo (`createEmptyDeploymentDocument`) tiene título
+«Diagrama de despliegue», sin nodos, artefactos ni relaciones. Operaciones:
+[deployment-model.md](deployment-model.md). `duplicateElements` solo copia
+nodos y artefactos (offset 24, sin relaciones). `canConnect`: path =
+nodo–nodo; deploy = artefacto→nodo. `sourceId === targetId` es
 `SELF_RELATIONSHIP`. Duplicados de la misma tupla están permitidos.
 
 ## Operaciones puras
@@ -215,7 +239,7 @@ con `migrateDocument` antes del primer save 3. Política:
 
 ## Compatibilidad futura
 
-- `kind` en documento, elemento y relación permite otros diagramas sin romper el parser si se usa unión exhaustiva y `default` que falle con `UNKNOWN_KIND`. Política: [diagram-kinds.md](diagram-kinds.md). 1.x solo `use-case`. Release 1: `"use-case" | "sequence"`. Release 2 (TASK-052): `"use-case" | "sequence" | "class"`; TASK-054: `+ "component"`; TASK-056+ amplían la unión.
+- `kind` en documento, elemento y relación permite otros diagramas sin romper el parser si se usa unión exhaustiva y `default` que falle con `UNKNOWN_KIND`. Política: [diagram-kinds.md](diagram-kinds.md). 1.x solo `use-case`. Release 1: `"use-case" | "sequence"`. Release 2 (TASK-052): `"use-case" | "sequence" | "class"`; TASK-054: `+ "component"`; TASK-056: `+ "deployment"`; TASK-058+ amplían la unión.
 - Workspace 2.0 (biblioteca): [ADR-007](../decisions/ADR-007-workspace-library.md). Envelope `storageVersion` 2. Release 2 no lo cambia.
 - ER Chen: [ADR-008](../decisions/ADR-008-chen-er.md).
 - Generalization **en casos de uso** será un `kind` de relación nuevo, no un flag en Association; no entra en Release 2.

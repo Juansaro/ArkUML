@@ -88,6 +88,20 @@ export type UmlComponent = {
   geometry: Geometry;
 };
 
+export type DeploymentNode = {
+  id: string;
+  kind: "node";
+  name: string;
+  geometry: Geometry;
+};
+
+export type Artifact = {
+  id: string;
+  kind: "artifact";
+  name: string;
+  geometry: Geometry;
+};
+
 export type UseCaseElement = Actor | UseCase | SystemBoundary;
 
 export type SequenceElement = Lifeline;
@@ -96,11 +110,14 @@ export type ClassElement = UmlClass;
 
 export type ComponentElement = UmlComponent;
 
+export type DeploymentElement = DeploymentNode | Artifact;
+
 export type DiagramElement =
   | UseCaseElement
   | SequenceElement
   | ClassElement
-  | ComponentElement;
+  | ComponentElement
+  | DeploymentElement;
 
 export type UseCaseRelationshipKind = "association" | "include" | "extend";
 
@@ -114,11 +131,14 @@ export type ClassRelationshipKind = ClassAssociationKind | "generalization";
 export type ComponentRelationshipKind =
   "component-usage" | "assembly-connector";
 
+export type DeploymentRelationshipKind = "communication-path" | "deploy";
+
 export type RelationshipKind =
   | UseCaseRelationshipKind
   | SequenceMessageKind
   | ClassRelationshipKind
-  | ComponentRelationshipKind;
+  | ComponentRelationshipKind
+  | DeploymentRelationshipKind;
 
 export const ASSOCIATION_MULTIPLICITIES = [
   "0..1",
@@ -176,11 +196,20 @@ export type ComponentRelationship = {
   name: string;
 };
 
+export type DeploymentRelationship = {
+  id: string;
+  kind: DeploymentRelationshipKind;
+  sourceId: string;
+  targetId: string;
+  name: string;
+};
+
 export type Relationship =
   | UseCaseRelationship
   | SequenceMessage
   | ClassRelationship
-  | ComponentRelationship;
+  | ComponentRelationship
+  | DeploymentRelationship;
 
 export type DocumentMetadata = {
   title: string;
@@ -190,7 +219,11 @@ export type DocumentMetadata = {
 
 export type DocumentKindV2 = "use-case" | "sequence";
 
-export type DocumentKind = DocumentKindV2 | "class" | "component";
+export type DocumentKind =
+  | DocumentKindV2
+  | "class"
+  | "component"
+  | "deployment";
 
 export type DiagramDocumentV1 = {
   schemaVersion: 1;
@@ -283,6 +316,16 @@ export function isUmlComponent(
   return element.kind === "component";
 }
 
+export function isDeploymentNode(
+  element: DiagramElement,
+): element is DeploymentNode {
+  return element.kind === "node";
+}
+
+export function isArtifact(element: DiagramElement): element is Artifact {
+  return element.kind === "artifact";
+}
+
 export function isClassRelationship(
   relationship: Relationship,
 ): relationship is ClassRelationship {
@@ -300,6 +343,14 @@ export function isComponentRelationship(
   return (
     relationship.kind === "component-usage" ||
     relationship.kind === "assembly-connector"
+  );
+}
+
+export function isDeploymentRelationship(
+  relationship: Relationship,
+): relationship is DeploymentRelationship {
+  return (
+    relationship.kind === "communication-path" || relationship.kind === "deploy"
   );
 }
 

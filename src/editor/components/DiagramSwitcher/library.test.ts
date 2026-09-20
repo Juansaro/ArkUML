@@ -18,6 +18,7 @@ describe("documentKindLabel", () => {
     expect(documentKindLabel("sequence")).toBe("Secuencia");
     expect(documentKindLabel("class")).toBe("Clases");
     expect(documentKindLabel("component")).toBe("Componentes");
+    expect(documentKindLabel("deployment")).toBe("Despliegue");
   });
 });
 
@@ -34,6 +35,9 @@ describe("documentKindTagline", () => {
     );
     expect(documentKindTagline("component")).toBe(
       "Editor de diagramas de componentes",
+    );
+    expect(documentKindTagline("deployment")).toBe(
+      "Editor de diagramas de despliegue",
     );
   });
 });

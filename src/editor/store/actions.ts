@@ -3,12 +3,14 @@ import {
   DEFAULT_VIEWPORT,
   CLASS_DOCUMENT_KIND,
   COMPONENT_DOCUMENT_KIND,
+  DEPLOYMENT_DOCUMENT_KIND,
   SEQUENCE_DOCUMENT_KIND,
 } from "../../domain/diagram/defaults.ts";
 import {
   createDiagramDocument,
   createEmptyClassDocument,
   createEmptyComponentDocument,
+  createEmptyDeploymentDocument,
   createEmptySequenceDocument,
   createUuid,
   type DiagramFactoryDeps,
@@ -564,7 +566,9 @@ export function createEditorActions(
             ? createEmptyClassDocument(deps)
             : nextKind === COMPONENT_DOCUMENT_KIND
               ? createEmptyComponentDocument(deps)
-              : createDiagramDocument(deps);
+              : nextKind === DEPLOYMENT_DOCUMENT_KIND
+                ? createEmptyDeploymentDocument(deps)
+                : createDiagramDocument(deps);
       return get().addDocument(document);
     },
     activateDocument: (documentId) => {
@@ -693,6 +697,12 @@ function cloneElementCopy(copy: ElementCopy): ElementCopy {
   }
   if (copy.kind === "component") {
     return { kind: "component", name: copy.name, geometry };
+  }
+  if (copy.kind === "node") {
+    return { kind: "node", name: copy.name, geometry };
+  }
+  if (copy.kind === "artifact") {
+    return { kind: "artifact", name: copy.name, geometry };
   }
   if (copy.parentId !== undefined) {
     return {

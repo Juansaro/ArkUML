@@ -1,11 +1,14 @@
 import {
   err,
+  isArtifact,
+  isDeploymentNode,
   isLifeline,
   isUmlClass,
   isUmlComponent,
   ok,
   type ClassRelationshipKind,
   type ComponentRelationshipKind,
+  type DeploymentRelationshipKind,
   type DiagramDocument,
   type DiagramElement,
   type RelationshipKind,
@@ -16,6 +19,7 @@ import {
 export const INCLUDE_STEREOTYPE = "«include»";
 export const EXTEND_STEREOTYPE = "«extend»";
 export const USE_STEREOTYPE = "«use»";
+export const DEPLOY_STEREOTYPE = "«deploy»";
 
 export type ConnectInput = {
   kind: RelationshipKind;
@@ -52,6 +56,12 @@ const COMPONENT_KIND_MESSAGE =
   "Este documento solo admite uso y ensamblaje entre componentes.";
 const COMPONENT_ENDPOINT_MESSAGE =
   "Una relación de componentes solo puede unir componentes.";
+const DEPLOYMENT_KIND_MESSAGE =
+  "Este documento solo admite camino de comunicación y deploy.";
+const COMMUNICATION_PATH_ENDPOINT_MESSAGE =
+  "Un camino de comunicación solo puede unir nodos.";
+const DEPLOY_ENDPOINT_MESSAGE =
+  "Deploy solo puede ir de un artefacto a un nodo.";
 
 export function relationshipLabel(kind: RelationshipKind): string | undefined {
   if (kind === "include") {
@@ -62,6 +72,9 @@ export function relationshipLabel(kind: RelationshipKind): string | undefined {
   }
   if (kind === "component-usage") {
     return USE_STEREOTYPE;
+  }
+  if (kind === "deploy") {
+    return DEPLOY_STEREOTYPE;
   }
   return undefined;
 }
@@ -78,6 +91,9 @@ export function canConnect(
   }
   if (document.kind === "component") {
     return canConnectComponent(document, input);
+  }
+  if (document.kind === "deployment") {
+    return canConnectDeployment(document, input);
   }
   return canConnectUseCase(document, input);
 }
@@ -171,6 +187,41 @@ function canConnectComponent(
   });
 }
 
+function canConnectDeployment(
+  document: DiagramDocument,
+  input: ConnectInput,
+): Result<AllowedConnection> {
+  if (!isDeploymentRelationshipKind(input.kind)) {
+    return err("INVALID_CONNECTION", DEPLOYMENT_KIND_MESSAGE);
+  }
+
+  const byId = indexElements(document);
+  const source = byId.get(input.sourceId);
+  const target = byId.get(input.targetId);
+
+  if (source === undefined || target === undefined) {
+    return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
+  }
+
+  if (source.id === target.id) {
+    return err("SELF_RELATIONSHIP", SELF_RELATIONSHIP_MESSAGE);
+  }
+
+  if (input.kind === "communication-path") {
+    if (!isDeploymentNode(source) || !isDeploymentNode(target)) {
+      return err("INVALID_CONNECTION", COMMUNICATION_PATH_ENDPOINT_MESSAGE);
+    }
+  } else if (!isArtifact(source) || !isDeploymentNode(target)) {
+    return err("INVALID_CONNECTION", DEPLOY_ENDPOINT_MESSAGE);
+  }
+
+  return ok({
+    kind: input.kind,
+    sourceId: source.id,
+    targetId: target.id,
+  });
+}
+
 function canConnectUseCase(
   document: DiagramDocument,
   input: ConnectInput,
@@ -242,6 +293,12 @@ function isComponentRelationshipKind(
   kind: RelationshipKind,
 ): kind is ComponentRelationshipKind {
   return kind === "component-usage" || kind === "assembly-connector";
+}
+
+function isDeploymentRelationshipKind(
+  kind: RelationshipKind,
+): kind is DeploymentRelationshipKind {
+  return kind === "communication-path" || kind === "deploy";
 }
 
 function indexElements(document: DiagramDocument): Map<string, DiagramElement> {

@@ -2,13 +2,16 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_BOUNDARY_GEOMETRY } from "./defaults.ts";
 import {
   createActor,
+  createArtifact,
   createClass,
   createComponent,
   createDiagramDocument,
   createEmptyClassDocument,
   createEmptyComponentDocument,
+  createEmptyDeploymentDocument,
   createEmptySequenceDocument,
   createLifeline,
+  createNode,
   createRelationship,
   createUseCase,
   type IdFactory,
@@ -21,6 +24,7 @@ import type {
 } from "./model.ts";
 import {
   canConnect,
+  DEPLOY_STEREOTYPE,
   EXTEND_STEREOTYPE,
   INCLUDE_STEREOTYPE,
   USE_STEREOTYPE,
@@ -270,11 +274,14 @@ describe("relationshipLabel", () => {
     expect(relationshipLabel("include")).toBe(INCLUDE_STEREOTYPE);
     expect(relationshipLabel("extend")).toBe(EXTEND_STEREOTYPE);
     expect(relationshipLabel("component-usage")).toBe(USE_STEREOTYPE);
+    expect(relationshipLabel("deploy")).toBe(DEPLOY_STEREOTYPE);
     expect(relationshipLabel("association")).toBeUndefined();
     expect(relationshipLabel("assembly-connector")).toBeUndefined();
+    expect(relationshipLabel("communication-path")).toBeUndefined();
     expect(INCLUDE_STEREOTYPE).toBe("«include»");
     expect(EXTEND_STEREOTYPE).toBe("«extend»");
     expect(USE_STEREOTYPE).toBe("«use»");
+    expect(DEPLOY_STEREOTYPE).toBe("«deploy»");
   });
 });
 
@@ -570,6 +577,89 @@ describe("canConnect component", () => {
         kind: "class-association",
         sourceId: billing.id,
         targetId: catalog.id,
+      }),
+      "INVALID_CONNECTION",
+    );
+  });
+});
+
+describe("canConnect deployment", () => {
+  it("acepta path nodo–nodo y deploy artefacto→nodo; rechaza artefacto–artefacto", () => {
+    const createId = sequentialIds();
+    const document = createEmptyDeploymentDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const appServer = createNode({ name: "AppServer" }, { createId });
+    const dbServer = createNode(
+      {
+        name: "DbServer",
+        geometry: { x: 240, y: 0, width: 200, height: 120 },
+      },
+      { createId },
+    );
+    const war = createArtifact(
+      {
+        name: "app.war",
+        geometry: { x: 40, y: 160, width: 140, height: 80 },
+      },
+      { createId },
+    );
+    const jar = createArtifact(
+      {
+        name: "lib.jar",
+        geometry: { x: 240, y: 160, width: 140, height: 80 },
+      },
+      { createId },
+    );
+    const deploymentDocument: DiagramDocument = {
+      ...document,
+      elements: [appServer, dbServer, war, jar],
+    };
+
+    expect(
+      canConnect(deploymentDocument, {
+        kind: "communication-path",
+        sourceId: appServer.id,
+        targetId: dbServer.id,
+      }).ok,
+    ).toBe(true);
+    expect(
+      canConnect(deploymentDocument, {
+        kind: "deploy",
+        sourceId: war.id,
+        targetId: appServer.id,
+      }).ok,
+    ).toBe(true);
+    expectCode(
+      canConnect(deploymentDocument, {
+        kind: "communication-path",
+        sourceId: war.id,
+        targetId: jar.id,
+      }),
+      "INVALID_CONNECTION",
+    );
+    expectCode(
+      canConnect(deploymentDocument, {
+        kind: "deploy",
+        sourceId: appServer.id,
+        targetId: war.id,
+      }),
+      "INVALID_CONNECTION",
+    );
+    expectCode(
+      canConnect(deploymentDocument, {
+        kind: "communication-path",
+        sourceId: appServer.id,
+        targetId: appServer.id,
+      }),
+      "SELF_RELATIONSHIP",
+    );
+    expectCode(
+      canConnect(deploymentDocument, {
+        kind: "component-usage",
+        sourceId: appServer.id,
+        targetId: dbServer.id,
       }),
       "INVALID_CONNECTION",
     );

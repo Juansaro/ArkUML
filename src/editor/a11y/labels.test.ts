@@ -14,6 +14,8 @@ describe("accessible labels", () => {
     expect(elementTypeLabel("lifeline")).toBe("Lifeline");
     expect(elementTypeLabel("class")).toBe("Clase");
     expect(elementTypeLabel("component")).toBe("Componente");
+    expect(elementTypeLabel("node")).toBe("Nodo");
+    expect(elementTypeLabel("artifact")).toBe("Artefacto");
     expect(elementAccessibleName({ kind: "actor", name: "Usuario" })).toBe(
       "Actor Usuario",
     );
@@ -34,6 +36,10 @@ describe("accessible labels", () => {
     expect(relationshipTypeLabel("generalization")).toBe("Generalización");
     expect(relationshipTypeLabel("component-usage")).toBe("Uso");
     expect(relationshipTypeLabel("assembly-connector")).toBe("Ensamblaje");
+    expect(relationshipTypeLabel("communication-path")).toBe(
+      "Camino de comunicación",
+    );
+    expect(relationshipTypeLabel("deploy")).toBe("Deploy");
     expect(relationshipAccessibleName("association", "Usuario", "Login")).toBe(
       "Asociación entre Usuario y Login",
     );

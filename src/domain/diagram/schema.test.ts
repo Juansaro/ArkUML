@@ -4,6 +4,7 @@ import {
   createActor,
   createEmptyClassDocument,
   createEmptyComponentDocument,
+  createEmptyDeploymentDocument,
   createEmptySequenceDocument,
   createLifeline,
   createRelationship,
@@ -148,7 +149,7 @@ describe("parseWorkspaceSnapshot", () => {
     expectRejected(
       withActiveDocument(snapshot, {
         ...activeDocument(snapshot),
-        kind: "deployment",
+        kind: "entity-relationship",
       }),
       "UNKNOWN_KIND",
       /kind|no soportado/i,
@@ -433,7 +434,7 @@ describe("parser schema 2 — secuencia y mezclas", () => {
   });
 });
 
-describe("parser schema 3 — clases, componentes y kinds futuros", () => {
+describe("parser schema 3 — clases, componentes, despliegue y kinds futuros", () => {
   it("acepta un documento class vacío", () => {
     const document = createEmptyClassDocument({
       createId: sequentialIds(),
@@ -447,6 +448,17 @@ describe("parser schema 3 — clases, componentes y kinds futuros", () => {
 
   it("acepta un documento component vacío", () => {
     const document = createEmptyComponentDocument({
+      createId: sequentialIds(),
+      now: () => FIXED_NOW,
+    });
+    expect(parseDiagramDocument(document)).toEqual({
+      ok: true,
+      value: document,
+    });
+  });
+
+  it("acepta un documento deployment vacío", () => {
+    const document = createEmptyDeploymentDocument({
       createId: sequentialIds(),
       now: () => FIXED_NOW,
     });
@@ -508,7 +520,7 @@ describe("parser schema 3 — clases, componentes y kinds futuros", () => {
     });
     const parsed = parseDiagramDocument({
       ...document,
-      kind: "deployment",
+      kind: "entity-relationship",
     });
     expect(parsed.ok).toBe(false);
     if (parsed.ok) {

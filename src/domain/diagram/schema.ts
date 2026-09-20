@@ -111,6 +111,20 @@ const umlComponentSchema = z.strictObject({
   geometry: geometrySchema,
 });
 
+const deploymentNodeSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("node"),
+  name: nameSchema,
+  geometry: geometrySchema,
+});
+
+const artifactSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("artifact"),
+  name: nameSchema,
+  geometry: geometrySchema,
+});
+
 const useCaseElementSchema = z.discriminatedUnion(
   "kind",
   [actorSchema, useCaseSchema, systemBoundarySchema],
@@ -132,6 +146,8 @@ const diagramElementSchema = z.discriminatedUnion(
     lifelineSchema,
     umlClassSchema,
     umlComponentSchema,
+    deploymentNodeSchema,
+    artifactSchema,
   ],
   { error: "Tipo de elemento no soportado." },
 );
@@ -192,6 +208,16 @@ const componentRelationshipSchema = z.strictObject({
   name: messageNameSchema,
 });
 
+const deploymentRelationshipSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.enum(["communication-path", "deploy"], {
+    error: "Tipo de relación no soportado.",
+  }),
+  sourceId: uuidSchema,
+  targetId: uuidSchema,
+  name: messageNameSchema,
+});
+
 const relationshipSchemaV2 = z.union([
   useCaseRelationshipSchema,
   sequenceMessageSchema,
@@ -203,6 +229,7 @@ const relationshipSchema = z.union([
   classAssociationSchema,
   generalizationSchema,
   componentRelationshipSchema,
+  deploymentRelationshipSchema,
 ]);
 
 const metadataSchema = z.strictObject({
@@ -219,6 +246,7 @@ const USE_CASE_ELEMENT_KINDS = new Set([
 const SEQUENCE_ELEMENT_KINDS = new Set(["lifeline"]);
 const CLASS_ELEMENT_KINDS = new Set(["class"]);
 const COMPONENT_ELEMENT_KINDS = new Set(["component"]);
+const DEPLOYMENT_ELEMENT_KINDS = new Set(["node", "artifact"]);
 const USE_CASE_RELATIONSHIP_KINDS = new Set([
   "association",
   "include",
@@ -235,9 +263,13 @@ const COMPONENT_RELATIONSHIP_KINDS = new Set([
   "component-usage",
   "assembly-connector",
 ]);
+const DEPLOYMENT_RELATIONSHIP_KINDS = new Set([
+  "communication-path",
+  "deploy",
+]);
 
 type KindCardinalityDocument = {
-  kind: "use-case" | "sequence" | "class" | "component";
+  kind: "use-case" | "sequence" | "class" | "component" | "deployment";
   elements: readonly { kind: string }[];
   relationships: readonly { kind: string }[];
 };
@@ -316,7 +348,9 @@ function addKindCardinalityIssues(
         ? CLASS_ELEMENT_KINDS
         : document.kind === "component"
           ? COMPONENT_ELEMENT_KINDS
-          : USE_CASE_ELEMENT_KINDS;
+          : document.kind === "deployment"
+            ? DEPLOYMENT_ELEMENT_KINDS
+            : USE_CASE_ELEMENT_KINDS;
   const allowedRelationships =
     document.kind === "sequence"
       ? SEQUENCE_RELATIONSHIP_KINDS
@@ -324,7 +358,9 @@ function addKindCardinalityIssues(
         ? CLASS_RELATIONSHIP_KINDS
         : document.kind === "component"
           ? COMPONENT_RELATIONSHIP_KINDS
-          : USE_CASE_RELATIONSHIP_KINDS;
+          : document.kind === "deployment"
+            ? DEPLOYMENT_RELATIONSHIP_KINDS
+            : USE_CASE_RELATIONSHIP_KINDS;
 
   document.elements.forEach((element, index) => {
     if (allowedElements.has(element.kind)) {
@@ -392,9 +428,12 @@ export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
       error: "schemaVersion debe ser 3.",
     }),
     id: uuidSchema,
-    kind: z.enum(["use-case", "sequence", "class", "component"], {
-      error: "kind de documento no soportado.",
-    }),
+    kind: z.enum(
+      ["use-case", "sequence", "class", "component", "deployment"],
+      {
+        error: "kind de documento no soportado.",
+      },
+    ),
     metadata: metadataSchema,
     elements: z.array(diagramElementSchema),
     relationships: z.array(relationshipSchema),

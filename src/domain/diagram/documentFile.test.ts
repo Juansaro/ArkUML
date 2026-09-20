@@ -17,6 +17,7 @@ import {
   createActor,
   createEmptyClassDocument,
   createEmptyComponentDocument,
+  createEmptyDeploymentDocument,
   createEmptySequenceDocument,
   createLifeline,
   createRelationship,
@@ -52,7 +53,10 @@ function toV2(document: DiagramDocument): DiagramDocumentV2 {
     metadata: document.metadata,
     elements: document.elements.filter(
       (element): element is DiagramDocumentV2["elements"][number] =>
-        element.kind !== "class" && element.kind !== "component",
+        element.kind !== "class" &&
+        element.kind !== "component" &&
+        element.kind !== "node" &&
+        element.kind !== "artifact",
     ),
     relationships: document.relationships.filter(
       (
@@ -63,7 +67,9 @@ function toV2(document: DiagramDocument): DiagramDocumentV2 {
         relationship.kind !== "composition" &&
         relationship.kind !== "generalization" &&
         relationship.kind !== "component-usage" &&
-        relationship.kind !== "assembly-connector",
+        relationship.kind !== "assembly-connector" &&
+        relationship.kind !== "communication-path" &&
+        relationship.kind !== "deploy",
     ),
   };
 }
@@ -308,6 +314,24 @@ describe("serializeDocumentFile / parseDocumentFile", () => {
     expect(parsed.value.formatVersion).toBe(3);
   });
 
+  it("hace round-trip de un documento deployment en formatVersion 3", () => {
+    const document = createEmptyDeploymentDocument({
+      createId: sequentialIds(60),
+      now: () => FIXED_NOW,
+    });
+    const json = serializeDocumentFile(document, VIEW);
+    const parsed = parseDocumentFileText(json);
+    expect(parsed).toEqual({
+      ok: true,
+      value: toDocumentFile(document, VIEW),
+    });
+    if (!parsed.ok) {
+      return;
+    }
+    expect(parsed.value.document.kind).toBe("deployment");
+    expect(parsed.value.formatVersion).toBe(3);
+  });
+
   it("acepta un envelope 3.x válido construido a mano", () => {
     const file = toDocumentFile(sampleUseCaseDocument(), VIEW);
     expect(parseDocumentFile(file)).toEqual({ ok: true, value: file });
@@ -385,7 +409,7 @@ describe("rechazo del archivo de usuario", () => {
     const document = sampleUseCaseDocument();
     expectRejected({
       ...toDocumentFile(document, VIEW),
-      document: { ...document, kind: "deployment" },
+      document: { ...document, kind: "entity-relationship" },
     });
   });
 

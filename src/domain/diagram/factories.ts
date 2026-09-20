@@ -2,17 +2,21 @@ import {
   CLASS_DOCUMENT_KIND,
   COMPONENT_DOCUMENT_KIND,
   DEFAULT_ASSOCIATION_MULTIPLICITY,
+  DEFAULT_ARTIFACT_GEOMETRY,
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_BOUNDARY_NAME,
   DEFAULT_CLASS_DOCUMENT_TITLE,
   DEFAULT_CLASS_GEOMETRY,
   DEFAULT_COMPONENT_DOCUMENT_TITLE,
   DEFAULT_COMPONENT_GEOMETRY,
+  DEFAULT_DEPLOYMENT_DOCUMENT_TITLE,
   DEFAULT_DOCUMENT_TITLE,
   DEFAULT_LIFELINE_GEOMETRY,
   DEFAULT_LIFELINE_STEM_LENGTH,
+  DEFAULT_NODE_GEOMETRY,
   DEFAULT_SEQUENCE_DOCUMENT_TITLE,
   DEFAULT_VIEWPORT,
+  DEPLOYMENT_DOCUMENT_KIND,
   DOCUMENT_KIND,
   SCHEMA_VERSION,
   SEQUENCE_DOCUMENT_KIND,
@@ -21,11 +25,15 @@ import {
 import type {
   Actor,
   Anchor,
+  Artifact,
   AssociationMultiplicity,
   ClassRelationship,
   ClassRelationshipKind,
   ComponentRelationship,
   ComponentRelationshipKind,
+  DeploymentNode,
+  DeploymentRelationship,
+  DeploymentRelationshipKind,
   DiagramDocument,
   DocumentMetadata,
   Geometry,
@@ -267,6 +275,54 @@ export function createComponentRelationship(
   };
 }
 
+export function createNode(
+  input: {
+    name: string;
+    geometry?: Geometry;
+  },
+  deps?: DiagramFactoryDeps,
+): DeploymentNode {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "node",
+    name: input.name.trim(),
+    geometry: copyGeometry(input.geometry ?? DEFAULT_NODE_GEOMETRY),
+  };
+}
+
+export function createArtifact(
+  input: {
+    name: string;
+    geometry?: Geometry;
+  },
+  deps?: DiagramFactoryDeps,
+): Artifact {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "artifact",
+    name: input.name.trim(),
+    geometry: copyGeometry(input.geometry ?? DEFAULT_ARTIFACT_GEOMETRY),
+  };
+}
+
+export function createDeploymentRelationship(
+  input: {
+    kind: DeploymentRelationshipKind;
+    sourceId: string;
+    targetId: string;
+    name?: string;
+  },
+  deps?: DiagramFactoryDeps,
+): DeploymentRelationship {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: input.kind,
+    sourceId: input.sourceId,
+    targetId: input.targetId,
+    name: input.name?.trim() ?? "",
+  };
+}
+
 export function createDocumentMetadata(
   input: { title?: string } = {},
   deps?: DiagramFactoryDeps,
@@ -359,6 +415,24 @@ export function createEmptyComponentDocument(
     kind: COMPONENT_DOCUMENT_KIND,
     metadata: createDocumentMetadata(
       { title: DEFAULT_COMPONENT_DOCUMENT_TITLE },
+      deps,
+    ),
+    elements: [],
+    relationships: [],
+  };
+}
+
+export function createEmptyDeploymentDocument(
+  deps?: DiagramFactoryDeps,
+): DiagramDocument {
+  const createId = resolveCreateId(deps);
+
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    id: createId(),
+    kind: DEPLOYMENT_DOCUMENT_KIND,
+    metadata: createDocumentMetadata(
+      { title: DEFAULT_DEPLOYMENT_DOCUMENT_TITLE },
       deps,
     ),
     elements: [],
