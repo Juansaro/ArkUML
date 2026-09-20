@@ -88,6 +88,9 @@ describe("DiagramCanvas", () => {
       "component",
       "node",
       "artifact",
+      "entity",
+      "attribute",
+      "er-relationship",
     ]);
     expect(Object.keys(edgeTypes)).toEqual([
       "association",
@@ -103,6 +106,7 @@ describe("DiagramCanvas", () => {
       "assembly-connector",
       "communication-path",
       "deploy",
+      "er-link",
     ]);
   });
 

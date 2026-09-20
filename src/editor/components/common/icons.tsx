@@ -36,6 +36,10 @@ export const ICON_NAMES = [
   "artifact",
   "communicationPath",
   "deploy",
+  "entity",
+  "attribute",
+  "erRelationship",
+  "erLink",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -331,6 +335,20 @@ export function IconPaths({ name }: { name: IconName }) {
           <path d="M11 9.5 14 12l-3 2.5" />
           <path d="M17 8v8" />
           <path d="M17 8h3a2 2 0 0 1 0 4h-3" />
+        </>
+      );
+    case "entity":
+      return <path d="M4 6h16v12H4z" />;
+    case "attribute":
+      return <ellipse cx="12" cy="12" rx="9" ry="6" />;
+    case "erRelationship":
+      return <path d="M12 3l9 9-9 9-9-9z" />;
+    case "erLink":
+      return (
+        <>
+          <path d="M3 8h6v8H3z" />
+          <path d="M9 12h5" />
+          <path d="M17 6l5 6-5 6-5-6z" />
         </>
       );
   }

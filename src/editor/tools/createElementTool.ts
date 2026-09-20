@@ -3,6 +3,9 @@ import {
   DEFAULT_CLASS_GEOMETRY,
   DEFAULT_COMPONENT_GEOMETRY,
   DEFAULT_ARTIFACT_GEOMETRY,
+  DEFAULT_ATTRIBUTE_GEOMETRY,
+  DEFAULT_ENTITY_GEOMETRY,
+  DEFAULT_ER_RELATIONSHIP_GEOMETRY,
   DEFAULT_LIFELINE_GEOMETRY,
   DEFAULT_LIFELINE_WIDTH,
   DEFAULT_NODE_GEOMETRY,
@@ -25,6 +28,9 @@ export const CREATE_ELEMENT_TOOLS = [
   "component",
   "node",
   "artifact",
+  "entity",
+  "attribute",
+  "er-relationship",
 ] as const;
 
 export type CreateElementTool = (typeof CREATE_ELEMENT_TOOLS)[number];
@@ -38,6 +44,9 @@ export const DEFAULT_ELEMENT_NAMES = {
   component: "Componente",
   node: "Nodo",
   artifact: "Artefacto",
+  entity: "Entidad",
+  attribute: "Atributo",
+  "er-relationship": "Relación",
 } as const;
 
 export const DEFAULT_ELEMENT_SIZES: Record<
@@ -70,6 +79,18 @@ export const DEFAULT_ELEMENT_SIZES: Record<
     width: DEFAULT_ARTIFACT_GEOMETRY.width,
     height: DEFAULT_ARTIFACT_GEOMETRY.height,
   },
+  entity: {
+    width: DEFAULT_ENTITY_GEOMETRY.width,
+    height: DEFAULT_ENTITY_GEOMETRY.height,
+  },
+  attribute: {
+    width: DEFAULT_ATTRIBUTE_GEOMETRY.width,
+    height: DEFAULT_ATTRIBUTE_GEOMETRY.height,
+  },
+  "er-relationship": {
+    width: DEFAULT_ER_RELATIONSHIP_GEOMETRY.width,
+    height: DEFAULT_ER_RELATIONSHIP_GEOMETRY.height,
+  },
 };
 
 export function isCreateElementTool(
@@ -83,7 +104,10 @@ export function isCreateElementTool(
     tool === "class" ||
     tool === "component" ||
     tool === "node" ||
-    tool === "artifact"
+    tool === "artifact" ||
+    tool === "entity" ||
+    tool === "attribute" ||
+    tool === "er-relationship"
   );
 }
 
@@ -175,6 +199,14 @@ export function defaultPlacementPosition(
   }
 
   if (kind === "node" || kind === "artifact") {
+    return { x: 80 + offset, y: 80 + offset };
+  }
+
+  if (
+    kind === "entity" ||
+    kind === "attribute" ||
+    kind === "er-relationship"
+  ) {
     return { x: 80 + offset, y: 80 + offset };
   }
 
@@ -297,6 +329,27 @@ function createByKind(
 
   if (kind === "artifact") {
     return state.createArtifact({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "entity") {
+    return state.createEntity({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "attribute") {
+    return state.createAttribute({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "er-relationship") {
+    return state.createErRelationship({
       name,
       geometry: geometryAt(kind, flowPosition),
     });

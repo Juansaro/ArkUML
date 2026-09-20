@@ -4,6 +4,7 @@ import type {
   AssociationMultiplicity,
   DiagramDocument,
   DiagramElement,
+  ErCardinality,
   Relationship,
   RelationshipKind,
 } from "../../domain/diagram/model.ts";
@@ -12,6 +13,8 @@ import {
   isClassRelationship,
   isComponentRelationship,
   isDeploymentRelationship,
+  isErAttribute,
+  isErLink,
   isLifeline,
   isSequenceMessage,
   isUmlClass,
@@ -31,6 +34,7 @@ export type DiagramNodeData = {
   stemLength?: number;
   attributes?: readonly string[];
   operations?: readonly string[];
+  isKey?: boolean;
 };
 
 export type DiagramEdgeData = {
@@ -39,6 +43,8 @@ export type DiagramEdgeData = {
   y?: number;
   sourceMultiplicity?: AssociationMultiplicity;
   targetMultiplicity?: AssociationMultiplicity;
+  cardinality?: ErCardinality;
+  cardinalityEnd?: "source" | "target";
 };
 
 export type DiagramNode = Node<DiagramNodeData, DiagramElement["kind"]>;
@@ -250,6 +256,36 @@ function mapElement(element: DiagramElement): DiagramNode {
     };
   }
 
+  if (
+    element.kind === "entity" ||
+    element.kind === "er-relationship"
+  ) {
+    return {
+      ...node,
+      style: {
+        width: element.geometry.width,
+        height: element.geometry.height,
+        overflow: "visible",
+      },
+    };
+  }
+
+  if (isErAttribute(element)) {
+    return {
+      ...node,
+      data: {
+        kind: element.kind,
+        name: element.name,
+        isKey: element.isKey === true,
+      },
+      style: {
+        width: element.geometry.width,
+        height: element.geometry.height,
+        overflow: "visible",
+      },
+    };
+  }
+
   if (element.kind === "use-case" && element.parentId !== undefined) {
     return {
       ...node,
@@ -358,6 +394,44 @@ function mapEdge(
       data: {
         kind: relationship.kind,
         name: relationship.name,
+      },
+      selected: false,
+      reconnectable: false,
+      ariaLabel: relationshipAriaLabel(relationship, elementsById, false),
+    };
+  }
+
+  if (isErLink(relationship)) {
+    const source = elementsById.get(relationship.sourceId);
+    const target = elementsById.get(relationship.targetId);
+    const anchors =
+      source === undefined || target === undefined
+        ? { source: "right" as const, target: "left" as const }
+        : inferredAnchors(source.geometry, target.geometry);
+    const cardinalityEnd =
+      relationship.cardinality === undefined
+        ? undefined
+        : source?.kind === "entity"
+          ? ("source" as const)
+          : target?.kind === "entity"
+            ? ("target" as const)
+            : undefined;
+    return {
+      id: relationship.id,
+      type: relationship.kind,
+      source: relationship.sourceId,
+      target: relationship.targetId,
+      sourceHandle: anchors.source,
+      targetHandle: anchors.target,
+      className: `diagram-edge diagram-edge-${relationship.kind}`,
+      data: {
+        kind: relationship.kind,
+        ...(relationship.cardinality !== undefined
+          ? {
+              cardinality: relationship.cardinality,
+              ...(cardinalityEnd !== undefined ? { cardinalityEnd } : {}),
+            }
+          : {}),
       },
       selected: false,
       reconnectable: false,

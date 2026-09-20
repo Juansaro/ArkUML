@@ -16,6 +16,9 @@ describe("accessible labels", () => {
     expect(elementTypeLabel("component")).toBe("Componente");
     expect(elementTypeLabel("node")).toBe("Nodo");
     expect(elementTypeLabel("artifact")).toBe("Artefacto");
+    expect(elementTypeLabel("entity")).toBe("Entidad");
+    expect(elementTypeLabel("attribute")).toBe("Atributo");
+    expect(elementTypeLabel("er-relationship")).toBe("Relación");
     expect(elementAccessibleName({ kind: "actor", name: "Usuario" })).toBe(
       "Actor Usuario",
     );
@@ -40,6 +43,7 @@ describe("accessible labels", () => {
       "Camino de comunicación",
     );
     expect(relationshipTypeLabel("deploy")).toBe("Deploy");
+    expect(relationshipTypeLabel("er-link")).toBe("Enlace");
     expect(relationshipAccessibleName("association", "Usuario", "Login")).toBe(
       "Asociación entre Usuario y Login",
     );

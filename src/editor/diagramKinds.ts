@@ -31,6 +31,10 @@ export const DEPLOYMENT_RELATIONSHIP_TOOLS = [
   "deploy",
 ] as const;
 
+export const ER_CREATE_TOOLS = ["entity", "attribute", "er-relationship"] as const;
+
+export const ER_RELATIONSHIP_TOOLS = ["er-link"] as const;
+
 export function isToolForDocumentKind(
   kind: DocumentKind,
   tool: EditorTool,
@@ -67,6 +71,14 @@ export function isToolForDocumentKind(
       tool === "artifact" ||
       tool === "communication-path" ||
       tool === "deploy"
+    );
+  }
+  if (kind === "entity-relationship") {
+    return (
+      tool === "entity" ||
+      tool === "attribute" ||
+      tool === "er-relationship" ||
+      tool === "er-link"
     );
   }
   return (

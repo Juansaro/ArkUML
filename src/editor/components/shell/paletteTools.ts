@@ -52,6 +52,21 @@ export const DEPLOYMENT_ELEMENT_TOOLS = [
   },
 ] as const;
 
+export const ER_ELEMENT_TOOLS = [
+  {
+    id: "entity",
+    label: "Entidad",
+  },
+  {
+    id: "attribute",
+    label: "Atributo",
+  },
+  {
+    id: "er-relationship",
+    label: "Relación",
+  },
+] as const;
+
 export const BOUNDARY_EXISTS_REASON =
   "Ya existe un límite del sistema. El documento admite uno solo.";
 
@@ -133,6 +148,14 @@ export const DEPLOYMENT_RELATIONSHIP_TOOLS = [
   },
 ] as const;
 
+export const ER_RELATIONSHIP_TOOLS = [
+  {
+    id: "er-link",
+    label: "Enlace",
+    hint: "Unir atributo–entidad o entidad–relación. Arrastra del origen al destino.",
+  },
+] as const;
+
 export function paletteElementTools(kind: DocumentKind) {
   if (kind === "sequence") {
     return SEQUENCE_ELEMENT_TOOLS;
@@ -145,6 +168,9 @@ export function paletteElementTools(kind: DocumentKind) {
   }
   if (kind === "deployment") {
     return DEPLOYMENT_ELEMENT_TOOLS;
+  }
+  if (kind === "entity-relationship") {
+    return ER_ELEMENT_TOOLS;
   }
   return PALETTE_ELEMENT_TOOLS;
 }
@@ -161,6 +187,9 @@ export function paletteRelationshipTools(kind: DocumentKind) {
   }
   if (kind === "deployment") {
     return DEPLOYMENT_RELATIONSHIP_TOOLS;
+  }
+  if (kind === "entity-relationship") {
+    return ER_RELATIONSHIP_TOOLS;
   }
   return PALETTE_RELATIONSHIP_TOOLS;
 }

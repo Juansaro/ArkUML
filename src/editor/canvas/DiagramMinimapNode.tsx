@@ -143,7 +143,7 @@ export function DiagramMinimapNode({
     );
   }
 
-  if (className === "component" || className === "class" || className === "artifact") {
+  if (className === "component" || className === "class" || className === "artifact" || className === "entity") {
     return (
       <g data-minimap-kind={className} onClick={handleClick}>
         <rect
@@ -160,6 +160,63 @@ export function DiagramMinimapNode({
             className={styles.minimapLabel}
             x={x + width / 2}
             y={y + height / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize={NAME_FONT_SIZE}
+            aria-hidden="true"
+          >
+            {name}
+          </text>
+        )}
+      </g>
+    );
+  }
+
+  if (className === "attribute") {
+    return (
+      <g data-minimap-kind="attribute" onClick={handleClick}>
+        <ellipse
+          cx={x + width / 2}
+          cy={y + height / 2}
+          rx={Math.max(0, width / 2 - inset)}
+          ry={Math.max(0, height / 2 - inset)}
+          fill="var(--color-surface)"
+          stroke="var(--color-fg)"
+          strokeWidth={NOTATION_STROKE}
+        />
+        {name === "" ? null : (
+          <text
+            className={styles.minimapLabel}
+            x={x + width / 2}
+            y={y + height / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize={NAME_FONT_SIZE}
+            aria-hidden="true"
+          >
+            {name}
+          </text>
+        )}
+      </g>
+    );
+  }
+
+  if (className === "er-relationship") {
+    const cx = x + width / 2;
+    const cy = y + height / 2;
+    return (
+      <g data-minimap-kind="er-relationship" onClick={handleClick}>
+        <polygon
+          points={`${cx},${y + inset} ${x + width - inset},${cy} ${cx},${y + height - inset} ${x + inset},${cy}`}
+          fill="var(--color-surface)"
+          stroke="var(--color-fg)"
+          strokeWidth={NOTATION_STROKE}
+        />
+        {name === "" ? null : (
+          <text
+            className={styles.minimapLabel}
+            x={cx}
+            y={cy}
             textAnchor="middle"
             dominantBaseline="middle"
             fontSize={NAME_FONT_SIZE}

@@ -42,6 +42,10 @@ const PALETTE_ICONS: Record<string, IconName> = {
   artifact: "artifact",
   "communication-path": "communicationPath",
   deploy: "deploy",
+  entity: "entity",
+  attribute: "attribute",
+  "er-relationship": "erRelationship",
+  "er-link": "erLink",
 };
 
 const PALETTE_DESCRIPTIONS: Record<string, string> = {
@@ -76,6 +80,11 @@ const PALETTE_DESCRIPTIONS: Record<string, string> = {
   "communication-path": "Unir dos nodos.",
   deploy:
     "Origen: artefacto. Destino: nodo. Arrastra del origen al destino; el sentido no se invierte.",
+  entity: "Crear entidad.",
+  attribute: "Crear atributo.",
+  "er-relationship": "Crear relación (rombo).",
+  "er-link":
+    "Unir atributo–entidad o entidad–relación. Arrastra del origen al destino.",
 };
 
 function paletteIcon(id: string): IconName {

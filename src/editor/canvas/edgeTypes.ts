@@ -4,6 +4,7 @@ import { ClassRelationshipEdge } from "../edges/ClassRelationshipEdge.tsx";
 import { ComponentRelationshipEdge } from "../edges/ComponentRelationshipEdge.tsx";
 import { DependencyEdge } from "../edges/DependencyEdge.tsx";
 import { DeploymentRelationshipEdge } from "../edges/DeploymentRelationshipEdge.tsx";
+import { ErLinkEdge } from "../edges/ErLinkEdge.tsx";
 import { SequenceMessageEdge } from "../edges/SequenceMessageEdge.tsx";
 
 export const edgeTypes = {
@@ -20,4 +21,5 @@ export const edgeTypes = {
   "assembly-connector": ComponentRelationshipEdge,
   "communication-path": DeploymentRelationshipEdge,
   deploy: DeploymentRelationshipEdge,
+  "er-link": ErLinkEdge,
 } satisfies EdgeTypes;

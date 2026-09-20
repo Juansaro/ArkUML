@@ -1,0 +1,18 @@
+.path {
+  fill: none;
+  stroke: var(--color-fg);
+  stroke-width: 2;
+}
+
+.cardinality {
+  fill: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  pointer-events: none;
+}
+
+:global(.react-flow__edge.selected) .path {
+  stroke: var(--color-focus);
+  stroke-width: 3;
+}

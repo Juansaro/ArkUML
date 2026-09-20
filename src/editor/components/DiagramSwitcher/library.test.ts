@@ -19,6 +19,7 @@ describe("documentKindLabel", () => {
     expect(documentKindLabel("class")).toBe("Clases");
     expect(documentKindLabel("component")).toBe("Componentes");
     expect(documentKindLabel("deployment")).toBe("Despliegue");
+    expect(documentKindLabel("entity-relationship")).toBe("Entidad relación");
   });
 });
 
@@ -38,6 +39,9 @@ describe("documentKindTagline", () => {
     );
     expect(documentKindTagline("deployment")).toBe(
       "Editor de diagramas de despliegue",
+    );
+    expect(documentKindTagline("entity-relationship")).toBe(
+      "Editor de diagramas entidad-relación",
     );
   });
 });

@@ -7,6 +7,8 @@ import type {
   DiagramDocument,
   DiagramElement,
   DocumentKind,
+  ErCardinality,
+  ErRelationshipKind,
   SequenceMessageKind,
   UseCaseRelationshipKind,
   Viewport,
@@ -16,6 +18,8 @@ import {
   isClassRelationship,
   isComponentRelationship,
   isDeploymentRelationship,
+  isErAttribute,
+  isErLink,
   isSequenceMessage,
   isUmlClass,
   isUseCaseRelationship,
@@ -195,6 +199,7 @@ export type InspectorView =
       typeLabel: string;
       attributes?: readonly string[];
       operations?: readonly string[];
+      isKey?: boolean;
     }
   | {
       status: "relationship";
@@ -253,6 +258,17 @@ export type InspectorView =
       targetId: string;
       sourceLabel: string;
       targetLabel: string;
+    }
+  | {
+      status: "er-link";
+      id: string;
+      kind: ErRelationshipKind;
+      typeLabel: string;
+      sourceId: string;
+      targetId: string;
+      sourceLabel: string;
+      targetLabel: string;
+      cardinality?: ErCardinality;
     };
 
 const EMPTY_INSPECTOR_VIEW: InspectorView = { status: "empty" };
@@ -284,6 +300,7 @@ export function selectInspectorView(state: EditorStore): InspectorView {
       ...(isUmlClass(element)
         ? { attributes: element.attributes, operations: element.operations }
         : {}),
+      ...(isErAttribute(element) ? { isKey: element.isKey === true } : {}),
     };
   }
 
@@ -353,6 +370,21 @@ export function selectInspectorView(state: EditorStore): InspectorView {
       targetId: relationship.targetId,
       sourceLabel: endpointLabel(state.document, relationship.sourceId),
       targetLabel: endpointLabel(state.document, relationship.targetId),
+    };
+  }
+  if (isErLink(relationship)) {
+    return {
+      status: "er-link",
+      id: relationship.id,
+      kind: relationship.kind,
+      typeLabel: relationshipTypeLabel(relationship.kind),
+      sourceId: relationship.sourceId,
+      targetId: relationship.targetId,
+      sourceLabel: endpointLabel(state.document, relationship.sourceId),
+      targetLabel: endpointLabel(state.document, relationship.targetId),
+      ...(relationship.cardinality !== undefined
+        ? { cardinality: relationship.cardinality }
+        : {}),
     };
   }
   if (!isUseCaseRelationship(relationship)) {

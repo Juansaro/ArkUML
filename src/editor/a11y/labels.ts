@@ -25,6 +25,15 @@ export function elementTypeLabel(kind: DiagramElement["kind"]): string {
   if (kind === "artifact") {
     return "Artefacto";
   }
+  if (kind === "entity") {
+    return "Entidad";
+  }
+  if (kind === "attribute") {
+    return "Atributo";
+  }
+  if (kind === "er-relationship") {
+    return "Relación";
+  }
   return "Límite del sistema";
 }
 
@@ -61,6 +70,9 @@ export function relationshipTypeLabel(kind: RelationshipKind): string {
   }
   if (kind === "deploy") {
     return "Deploy";
+  }
+  if (kind === "er-link") {
+    return "Enlace";
   }
   return "Extend";
 }

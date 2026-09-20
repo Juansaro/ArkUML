@@ -19,6 +19,9 @@ export function documentKindLabel(kind: DocumentKind): string {
   if (kind === "deployment") {
     return "Despliegue";
   }
+  if (kind === "entity-relationship") {
+    return "Entidad relación";
+  }
   return "Casos de uso";
 }
 
@@ -35,6 +38,9 @@ export function documentKindTagline(kind: DocumentKind): string {
   if (kind === "deployment") {
     return "Editor de diagramas de despliegue";
   }
+  if (kind === "entity-relationship") {
+    return "Editor de diagramas entidad-relación";
+  }
   return "Editor de diagramas de casos de uso";
 }
 
@@ -44,6 +50,7 @@ export const CREATABLE_DOCUMENT_KINDS = [
   { value: "class", label: "Clases" },
   { value: "component", label: "Componentes" },
   { value: "deployment", label: "Despliegue" },
+  { value: "entity-relationship", label: "Entidad relación" },
 ] as const satisfies readonly { value: DocumentKind; label: string }[];
 
 export function filterLibraryDocuments(

@@ -627,6 +627,44 @@ describe("EditorShell", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("Nuevo con Entidad relación añade el kind y cambia la paleta", async () => {
+    const user = userEvent.setup();
+    const createId = sequentialIds(110);
+    const deps = {
+      createId,
+      now: () => new Date("2026-09-07T12:00:00.000Z"),
+    };
+    const store = createEditorStore({
+      document: createDiagramDocument(deps),
+      deps: { ...deps, now: () => new Date("2026-09-08T08:00:00.000Z") },
+    });
+    render(
+      <EditorStoreProvider store={store}>
+        <EditorShell />
+      </EditorStoreProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Nuevo" }));
+    await user.click(screen.getByRole("radio", { name: "Entidad relación" }));
+    await user.click(
+      screen.getByRole("button", { name: "Crear diagrama nuevo" }),
+    );
+
+    expect(store.getState().document.kind).toBe("entity-relationship");
+    expect(store.getState().document.metadata.title).toBe(
+      "Diagrama entidad-relación",
+    );
+    expect(screen.getByRole("button", { name: "Entidad" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Atributo" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Relación" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Enlace" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Actor" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("devuelve el foco al control que abrió el diálogo", async () => {
     const user = userEvent.setup();
     render(<EditorShell />);

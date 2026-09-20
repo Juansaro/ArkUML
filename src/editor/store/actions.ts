@@ -4,6 +4,7 @@ import {
   CLASS_DOCUMENT_KIND,
   COMPONENT_DOCUMENT_KIND,
   DEPLOYMENT_DOCUMENT_KIND,
+  ER_DOCUMENT_KIND,
   SEQUENCE_DOCUMENT_KIND,
 } from "../../domain/diagram/defaults.ts";
 import {
@@ -11,6 +12,7 @@ import {
   createEmptyClassDocument,
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
+  createEmptyErDocument,
   createEmptySequenceDocument,
   createUuid,
   type DiagramFactoryDeps,
@@ -19,6 +21,7 @@ import type {
   AssociationMultiplicity,
   DiagramDocument,
   DocumentKind,
+  ErCardinality,
   Geometry,
   Result,
   Viewport,
@@ -32,6 +35,9 @@ import {
   createComponent as createComponentOperation,
   createNode as createNodeOperation,
   createArtifact as createArtifactOperation,
+  createEntity as createEntityOperation,
+  createAttribute as createAttributeOperation,
+  createErRelationship as createErRelationshipOperation,
   createRelationship,
   deleteElements as deleteElementsOperation,
   deleteRelationships as deleteRelationshipsOperation,
@@ -45,7 +51,9 @@ import {
   reparentUseCase as reparentUseCaseOperation,
   resizeBoundary,
   setAssociationEnds as setAssociationEndsOperation,
+  setAttributeKey as setAttributeKeyOperation,
   setClassMembers as setClassMembersOperation,
+  setErCardinality as setErCardinalityOperation,
   type CreateElementInput,
   type CreateRelationshipInput,
   type ElementCopy,
@@ -110,6 +118,18 @@ export type EditorActions = {
     name: string;
     geometry?: Geometry;
   }) => Result<DiagramDocument>;
+  createEntity: (input: {
+    name: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createAttribute: (input: {
+    name: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createErRelationship: (input: {
+    name: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
   renameElement: (elementId: string, name: string) => Result<DiagramDocument>;
   renameRelationship: (
     relationshipId: string,
@@ -136,6 +156,14 @@ export type EditorActions = {
     id: string;
     sourceMultiplicity: AssociationMultiplicity;
     targetMultiplicity: AssociationMultiplicity;
+  }) => Result<DiagramDocument>;
+  setAttributeKey: (input: {
+    id: string;
+    isKey: boolean;
+  }) => Result<DiagramDocument>;
+  setErCardinality: (input: {
+    id: string;
+    cardinality: ErCardinality;
   }) => Result<DiagramDocument>;
   deleteElements: (elementIds: readonly string[]) => Result<DiagramDocument>;
   deleteRelationships: (
@@ -229,6 +257,14 @@ export function createEditorActions(
       apply((document) => createNodeOperation(document, input, deps)),
     createArtifact: (input) =>
       apply((document) => createArtifactOperation(document, input, deps)),
+    createEntity: (input) =>
+      apply((document) => createEntityOperation(document, input, deps)),
+    createAttribute: (input) =>
+      apply((document) => createAttributeOperation(document, input, deps)),
+    createErRelationship: (input) =>
+      apply((document) =>
+        createErRelationshipOperation(document, input, deps),
+      ),
     renameElement: (elementId, name) =>
       apply((document) =>
         renameElementOperation(document, elementId, name, deps),
@@ -257,6 +293,10 @@ export function createEditorActions(
       apply((document) => setClassMembersOperation(document, input, deps)),
     setAssociationEnds: (input) =>
       apply((document) => setAssociationEndsOperation(document, input, deps)),
+    setAttributeKey: (input) =>
+      apply((document) => setAttributeKeyOperation(document, input, deps)),
+    setErCardinality: (input) =>
+      apply((document) => setErCardinalityOperation(document, input, deps)),
     deleteElements: (elementIds) =>
       apply((document) => deleteElementsOperation(document, elementIds, deps)),
     deleteRelationships: (relationshipIds) =>
@@ -582,7 +622,9 @@ export function createEditorActions(
               ? createEmptyComponentDocument(deps)
               : nextKind === DEPLOYMENT_DOCUMENT_KIND
                 ? createEmptyDeploymentDocument(deps)
-                : createDiagramDocument(deps);
+                : nextKind === ER_DOCUMENT_KIND
+                  ? createEmptyErDocument(deps)
+                  : createDiagramDocument(deps);
       return get().addDocument(document);
     },
     activateDocument: (documentId) => {

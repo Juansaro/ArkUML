@@ -499,16 +499,48 @@ Camino y deploy no se distinguen solo por color: continuo sin punta vs
 discontinua + `D`. Estos iconos no sustituyen el prisma, el documento
 ni el estereotipo «deploy» del lienzo.
 
+**`entity`** — rectángulo Chen (entidad):
+
+```text
+<path d="M4 6h16v12H4z" />
+```
+
+**`attribute`** — elipse Chen (atributo):
+
+```text
+<ellipse cx="12" cy="12" rx="9" ry="6" />
+```
+
+**`erRelationship`** — rombo Chen (relación):
+
+```text
+<path d="M12 3l9 9-9 9-9-9z" />
+```
+
+**`erLink`** — enlace origen → destino (rectángulo + segmento + rombo
+simplificado), sin punta:
+
+```text
+<path d="M3 8h6v8H3z" />
+<path d="M9 12h5" />
+<path d="M17 6l5 6-5 6-5-6z" />
+```
+
+Entidad, atributo, rombo y enlace no se distinguen solo por color: rectángulo
+vs elipse vs rombo vs rectángulo–línea–rombo. Estos iconos no sustituyen
+el subrayado de clave ni la cardinalidad «1»/«N» del lienzo.
+
 Los ids de `Icon` van en camelCase. En paleta se conectan a los `EditorTool`
 existentes sin renombrar ni el icono ni la herramienta: `useCase` →
 `use-case`, `systemBoundary` → `system-boundary`, `syncMessage` →
 `sync-message`, `replyMessage` → `reply-message`, `classAssociation` →
 `class-association`, `componentUsage` → `component-usage`,
 `assemblyConnector` → `assembly-connector`, `communicationPath` →
-`communication-path`. El resto coincide (`select`, `actor`,
+`communication-path`, `erRelationship` → `er-relationship`,
+`erLink` → `er-link`. El resto coincide (`select`, `actor`,
 `association`, `include`, `extend`, `lifeline`, `class`, `aggregation`,
 `composition`, `generalization`, `component`, `node`, `artifact`,
-`deploy`).
+`deploy`, `entity`, `attribute`).
 
 ## Matriz de controles
 
@@ -552,6 +584,10 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Paleta | `artifact` | Icono + etiqueta. Solo despliegue | Artefacto | «Crear artefacto.» | — |
 | Paleta | `communicationPath` | Icono + etiqueta. Solo despliegue | Camino | «Unir dos nodos.» | — |
 | Paleta | `deploy` | Icono + etiqueta. Solo despliegue | Desplegar | «Origen: artefacto. Destino: nodo. Arrastra del origen al destino; el sentido no se invierte.» | — |
+| Paleta | `entity` | Icono + etiqueta. Solo `document.kind` `"entity-relationship"` | Entidad | «Crear entidad.» | — |
+| Paleta | `attribute` | Icono + etiqueta. Solo ER | Atributo | «Crear atributo.» | — |
+| Paleta | `erRelationship` | Icono + etiqueta. Solo ER | Relación | «Crear relación (rombo).» | — |
+| Paleta | `erLink` | Icono + etiqueta. Solo ER | Enlace | «Unir atributo–entidad o entidad–relación. Arrastra del origen al destino.» | — |
 | Lienzo | `zoomIn` | Icon-only | Acercar | «Acercar.» | «El zoom ya está en el máximo (200%).» cuando `zoom >= 2` |
 | Lienzo | `zoomOut` | Icon-only | Alejar | «Alejar.» | «El zoom ya está en el mínimo (50%).» cuando `zoom <= 0.5` |
 | Lienzo | `fitView` | Icon-only | Ajustar vista | «Ajustar todo el diagrama (Ctrl/Cmd+0).» | — |

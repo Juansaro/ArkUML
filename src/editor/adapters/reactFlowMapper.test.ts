@@ -4,15 +4,19 @@ import {
   createEmptyClassDocument,
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
+  createEmptyErDocument,
   createEmptySequenceDocument,
   type IdFactory,
 } from "../../domain/diagram/factories.ts";
 import type { DiagramDocument, Geometry } from "../../domain/diagram/model.ts";
 import {
   createArtifact,
+  createAttribute,
   createClass,
   createComponent,
   createElement,
+  createEntity,
+  createErRelationship,
   createLifeline,
   createNode,
   createRelationship,
@@ -667,6 +671,104 @@ describe("mapDocumentToReactFlow", () => {
     expect(edges[1]).toMatchObject({
       type: "deploy",
       data: { kind: "deploy", name: "" },
+    });
+  });
+
+  it("proyecta entidad, atributo clave, rombo y er-link con cardinalidad", () => {
+    const deps = { createId: sequentialIds(200), now: () => CREATED_AT };
+    const empty = createEmptyErDocument(deps);
+    const withEntity = expectOk(
+      createEntity(
+        empty,
+        {
+          name: "Cliente",
+          geometry: { x: 0, y: 0, width: 160, height: 80 },
+        },
+        deps,
+      ),
+    );
+    const withAttr = expectOk(
+      createAttribute(
+        withEntity,
+        {
+          name: "id",
+          geometry: { x: 0, y: 120, width: 120, height: 56 },
+          isKey: true,
+        },
+        deps,
+      ),
+    );
+    const withRombo = expectOk(
+      createErRelationship(
+        withAttr,
+        {
+          name: "hace",
+          geometry: { x: 220, y: 0, width: 120, height: 80 },
+        },
+        deps,
+      ),
+    );
+    const entity = withRombo.elements[0];
+    const attribute = withRombo.elements[1];
+    const rombo = withRombo.elements[2];
+    if (entity === undefined || attribute === undefined || rombo === undefined) {
+      throw new Error("Faltan elementos ER");
+    }
+    const withAttrLink = expectOk(
+      createRelationship(
+        withRombo,
+        {
+          kind: "er-link",
+          sourceId: attribute.id,
+          targetId: entity.id,
+        },
+        deps,
+      ),
+    );
+    const document = expectOk(
+      createRelationship(
+        withAttrLink,
+        {
+          kind: "er-link",
+          sourceId: entity.id,
+          targetId: rombo.id,
+        },
+        deps,
+      ),
+    );
+
+    const { nodes, edges } = mapDocumentToReactFlow(document, {
+      elementIds: [entity.id],
+      relationshipIds: [document.relationships[1]!.id],
+    });
+
+    expect(nodes).toHaveLength(3);
+    expect(nodes[0]).toMatchObject({
+      type: "entity",
+      data: { kind: "entity", name: "Cliente" },
+      selected: true,
+    });
+    expect(nodes[1]).toMatchObject({
+      type: "attribute",
+      data: { kind: "attribute", name: "id", isKey: true },
+    });
+    expect(nodes[2]).toMatchObject({
+      type: "er-relationship",
+      data: { kind: "er-relationship", name: "hace" },
+    });
+    expect(edges[0]).toMatchObject({
+      type: "er-link",
+      data: { kind: "er-link" },
+    });
+    expect(edges[0]?.data?.cardinality).toBeUndefined();
+    expect(edges[1]).toMatchObject({
+      type: "er-link",
+      selected: true,
+      data: {
+        kind: "er-link",
+        cardinality: "N",
+        cardinalityEnd: "source",
+      },
     });
   });
 });

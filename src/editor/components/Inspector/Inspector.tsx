@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
   ASSOCIATION_MULTIPLICITIES,
+  ER_CARDINALITIES,
   isAssociationMultiplicity,
+  isErCardinality,
 } from "../../../domain/diagram/model.ts";
 import { ElementNameField } from "../../interactions/ElementNameField.tsx";
 import {
@@ -52,7 +54,8 @@ export function Inspector({ headingId }: InspectorProps) {
       view.status !== "message" &&
       view.status !== "class-relationship" &&
       view.status !== "component-relationship" &&
-      view.status !== "deployment-relationship" ? (
+      view.status !== "deployment-relationship" &&
+      view.status !== "er-link" ? (
         <>
           {connectionHelp !== undefined ? (
             <ConnectionHelp text={connectionHelp} />
@@ -213,6 +216,22 @@ function InspectorBody({
     );
   }
 
+  if (view.status === "er-link") {
+    const endpoints = relationshipEndpointFieldLabels(view.kind);
+    return (
+      <div className={styles.fields}>
+        {connectionHelp !== undefined ? (
+          <ConnectionHelp text={connectionHelp} />
+        ) : null}
+        <TypeField label={view.typeLabel} />
+        <ErLinkEndpoints view={view} labels={endpoints} />
+        {view.cardinality !== undefined ? (
+          <ErCardinalityField view={view} />
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className={styles.fields}>
       <TypeField label={view.typeLabel} />
@@ -227,6 +246,7 @@ function InspectorBody({
         />
       </label>
       {view.kind === "class" ? <ClassMembersFields view={view} /> : null}
+      {view.kind === "attribute" ? <AttributeKeyField view={view} /> : null}
     </div>
   );
 }
@@ -439,6 +459,93 @@ function DeploymentRelationshipEndpoints({
         </p>
       </div>
     </>
+  );
+}
+
+function ErLinkEndpoints({
+  view,
+  labels,
+}: {
+  view: Extract<ReturnType<typeof selectInspectorView>, { status: "er-link" }>;
+  labels: { source: string; target: string };
+}) {
+  return (
+    <>
+      <div className={styles.field}>
+        <p className={styles.label}>{labels.source}</p>
+        <p className={styles.value} data-testid="inspector-source">
+          {view.sourceLabel}
+        </p>
+      </div>
+      <div className={styles.field}>
+        <p className={styles.label}>{labels.target}</p>
+        <p className={styles.value} data-testid="inspector-target">
+          {view.targetLabel}
+        </p>
+      </div>
+    </>
+  );
+}
+
+function ErCardinalityField({
+  view,
+}: {
+  view: Extract<ReturnType<typeof selectInspectorView>, { status: "er-link" }>;
+}) {
+  const store = useEditorStoreApi();
+  const cardinality = view.cardinality ?? "N";
+
+  return (
+    <label className={styles.field}>
+      <span className={styles.label}>Cardinalidad</span>
+      <select
+        className={styles.select}
+        value={cardinality}
+        data-testid="inspector-er-cardinality"
+        aria-label="Cardinalidad"
+        onChange={(event) => {
+          if (!isErCardinality(event.target.value)) {
+            return;
+          }
+          store.getState().setErCardinality({
+            id: view.id,
+            cardinality: event.target.value,
+          });
+        }}
+      >
+        {ER_CARDINALITIES.map((value) => (
+          <option key={value} value={value}>
+            {value}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function AttributeKeyField({
+  view,
+}: {
+  view: Extract<ReturnType<typeof selectInspectorView>, { status: "element" }>;
+}) {
+  const store = useEditorStoreApi();
+  const isKey = view.isKey === true;
+
+  return (
+    <label className={styles.field} data-testid="inspector-attribute-key">
+      <span className={styles.label}>Clave</span>
+      <input
+        type="checkbox"
+        checked={isKey}
+        aria-label="Clave"
+        onChange={(event) => {
+          store.getState().setAttributeKey({
+            id: view.id,
+            isKey: event.target.checked,
+          });
+        }}
+      />
+    </label>
   );
 }
 

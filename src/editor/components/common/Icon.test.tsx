@@ -130,4 +130,22 @@ describe("Icon", () => {
       "M17 8h3a2 2 0 0 1 0 4h-3",
     );
   });
+
+  it("pinta los glifos Chen de entidad-relación", () => {
+    const { rerender } = render(<Icon name="entity" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M4 6h16v12H4z");
+    rerender(<Icon name="attribute" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      'cx="12" cy="12" rx="9" ry="6"',
+    );
+    rerender(<Icon name="erRelationship" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M12 3l9 9-9 9-9-9z",
+    );
+    rerender(<Icon name="erLink" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M3 8h6v8H3z");
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M17 6l5 6-5 6-5-6z",
+    );
+  });
 });

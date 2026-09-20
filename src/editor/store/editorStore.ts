@@ -41,6 +41,10 @@ export const EDITOR_TOOLS = [
   "artifact",
   "communication-path",
   "deploy",
+  "entity",
+  "attribute",
+  "er-relationship",
+  "er-link",
 ] as const;
 
 export type EditorTool = (typeof EDITOR_TOOLS)[number];

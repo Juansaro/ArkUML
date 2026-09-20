@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -66,10 +66,10 @@ Host vacío prohibido. Notación = `er-model.md`. Sin kit.
 
 ## Criterios de aceptación
 
-- [ ] Paleta y lienzo Chen; cardinalidad visible en entidad–rombo.
-- [ ] Nuevo ER añade a la biblioteca.
-- [ ] PNG sin shell. Módulos previos intactos.
-- [ ] Iconos en addendum de marca.
+- [x] Paleta y lienzo Chen; cardinalidad visible en entidad–rombo.
+- [x] Nuevo ER añade a la biblioteca.
+- [x] PNG sin shell. Módulos previos intactos.
+- [x] Iconos en addendum de marca.
 
 ## Tests
 
@@ -93,4 +93,12 @@ Módulo ER completo.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-20: módulo ER Chen; paleta Entidad/Atributo/Relación/Enlace;
+EntityNode + AttributeNode (`isKey` subrayado) + ErRelationshipNode
+(rombo) + ErLinkEdge con «1»/«N»; Nuevo y combobox «Entidad relación»;
+addendum de iconos en `brand-system.md`. `npx vitest run src/editor
+src/domain` (413 tests). `npx playwright test --project=chromium`
+(72 tests). `tsc -p tsconfig.app.json` limpio. `tsc -b` sigue fallando
+por `e2e/include-extend.spec.ts` (`SVGPathElement`/`DOMPoint` en
+`tsconfig.node` sin lib DOM; preexistente, fuera de alcance). Pin
+`html-to-image@1.11.11` intacto. Sin Crow’s foot ni entidad débil.
