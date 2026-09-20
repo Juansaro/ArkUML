@@ -9,9 +9,11 @@ import {
   connectionRejectionMessage,
   connectableEndpointOptions,
   defaultMessageY,
+  isActivityRelationshipTool,
   isClassRelationshipTool,
   isComponentRelationshipTool,
   isDeploymentRelationshipTool,
+  isErRelationshipTool,
   isSequenceRelationshipTool,
   relationshipEndpointFieldLabels,
   type RelationshipTool,
@@ -67,7 +69,9 @@ export function ConnectForm({ kind }: ConnectFormProps) {
     if (
       isClassRelationshipTool(kind) ||
       isComponentRelationshipTool(kind) ||
-      isDeploymentRelationshipTool(kind)
+      isDeploymentRelationshipTool(kind) ||
+      isErRelationshipTool(kind) ||
+      isActivityRelationshipTool(kind)
     ) {
       commitRelationship(store, {
         kind,

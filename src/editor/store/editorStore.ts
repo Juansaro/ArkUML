@@ -45,6 +45,14 @@ export const EDITOR_TOOLS = [
   "attribute",
   "er-relationship",
   "er-link",
+  "action",
+  "initial-node",
+  "activity-final",
+  "decision-node",
+  "merge-node",
+  "fork-node",
+  "join-node",
+  "control-flow",
 ] as const;
 
 export type EditorTool = (typeof EDITOR_TOOLS)[number];

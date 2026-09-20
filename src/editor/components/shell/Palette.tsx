@@ -46,6 +46,14 @@ const PALETTE_ICONS: Record<string, IconName> = {
   attribute: "attribute",
   "er-relationship": "erRelationship",
   "er-link": "erLink",
+  action: "action",
+  "initial-node": "initialNode",
+  "activity-final": "activityFinal",
+  "decision-node": "decisionNode",
+  "merge-node": "mergeNode",
+  "fork-node": "forkNode",
+  "join-node": "joinNode",
+  "control-flow": "controlFlow",
 };
 
 const PALETTE_DESCRIPTIONS: Record<string, string> = {
@@ -85,6 +93,15 @@ const PALETTE_DESCRIPTIONS: Record<string, string> = {
   "er-relationship": "Crear relación (rombo).",
   "er-link":
     "Unir atributo–entidad o entidad–relación. Arrastra del origen al destino.",
+  action: "Crear acción.",
+  "initial-node": "Crear nodo inicial.",
+  "activity-final": "Crear nodo final.",
+  "decision-node": "Crear nodo de decisión.",
+  "merge-node": "Crear nodo de fusión.",
+  "fork-node": "Crear barra de bifurcación.",
+  "join-node": "Crear barra de unión.",
+  "control-flow":
+    "Unir dos nodos con flujo de control. Arrastra del origen al destino. La guarda es opcional al salir de una decisión.",
 };
 
 function paletteIcon(id: string): IconName {

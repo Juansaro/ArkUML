@@ -34,6 +34,27 @@ export function elementTypeLabel(kind: DiagramElement["kind"]): string {
   if (kind === "er-relationship") {
     return "Relación";
   }
+  if (kind === "action") {
+    return "Acción";
+  }
+  if (kind === "initial-node") {
+    return "Inicial";
+  }
+  if (kind === "activity-final") {
+    return "Final";
+  }
+  if (kind === "decision-node") {
+    return "Decisión";
+  }
+  if (kind === "merge-node") {
+    return "Fusión";
+  }
+  if (kind === "fork-node") {
+    return "Fork";
+  }
+  if (kind === "join-node") {
+    return "Join";
+  }
   return "Límite del sistema";
 }
 
@@ -74,6 +95,9 @@ export function relationshipTypeLabel(kind: RelationshipKind): string {
   if (kind === "er-link") {
     return "Enlace";
   }
+  if (kind === "control-flow") {
+    return "Flujo de control";
+  }
   return "Extend";
 }
 
@@ -81,7 +105,9 @@ export function elementAccessibleName(
   element: Pick<DiagramElement, "kind" | "name">,
   selected = false,
 ): string {
-  const base = `${elementTypeLabel(element.kind)} ${element.name}`;
+  const type = elementTypeLabel(element.kind);
+  const base =
+    element.name.trim().length === 0 ? type : `${type} ${element.name}`;
   return selected ? `${base}, seleccionado` : base;
 }
 

@@ -20,6 +20,7 @@ describe("documentKindLabel", () => {
     expect(documentKindLabel("component")).toBe("Componentes");
     expect(documentKindLabel("deployment")).toBe("Despliegue");
     expect(documentKindLabel("entity-relationship")).toBe("Entidad relación");
+    expect(documentKindLabel("activity")).toBe("Actividades");
   });
 });
 
@@ -42,6 +43,9 @@ describe("documentKindTagline", () => {
     );
     expect(documentKindTagline("entity-relationship")).toBe(
       "Editor de diagramas entidad-relación",
+    );
+    expect(documentKindTagline("activity")).toBe(
+      "Editor de diagramas de actividades",
     );
   });
 });

@@ -67,6 +67,37 @@ export const ER_ELEMENT_TOOLS = [
   },
 ] as const;
 
+export const ACTIVITY_ELEMENT_TOOLS = [
+  {
+    id: "action",
+    label: "Acción",
+  },
+  {
+    id: "initial-node",
+    label: "Inicial",
+  },
+  {
+    id: "activity-final",
+    label: "Final",
+  },
+  {
+    id: "decision-node",
+    label: "Decisión",
+  },
+  {
+    id: "merge-node",
+    label: "Fusión",
+  },
+  {
+    id: "fork-node",
+    label: "Fork",
+  },
+  {
+    id: "join-node",
+    label: "Join",
+  },
+] as const;
+
 export const BOUNDARY_EXISTS_REASON =
   "Ya existe un límite del sistema. El documento admite uno solo.";
 
@@ -156,6 +187,14 @@ export const ER_RELATIONSHIP_TOOLS = [
   },
 ] as const;
 
+export const ACTIVITY_RELATIONSHIP_TOOLS = [
+  {
+    id: "control-flow",
+    label: "Flujo",
+    hint: "Unir dos nodos con flujo de control. Arrastra del origen al destino. La guarda es opcional al salir de una decisión.",
+  },
+] as const;
+
 export function paletteElementTools(kind: DocumentKind) {
   if (kind === "sequence") {
     return SEQUENCE_ELEMENT_TOOLS;
@@ -171,6 +210,9 @@ export function paletteElementTools(kind: DocumentKind) {
   }
   if (kind === "entity-relationship") {
     return ER_ELEMENT_TOOLS;
+  }
+  if (kind === "activity") {
+    return ACTIVITY_ELEMENT_TOOLS;
   }
   return PALETTE_ELEMENT_TOOLS;
 }
@@ -190,6 +232,9 @@ export function paletteRelationshipTools(kind: DocumentKind) {
   }
   if (kind === "entity-relationship") {
     return ER_RELATIONSHIP_TOOLS;
+  }
+  if (kind === "activity") {
+    return ACTIVITY_RELATIONSHIP_TOOLS;
   }
   return PALETTE_RELATIONSHIP_TOOLS;
 }

@@ -1,6 +1,7 @@
 import type { StoreApi } from "zustand/vanilla";
 import {
   DEFAULT_VIEWPORT,
+  ACTIVITY_DOCUMENT_KIND,
   CLASS_DOCUMENT_KIND,
   COMPONENT_DOCUMENT_KIND,
   DEPLOYMENT_DOCUMENT_KIND,
@@ -9,6 +10,7 @@ import {
 } from "../../domain/diagram/defaults.ts";
 import {
   createDiagramDocument,
+  createEmptyActivityDocument,
   createEmptyClassDocument,
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
@@ -38,6 +40,13 @@ import {
   createEntity as createEntityOperation,
   createAttribute as createAttributeOperation,
   createErRelationship as createErRelationshipOperation,
+  createAction as createActionOperation,
+  createInitialNode as createInitialNodeOperation,
+  createActivityFinal as createActivityFinalOperation,
+  createDecisionNode as createDecisionNodeOperation,
+  createMergeNode as createMergeNodeOperation,
+  createForkNode as createForkNodeOperation,
+  createJoinNode as createJoinNodeOperation,
   createRelationship,
   deleteElements as deleteElementsOperation,
   deleteRelationships as deleteRelationshipsOperation,
@@ -53,6 +62,7 @@ import {
   setAssociationEnds as setAssociationEndsOperation,
   setAttributeKey as setAttributeKeyOperation,
   setClassMembers as setClassMembersOperation,
+  setControlFlowGuard as setControlFlowGuardOperation,
   setErCardinality as setErCardinalityOperation,
   type CreateElementInput,
   type CreateRelationshipInput,
@@ -130,6 +140,34 @@ export type EditorActions = {
     name: string;
     geometry?: Geometry;
   }) => Result<DiagramDocument>;
+  createAction: (input: {
+    name: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createInitialNode: (input: {
+    name?: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createActivityFinal: (input: {
+    name?: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createDecisionNode: (input: {
+    name?: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createMergeNode: (input: {
+    name?: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createForkNode: (input: {
+    name?: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createJoinNode: (input: {
+    name?: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
   renameElement: (elementId: string, name: string) => Result<DiagramDocument>;
   renameRelationship: (
     relationshipId: string,
@@ -164,6 +202,10 @@ export type EditorActions = {
   setErCardinality: (input: {
     id: string;
     cardinality: ErCardinality;
+  }) => Result<DiagramDocument>;
+  setControlFlowGuard: (input: {
+    id: string;
+    guard: string;
   }) => Result<DiagramDocument>;
   deleteElements: (elementIds: readonly string[]) => Result<DiagramDocument>;
   deleteRelationships: (
@@ -265,6 +307,20 @@ export function createEditorActions(
       apply((document) =>
         createErRelationshipOperation(document, input, deps),
       ),
+    createAction: (input) =>
+      apply((document) => createActionOperation(document, input, deps)),
+    createInitialNode: (input) =>
+      apply((document) => createInitialNodeOperation(document, input, deps)),
+    createActivityFinal: (input) =>
+      apply((document) => createActivityFinalOperation(document, input, deps)),
+    createDecisionNode: (input) =>
+      apply((document) => createDecisionNodeOperation(document, input, deps)),
+    createMergeNode: (input) =>
+      apply((document) => createMergeNodeOperation(document, input, deps)),
+    createForkNode: (input) =>
+      apply((document) => createForkNodeOperation(document, input, deps)),
+    createJoinNode: (input) =>
+      apply((document) => createJoinNodeOperation(document, input, deps)),
     renameElement: (elementId, name) =>
       apply((document) =>
         renameElementOperation(document, elementId, name, deps),
@@ -297,6 +353,8 @@ export function createEditorActions(
       apply((document) => setAttributeKeyOperation(document, input, deps)),
     setErCardinality: (input) =>
       apply((document) => setErCardinalityOperation(document, input, deps)),
+    setControlFlowGuard: (input) =>
+      apply((document) => setControlFlowGuardOperation(document, input, deps)),
     deleteElements: (elementIds) =>
       apply((document) => deleteElementsOperation(document, elementIds, deps)),
     deleteRelationships: (relationshipIds) =>
@@ -624,7 +682,9 @@ export function createEditorActions(
                 ? createEmptyDeploymentDocument(deps)
                 : nextKind === ER_DOCUMENT_KIND
                   ? createEmptyErDocument(deps)
-                  : createDiagramDocument(deps);
+                  : nextKind === ACTIVITY_DOCUMENT_KIND
+                    ? createEmptyActivityDocument(deps)
+                    : createDiagramDocument(deps);
       return get().addDocument(document);
     },
     activateDocument: (documentId) => {

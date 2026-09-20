@@ -5,14 +5,17 @@ import type {
   Result,
 } from "../../domain/diagram/model.ts";
 import type {
+  ActivityRelationshipKind,
   ClassRelationshipKind,
   ComponentRelationshipKind,
   DeploymentRelationshipKind,
   ErRelationshipKind,
 } from "../../domain/diagram/model.ts";
 import {
+  isActivityElement,
   isClassRelationship,
   isComponentRelationship,
+  isControlFlow,
   isDeploymentRelationship,
   isErLink,
   isLifeline,
@@ -42,6 +45,7 @@ export const RELATIONSHIP_TOOLS = [
   "communication-path",
   "deploy",
   "er-link",
+  "control-flow",
 ] as const;
 
 export type RelationshipTool = (typeof RELATIONSHIP_TOOLS)[number];
@@ -72,7 +76,8 @@ export function isRelationshipTool(tool: EditorTool): tool is RelationshipTool {
     tool === "assembly-connector" ||
     tool === "communication-path" ||
     tool === "deploy" ||
-    tool === "er-link"
+    tool === "er-link" ||
+    tool === "control-flow"
   );
 }
 
@@ -103,6 +108,12 @@ export function isErRelationshipTool(
   tool: EditorTool,
 ): tool is ErRelationshipKind {
   return tool === "er-link";
+}
+
+export function isActivityRelationshipTool(
+  tool: EditorTool,
+): tool is ActivityRelationshipKind {
+  return tool === "control-flow";
 }
 
 export function isSequenceRelationshipTool(
@@ -174,6 +185,9 @@ export function createdRelationshipAnnouncement(
   if (kind === "er-link") {
     return "Se creó el enlace.";
   }
+  if (kind === "control-flow") {
+    return "Se creó el flujo de control.";
+  }
   return "Se creó extend.";
 }
 
@@ -227,6 +241,9 @@ export function relationshipConnectionHelp(
   }
   if (isErRelationshipTool(tool)) {
     return "Unir atributo–entidad o entidad–relación. Arrastra del origen al destino.";
+  }
+  if (isActivityRelationshipTool(tool)) {
+    return "Unir dos nodos con flujo de control. Arrastra del origen al destino. La guarda es opcional al salir de una decisión.";
   }
   if (tool === "sync-message") {
     return "Mensaje síncrono (llamada).";
@@ -360,6 +377,9 @@ function isConnectableEndpoint(
       element.kind === "er-relationship"
     );
   }
+  if (kind === "control-flow") {
+    return isActivityElement(element);
+  }
   if (kind === "sync-message" || kind === "reply-message") {
     return isLifeline(element);
   }
@@ -433,6 +453,13 @@ export function relationshipInputFromConnection(
     };
   }
   if (isErRelationshipTool(kind)) {
+    return {
+      kind,
+      sourceId: connection.source,
+      targetId: connection.target,
+    };
+  }
+  if (isActivityRelationshipTool(kind)) {
     return {
       kind,
       sourceId: connection.source,
@@ -517,7 +544,8 @@ export function commitRelationship(
       isClassRelationship(created) ||
       isComponentRelationship(created) ||
       isDeploymentRelationship(created) ||
-      isErLink(created)
+      isErLink(created) ||
+      isControlFlow(created)
     ) {
       store.getState().setMessage(createdRelationshipAnnouncement(created.kind));
     }

@@ -92,6 +92,11 @@ describe("nextDefaultName", () => {
     expect(nextDefaultName(["Actor"], "Actor")).toBe("Actor 2");
     expect(nextDefaultName(["Actor", "Actor 2"], "Actor")).toBe("Actor 3");
   });
+
+  it("deja vacío el nombre de nodos de control sin serializar", () => {
+    expect(nextDefaultName([""], "")).toBe("");
+    expect(nextDefaultName(["", "Acción"], "")).toBe("");
+  });
 });
 
 describe("geometryAt", () => {

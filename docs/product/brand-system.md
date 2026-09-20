@@ -530,6 +530,66 @@ Entidad, atributo, rombo y enlace no se distinguen solo por color: rectángulo
 vs elipse vs rombo vs rectángulo–línea–rombo. Estos iconos no sustituyen
 el subrayado de clave ni la cardinalidad «1»/«N» del lienzo.
 
+**`action`** — rectángulo redondeado (acción opaca):
+
+```text
+<path d="M5 8h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z" />
+```
+
+**`initialNode`** — círculo relleno (nodo inicial):
+
+```text
+<circle cx="12" cy="12" r="6" fill="currentColor" stroke="none" />
+```
+
+**`activityFinal`** — bullseye (final de actividad):
+
+```text
+<circle cx="12" cy="12" r="8" />
+<circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none" />
+```
+
+**`decisionNode`** — rombo (decisión):
+
+```text
+<path d="M12 3l9 9-9 9-9-9z" />
+```
+
+**`mergeNode`** — rombo con trazo horizontal (fusión; no solo color):
+
+```text
+<path d="M12 3l9 9-9 9-9-9z" />
+<path d="M8 12h8" />
+```
+
+**`forkNode`** — barra con marcas hacia arriba (fork):
+
+```text
+<path d="M3 11h18v2H3z" fill="currentColor" stroke="none" />
+<path d="M8 7v4" />
+<path d="M16 7v4" />
+```
+
+**`joinNode`** — barra con marcas hacia abajo (join):
+
+```text
+<path d="M3 11h18v2H3z" fill="currentColor" stroke="none" />
+<path d="M8 13v4" />
+<path d="M16 13v4" />
+```
+
+**`controlFlow`** — trazo continuo con flecha abierta (flujo de control):
+
+```text
+<path d="M3 12h14" />
+<path d="M14 9l5 3-5 3" />
+```
+
+Acción, inicial, final, decisión, fusión, fork, join y flujo no se
+distinguen solo por color: rectángulo redondeado vs círculo relleno vs
+bullseye vs rombo vs rombo+trazo vs barra↑ vs barra↓ vs flecha abierta.
+Estos iconos no sustituyen la notación del lienzo ni el texto `[guard]`.
+
 Los ids de `Icon` van en camelCase. En paleta se conectan a los `EditorTool`
 existentes sin renombrar ni el icono ni la herramienta: `useCase` →
 `use-case`, `systemBoundary` → `system-boundary`, `syncMessage` →
@@ -537,10 +597,14 @@ existentes sin renombrar ni el icono ni la herramienta: `useCase` →
 `class-association`, `componentUsage` → `component-usage`,
 `assemblyConnector` → `assembly-connector`, `communicationPath` →
 `communication-path`, `erRelationship` → `er-relationship`,
-`erLink` → `er-link`. El resto coincide (`select`, `actor`,
-`association`, `include`, `extend`, `lifeline`, `class`, `aggregation`,
-`composition`, `generalization`, `component`, `node`, `artifact`,
-`deploy`, `entity`, `attribute`).
+`erLink` → `er-link`, `initialNode` → `initial-node`,
+`activityFinal` → `activity-final`, `decisionNode` → `decision-node`,
+`mergeNode` → `merge-node`, `forkNode` → `fork-node`,
+`joinNode` → `join-node`, `controlFlow` → `control-flow`. El resto
+coincide (`select`, `actor`, `association`, `include`, `extend`,
+`lifeline`, `class`, `aggregation`, `composition`, `generalization`,
+`component`, `node`, `artifact`, `deploy`, `entity`, `attribute`,
+`action`).
 
 ## Matriz de controles
 
@@ -588,6 +652,14 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Paleta | `attribute` | Icono + etiqueta. Solo ER | Atributo | «Crear atributo.» | — |
 | Paleta | `erRelationship` | Icono + etiqueta. Solo ER | Relación | «Crear relación (rombo).» | — |
 | Paleta | `erLink` | Icono + etiqueta. Solo ER | Enlace | «Unir atributo–entidad o entidad–relación. Arrastra del origen al destino.» | — |
+| Paleta | `action` | Icono + etiqueta. Solo `document.kind` `"activity"` | Acción | «Crear acción.» | — |
+| Paleta | `initialNode` | Icono + etiqueta. Solo actividades | Inicial | «Crear nodo inicial.» | — |
+| Paleta | `activityFinal` | Icono + etiqueta. Solo actividades | Final | «Crear nodo final.» | — |
+| Paleta | `decisionNode` | Icono + etiqueta. Solo actividades | Decisión | «Crear nodo de decisión.» | — |
+| Paleta | `mergeNode` | Icono + etiqueta. Solo actividades | Fusión | «Crear nodo de fusión.» | — |
+| Paleta | `forkNode` | Icono + etiqueta. Solo actividades | Fork | «Crear barra de bifurcación.» | — |
+| Paleta | `joinNode` | Icono + etiqueta. Solo actividades | Join | «Crear barra de unión.» | — |
+| Paleta | `controlFlow` | Icono + etiqueta. Solo actividades | Flujo | «Unir dos nodos con flujo de control. Arrastra del origen al destino. La guarda es opcional al salir de una decisión.» | — |
 | Lienzo | `zoomIn` | Icon-only | Acercar | «Acercar.» | «El zoom ya está en el máximo (200%).» cuando `zoom >= 2` |
 | Lienzo | `zoomOut` | Icon-only | Alejar | «Alejar.» | «El zoom ya está en el mínimo (50%).» cuando `zoom <= 0.5` |
 | Lienzo | `fitView` | Icon-only | Ajustar vista | «Ajustar todo el diagrama (Ctrl/Cmd+0).» | — |

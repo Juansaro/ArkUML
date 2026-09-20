@@ -1,6 +1,7 @@
 import type {
   Anchor,
   AssociationMultiplicity,
+  ActivityRelationshipKind,
   ClassRelationshipKind,
   ComponentRelationshipKind,
   DeploymentRelationshipKind,
@@ -17,6 +18,7 @@ import {
   isClassAssociation,
   isClassRelationship,
   isComponentRelationship,
+  isControlFlow,
   isDeploymentRelationship,
   isErAttribute,
   isErLink,
@@ -269,6 +271,17 @@ export type InspectorView =
       sourceLabel: string;
       targetLabel: string;
       cardinality?: ErCardinality;
+    }
+  | {
+      status: "control-flow";
+      id: string;
+      kind: ActivityRelationshipKind;
+      typeLabel: string;
+      sourceId: string;
+      targetId: string;
+      sourceLabel: string;
+      targetLabel: string;
+      guard: string;
     };
 
 const EMPTY_INSPECTOR_VIEW: InspectorView = { status: "empty" };
@@ -385,6 +398,19 @@ export function selectInspectorView(state: EditorStore): InspectorView {
       ...(relationship.cardinality !== undefined
         ? { cardinality: relationship.cardinality }
         : {}),
+    };
+  }
+  if (isControlFlow(relationship)) {
+    return {
+      status: "control-flow",
+      id: relationship.id,
+      kind: relationship.kind,
+      typeLabel: relationshipTypeLabel(relationship.kind),
+      sourceId: relationship.sourceId,
+      targetId: relationship.targetId,
+      sourceLabel: endpointLabel(state.document, relationship.sourceId),
+      targetLabel: endpointLabel(state.document, relationship.targetId),
+      guard: relationship.guard,
     };
   }
   if (!isUseCaseRelationship(relationship)) {

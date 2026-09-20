@@ -1,0 +1,17 @@
+.node {
+  position: relative;
+  min-width: 16px;
+  min-height: 16px;
+}
+
+.circle {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--color-fg);
+}
+
+.node[data-selected="true"] .circle {
+  box-shadow: 0 0 0 2px var(--color-focus);
+}

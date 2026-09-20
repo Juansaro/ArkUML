@@ -91,6 +91,13 @@ describe("DiagramCanvas", () => {
       "entity",
       "attribute",
       "er-relationship",
+      "action",
+      "initial-node",
+      "activity-final",
+      "decision-node",
+      "merge-node",
+      "fork-node",
+      "join-node",
     ]);
     expect(Object.keys(edgeTypes)).toEqual([
       "association",
@@ -107,6 +114,7 @@ describe("DiagramCanvas", () => {
       "communication-path",
       "deploy",
       "er-link",
+      "control-flow",
     ]);
   });
 

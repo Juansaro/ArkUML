@@ -31,7 +31,14 @@ export function diagramElement(
     | "artifact"
     | "entity"
     | "attribute"
-    | "er-relationship",
+    | "er-relationship"
+    | "action"
+    | "initial-node"
+    | "activity-final"
+    | "decision-node"
+    | "merge-node"
+    | "fork-node"
+    | "join-node",
   name: string,
 ): Locator {
   return diagramCanvas(page)
@@ -127,7 +134,8 @@ export async function createNewDiagram(
     | "Clases"
     | "Componentes"
     | "Despliegue"
-    | "Entidad relación" = "Casos de uso",
+    | "Entidad relación"
+    | "Actividades" = "Casos de uso",
 ): Promise<void> {
   await page.getByRole("button", { name: "Nuevo" }).click();
   const dialog = page.getByRole("dialog", { name: "Nuevo diagrama" });

@@ -148,4 +148,27 @@ describe("Icon", () => {
       "M17 6l5 6-5 6-5-6z",
     );
   });
+
+  it("pinta los glifos de actividades", () => {
+    const { rerender } = render(<Icon name="action" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M5 8h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z",
+    );
+    rerender(<Icon name="initialNode" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      'fill="currentColor"',
+    );
+    rerender(<Icon name="activityFinal" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      'r="8"',
+    );
+    rerender(<Icon name="mergeNode" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M8 12h8");
+    rerender(<Icon name="forkNode" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M8 7v4");
+    rerender(<Icon name="joinNode" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M8 13v4");
+    rerender(<Icon name="controlFlow" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M14 9l5 3-5 3");
+  });
 });

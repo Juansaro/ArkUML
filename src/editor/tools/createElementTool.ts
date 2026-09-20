@@ -1,11 +1,16 @@
 import {
+  DEFAULT_ACTION_GEOMETRY,
+  DEFAULT_ACTIVITY_FINAL_GEOMETRY,
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_CLASS_GEOMETRY,
   DEFAULT_COMPONENT_GEOMETRY,
   DEFAULT_ARTIFACT_GEOMETRY,
   DEFAULT_ATTRIBUTE_GEOMETRY,
+  DEFAULT_DECISION_NODE_GEOMETRY,
   DEFAULT_ENTITY_GEOMETRY,
   DEFAULT_ER_RELATIONSHIP_GEOMETRY,
+  DEFAULT_FORK_NODE_GEOMETRY,
+  DEFAULT_INITIAL_NODE_GEOMETRY,
   DEFAULT_LIFELINE_GEOMETRY,
   DEFAULT_LIFELINE_WIDTH,
   DEFAULT_NODE_GEOMETRY,
@@ -17,6 +22,7 @@ import type {
   SystemBoundary,
   Viewport,
 } from "../../domain/diagram/model.ts";
+import { elementTypeLabel } from "../a11y/labels.ts";
 import type { EditorStoreApi, EditorTool } from "../store/editorStore.ts";
 
 export const CREATE_ELEMENT_TOOLS = [
@@ -31,6 +37,13 @@ export const CREATE_ELEMENT_TOOLS = [
   "entity",
   "attribute",
   "er-relationship",
+  "action",
+  "initial-node",
+  "activity-final",
+  "decision-node",
+  "merge-node",
+  "fork-node",
+  "join-node",
 ] as const;
 
 export type CreateElementTool = (typeof CREATE_ELEMENT_TOOLS)[number];
@@ -47,6 +60,13 @@ export const DEFAULT_ELEMENT_NAMES = {
   entity: "Entidad",
   attribute: "Atributo",
   "er-relationship": "Relación",
+  action: "Acción",
+  "initial-node": "",
+  "activity-final": "",
+  "decision-node": "",
+  "merge-node": "",
+  "fork-node": "",
+  "join-node": "",
 } as const;
 
 export const DEFAULT_ELEMENT_SIZES: Record<
@@ -91,6 +111,34 @@ export const DEFAULT_ELEMENT_SIZES: Record<
     width: DEFAULT_ER_RELATIONSHIP_GEOMETRY.width,
     height: DEFAULT_ER_RELATIONSHIP_GEOMETRY.height,
   },
+  action: {
+    width: DEFAULT_ACTION_GEOMETRY.width,
+    height: DEFAULT_ACTION_GEOMETRY.height,
+  },
+  "initial-node": {
+    width: DEFAULT_INITIAL_NODE_GEOMETRY.width,
+    height: DEFAULT_INITIAL_NODE_GEOMETRY.height,
+  },
+  "activity-final": {
+    width: DEFAULT_ACTIVITY_FINAL_GEOMETRY.width,
+    height: DEFAULT_ACTIVITY_FINAL_GEOMETRY.height,
+  },
+  "decision-node": {
+    width: DEFAULT_DECISION_NODE_GEOMETRY.width,
+    height: DEFAULT_DECISION_NODE_GEOMETRY.height,
+  },
+  "merge-node": {
+    width: DEFAULT_DECISION_NODE_GEOMETRY.width,
+    height: DEFAULT_DECISION_NODE_GEOMETRY.height,
+  },
+  "fork-node": {
+    width: DEFAULT_FORK_NODE_GEOMETRY.width,
+    height: DEFAULT_FORK_NODE_GEOMETRY.height,
+  },
+  "join-node": {
+    width: DEFAULT_FORK_NODE_GEOMETRY.width,
+    height: DEFAULT_FORK_NODE_GEOMETRY.height,
+  },
 };
 
 export function isCreateElementTool(
@@ -107,7 +155,14 @@ export function isCreateElementTool(
     tool === "artifact" ||
     tool === "entity" ||
     tool === "attribute" ||
-    tool === "er-relationship"
+    tool === "er-relationship" ||
+    tool === "action" ||
+    tool === "initial-node" ||
+    tool === "activity-final" ||
+    tool === "decision-node" ||
+    tool === "merge-node" ||
+    tool === "fork-node" ||
+    tool === "join-node"
   );
 }
 
@@ -115,6 +170,9 @@ export function nextDefaultName(
   existingNames: readonly string[],
   base: string,
 ): string {
+  if (base.trim().length === 0) {
+    return "";
+  }
   if (!existingNames.includes(base)) {
     return base;
   }
@@ -205,7 +263,14 @@ export function defaultPlacementPosition(
   if (
     kind === "entity" ||
     kind === "attribute" ||
-    kind === "er-relationship"
+    kind === "er-relationship" ||
+    kind === "action" ||
+    kind === "initial-node" ||
+    kind === "activity-final" ||
+    kind === "decision-node" ||
+    kind === "merge-node" ||
+    kind === "fork-node" ||
+    kind === "join-node"
   ) {
     return { x: 80 + offset, y: 80 + offset };
   }
@@ -273,7 +338,13 @@ export function placeElement(
       elementIds: [created.id],
       relationshipIds: [],
     });
-    store.getState().setMessage(createdElementAnnouncement(created.name));
+    const announcementName =
+      created.name.trim().length > 0
+        ? created.name
+        : elementTypeLabel(created.kind);
+    store
+      .getState()
+      .setMessage(createdElementAnnouncement(announcementName));
   }
   store.getState().setTool("select");
   return result;
@@ -350,6 +421,55 @@ function createByKind(
 
   if (kind === "er-relationship") {
     return state.createErRelationship({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "action") {
+    return state.createAction({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "initial-node") {
+    return state.createInitialNode({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "activity-final") {
+    return state.createActivityFinal({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "decision-node") {
+    return state.createDecisionNode({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "merge-node") {
+    return state.createMergeNode({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "fork-node") {
+    return state.createForkNode({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "join-node") {
+    return state.createJoinNode({
       name,
       geometry: geometryAt(kind, flowPosition),
     });

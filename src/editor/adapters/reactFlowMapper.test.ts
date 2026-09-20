@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createDiagramDocument,
+  createEmptyActivityDocument,
   createEmptyClassDocument,
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
@@ -10,18 +11,23 @@ import {
 } from "../../domain/diagram/factories.ts";
 import type { DiagramDocument, Geometry } from "../../domain/diagram/model.ts";
 import {
+  createAction,
+  createActivityFinal,
   createArtifact,
   createAttribute,
   createClass,
   createComponent,
+  createDecisionNode,
   createElement,
   createEntity,
   createErRelationship,
+  createInitialNode,
   createLifeline,
   createNode,
   createRelationship,
   moveElements,
   setClassMembers,
+  setControlFlowGuard,
 } from "../../domain/diagram/operations.ts";
 import { createPerformanceDocument } from "../../test/performanceFixture.ts";
 import { mapDocumentToReactFlow } from "./reactFlowMapper.ts";
@@ -769,6 +775,101 @@ describe("mapDocumentToReactFlow", () => {
         cardinality: "N",
         cardinalityEnd: "source",
       },
+    });
+  });
+
+  it("proyecta acción, inicial, decisión, final y control-flow con guarda", () => {
+    const deps = { createId: sequentialIds(300), now: () => CREATED_AT };
+    const empty = createEmptyActivityDocument(deps);
+    const withInitial = expectOk(
+      createInitialNode(
+        empty,
+        { geometry: { x: 0, y: 0, width: 24, height: 24 } },
+        deps,
+      ),
+    );
+    const withAction = expectOk(
+      createAction(
+        withInitial,
+        {
+          name: "Validar",
+          geometry: { x: 80, y: 0, width: 160, height: 64 },
+        },
+        deps,
+      ),
+    );
+    const withDecision = expectOk(
+      createDecisionNode(
+        withAction,
+        { geometry: { x: 280, y: 8, width: 48, height: 48 } },
+        deps,
+      ),
+    );
+    const withFinal = expectOk(
+      createActivityFinal(
+        withDecision,
+        { geometry: { x: 400, y: 0, width: 28, height: 28 } },
+        deps,
+      ),
+    );
+    const initial = withFinal.elements[0];
+    const action = withFinal.elements[1];
+    const decision = withFinal.elements[2];
+    const activityFinal = withFinal.elements[3];
+    if (
+      initial === undefined ||
+      action === undefined ||
+      decision === undefined ||
+      activityFinal === undefined
+    ) {
+      throw new Error("Faltan nodos activity");
+    }
+    const withFlow = expectOk(
+      createRelationship(
+        withFinal,
+        {
+          kind: "control-flow",
+          sourceId: decision.id,
+          targetId: activityFinal.id,
+        },
+        deps,
+      ),
+    );
+    const document = expectOk(
+      setControlFlowGuard(
+        withFlow,
+        { id: withFlow.relationships[0]!.id, guard: "sí" },
+        deps,
+      ),
+    );
+
+    const { nodes, edges } = mapDocumentToReactFlow(document, {
+      elementIds: [action.id],
+      relationshipIds: [document.relationships[0]!.id],
+    });
+
+    expect(nodes).toHaveLength(4);
+    expect(nodes[0]).toMatchObject({
+      type: "initial-node",
+      data: { kind: "initial-node", name: "" },
+    });
+    expect(nodes[1]).toMatchObject({
+      type: "action",
+      data: { kind: "action", name: "Validar" },
+      selected: true,
+    });
+    expect(nodes[2]).toMatchObject({
+      type: "decision-node",
+      data: { kind: "decision-node" },
+    });
+    expect(nodes[3]).toMatchObject({
+      type: "activity-final",
+      data: { kind: "activity-final" },
+    });
+    expect(edges[0]).toMatchObject({
+      type: "control-flow",
+      selected: true,
+      data: { kind: "control-flow", guard: "sí" },
     });
   });
 });

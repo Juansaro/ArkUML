@@ -35,6 +35,18 @@ export const ER_CREATE_TOOLS = ["entity", "attribute", "er-relationship"] as con
 
 export const ER_RELATIONSHIP_TOOLS = ["er-link"] as const;
 
+export const ACTIVITY_CREATE_TOOLS = [
+  "action",
+  "initial-node",
+  "activity-final",
+  "decision-node",
+  "merge-node",
+  "fork-node",
+  "join-node",
+] as const;
+
+export const ACTIVITY_RELATIONSHIP_TOOLS = ["control-flow"] as const;
+
 export function isToolForDocumentKind(
   kind: DocumentKind,
   tool: EditorTool,
@@ -79,6 +91,18 @@ export function isToolForDocumentKind(
       tool === "attribute" ||
       tool === "er-relationship" ||
       tool === "er-link"
+    );
+  }
+  if (kind === "activity") {
+    return (
+      tool === "action" ||
+      tool === "initial-node" ||
+      tool === "activity-final" ||
+      tool === "decision-node" ||
+      tool === "merge-node" ||
+      tool === "fork-node" ||
+      tool === "join-node" ||
+      tool === "control-flow"
     );
   }
   return (

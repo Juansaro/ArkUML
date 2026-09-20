@@ -40,6 +40,14 @@ export const ICON_NAMES = [
   "attribute",
   "erRelationship",
   "erLink",
+  "action",
+  "initialNode",
+  "activityFinal",
+  "decisionNode",
+  "mergeNode",
+  "forkNode",
+  "joinNode",
+  "controlFlow",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -349,6 +357,51 @@ export function IconPaths({ name }: { name: IconName }) {
           <path d="M3 8h6v8H3z" />
           <path d="M9 12h5" />
           <path d="M17 6l5 6-5 6-5-6z" />
+        </>
+      );
+    case "action":
+      return (
+        <path d="M5 8h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z" />
+      );
+    case "initialNode":
+      return <circle cx="12" cy="12" r="6" fill="currentColor" stroke="none" />;
+    case "activityFinal":
+      return (
+        <>
+          <circle cx="12" cy="12" r="8" />
+          <circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none" />
+        </>
+      );
+    case "decisionNode":
+      return <path d="M12 3l9 9-9 9-9-9z" />;
+    case "mergeNode":
+      return (
+        <>
+          <path d="M12 3l9 9-9 9-9-9z" />
+          <path d="M8 12h8" />
+        </>
+      );
+    case "forkNode":
+      return (
+        <>
+          <path d="M3 11h18v2H3z" fill="currentColor" stroke="none" />
+          <path d="M8 7v4" />
+          <path d="M16 7v4" />
+        </>
+      );
+    case "joinNode":
+      return (
+        <>
+          <path d="M3 11h18v2H3z" fill="currentColor" stroke="none" />
+          <path d="M8 13v4" />
+          <path d="M16 13v4" />
+        </>
+      );
+    case "controlFlow":
+      return (
+        <>
+          <path d="M3 12h14" />
+          <path d="M14 9l5 3-5 3" />
         </>
       );
   }

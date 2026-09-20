@@ -1,0 +1,46 @@
+.node {
+  position: relative;
+  min-width: 96px;
+  min-height: 40px;
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+}
+
+.box {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid var(--color-fg);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.node[data-selected="true"] .box {
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 2px var(--color-focus);
+}
+
+.name {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+}
+
+.nameText {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

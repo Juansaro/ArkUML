@@ -19,9 +19,19 @@ describe("accessible labels", () => {
     expect(elementTypeLabel("entity")).toBe("Entidad");
     expect(elementTypeLabel("attribute")).toBe("Atributo");
     expect(elementTypeLabel("er-relationship")).toBe("Relación");
+    expect(elementTypeLabel("action")).toBe("Acción");
+    expect(elementTypeLabel("initial-node")).toBe("Inicial");
+    expect(elementTypeLabel("activity-final")).toBe("Final");
+    expect(elementTypeLabel("decision-node")).toBe("Decisión");
+    expect(elementTypeLabel("merge-node")).toBe("Fusión");
+    expect(elementTypeLabel("fork-node")).toBe("Fork");
+    expect(elementTypeLabel("join-node")).toBe("Join");
     expect(elementAccessibleName({ kind: "actor", name: "Usuario" })).toBe(
       "Actor Usuario",
     );
+    expect(
+      elementAccessibleName({ kind: "initial-node", name: "" }),
+    ).toBe("Inicial");
     expect(
       elementAccessibleName({ kind: "actor", name: "Usuario" }, true),
     ).toBe("Actor Usuario, seleccionado");
@@ -44,6 +54,7 @@ describe("accessible labels", () => {
     );
     expect(relationshipTypeLabel("deploy")).toBe("Deploy");
     expect(relationshipTypeLabel("er-link")).toBe("Enlace");
+    expect(relationshipTypeLabel("control-flow")).toBe("Flujo de control");
     expect(relationshipAccessibleName("association", "Usuario", "Login")).toBe(
       "Asociación entre Usuario y Login",
     );

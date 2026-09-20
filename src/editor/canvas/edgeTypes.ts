@@ -2,6 +2,7 @@ import type { EdgeTypes } from "@xyflow/react";
 import { AssociationEdge } from "../edges/AssociationEdge.tsx";
 import { ClassRelationshipEdge } from "../edges/ClassRelationshipEdge.tsx";
 import { ComponentRelationshipEdge } from "../edges/ComponentRelationshipEdge.tsx";
+import { ControlFlowEdge } from "../edges/ControlFlowEdge.tsx";
 import { DependencyEdge } from "../edges/DependencyEdge.tsx";
 import { DeploymentRelationshipEdge } from "../edges/DeploymentRelationshipEdge.tsx";
 import { ErLinkEdge } from "../edges/ErLinkEdge.tsx";
@@ -22,4 +23,5 @@ export const edgeTypes = {
   "communication-path": DeploymentRelationshipEdge,
   deploy: DeploymentRelationshipEdge,
   "er-link": ErLinkEdge,
+  "control-flow": ControlFlowEdge,
 } satisfies EdgeTypes;

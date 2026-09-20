@@ -1,0 +1,37 @@
+.node {
+  position: relative;
+  min-width: 20px;
+  min-height: 20px;
+}
+
+.bullseye {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+}
+
+.outer {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--color-fg);
+  border-radius: 50%;
+  background: var(--color-surface);
+}
+
+.inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 55%;
+  height: 55%;
+  border-radius: 50%;
+  background: var(--color-fg);
+  transform: translate(-50%, -50%);
+}
+
+.node[data-selected="true"] .outer {
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 2px var(--color-focus);
+}

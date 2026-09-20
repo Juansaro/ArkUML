@@ -9,9 +9,11 @@ import type {
   RelationshipKind,
 } from "../../domain/diagram/model.ts";
 import {
+  isActivityElement,
   isClassAssociation,
   isClassRelationship,
   isComponentRelationship,
+  isControlFlow,
   isDeploymentRelationship,
   isErAttribute,
   isErLink,
@@ -45,6 +47,7 @@ export type DiagramEdgeData = {
   targetMultiplicity?: AssociationMultiplicity;
   cardinality?: ErCardinality;
   cardinalityEnd?: "source" | "target";
+  guard?: string;
 };
 
 export type DiagramNode = Node<DiagramNodeData, DiagramElement["kind"]>;
@@ -286,6 +289,17 @@ function mapElement(element: DiagramElement): DiagramNode {
     };
   }
 
+  if (isActivityElement(element)) {
+    return {
+      ...node,
+      style: {
+        width: element.geometry.width,
+        height: element.geometry.height,
+        overflow: "visible",
+      },
+    };
+  }
+
   if (element.kind === "use-case" && element.parentId !== undefined) {
     return {
       ...node,
@@ -432,6 +446,31 @@ function mapEdge(
               ...(cardinalityEnd !== undefined ? { cardinalityEnd } : {}),
             }
           : {}),
+      },
+      selected: false,
+      reconnectable: false,
+      ariaLabel: relationshipAriaLabel(relationship, elementsById, false),
+    };
+  }
+
+  if (isControlFlow(relationship)) {
+    const source = elementsById.get(relationship.sourceId);
+    const target = elementsById.get(relationship.targetId);
+    const anchors =
+      source === undefined || target === undefined
+        ? { source: "right" as const, target: "left" as const }
+        : inferredAnchors(source.geometry, target.geometry);
+    return {
+      id: relationship.id,
+      type: relationship.kind,
+      source: relationship.sourceId,
+      target: relationship.targetId,
+      sourceHandle: anchors.source,
+      targetHandle: anchors.target,
+      className: `diagram-edge diagram-edge-${relationship.kind}`,
+      data: {
+        kind: relationship.kind,
+        guard: relationship.guard,
       },
       selected: false,
       reconnectable: false,

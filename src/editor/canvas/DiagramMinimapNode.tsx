@@ -143,7 +143,8 @@ export function DiagramMinimapNode({
     );
   }
 
-  if (className === "component" || className === "class" || className === "artifact" || className === "entity") {
+  if (className === "component" || className === "class" || className === "artifact" || className === "entity" || className === "action") {
+    const radius = className === "action" ? 8 : 0;
     return (
       <g data-minimap-kind={className} onClick={handleClick}>
         <rect
@@ -151,6 +152,8 @@ export function DiagramMinimapNode({
           y={y + inset}
           width={Math.max(0, width - NOTATION_STROKE)}
           height={Math.max(0, height - NOTATION_STROKE)}
+          rx={radius}
+          ry={radius}
           fill="var(--color-surface)"
           stroke="var(--color-fg)"
           strokeWidth={NOTATION_STROKE}
@@ -201,11 +204,15 @@ export function DiagramMinimapNode({
     );
   }
 
-  if (className === "er-relationship") {
+  if (
+    className === "er-relationship" ||
+    className === "decision-node" ||
+    className === "merge-node"
+  ) {
     const cx = x + width / 2;
     const cy = y + height / 2;
     return (
-      <g data-minimap-kind="er-relationship" onClick={handleClick}>
+      <g data-minimap-kind={className} onClick={handleClick}>
         <polygon
           points={`${cx},${y + inset} ${x + width - inset},${cy} ${cx},${y + height - inset} ${x + inset},${cy}`}
           fill="var(--color-surface)"
@@ -225,6 +232,60 @@ export function DiagramMinimapNode({
             {name}
           </text>
         )}
+      </g>
+    );
+  }
+
+  if (className === "initial-node") {
+    return (
+      <g data-minimap-kind="initial-node" onClick={handleClick}>
+        <circle
+          cx={x + width / 2}
+          cy={y + height / 2}
+          r={Math.max(0, Math.min(width, height) / 2 - inset)}
+          fill="var(--color-fg)"
+          stroke="none"
+        />
+      </g>
+    );
+  }
+
+  if (className === "activity-final") {
+    const cx = x + width / 2;
+    const cy = y + height / 2;
+    const outer = Math.max(0, Math.min(width, height) / 2 - inset);
+    return (
+      <g data-minimap-kind="activity-final" onClick={handleClick}>
+        <circle
+          cx={cx}
+          cy={cy}
+          r={outer}
+          fill="var(--color-surface)"
+          stroke="var(--color-fg)"
+          strokeWidth={NOTATION_STROKE}
+        />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={outer * 0.45}
+          fill="var(--color-fg)"
+          stroke="none"
+        />
+      </g>
+    );
+  }
+
+  if (className === "fork-node" || className === "join-node") {
+    return (
+      <g data-minimap-kind={className} onClick={handleClick}>
+        <rect
+          x={x + inset}
+          y={y + inset}
+          width={Math.max(0, width - NOTATION_STROKE)}
+          height={Math.max(0, height - NOTATION_STROKE)}
+          fill="var(--color-fg)"
+          stroke="none"
+        />
       </g>
     );
   }
