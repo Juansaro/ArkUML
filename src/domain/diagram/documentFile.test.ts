@@ -18,6 +18,7 @@ import {
   createEmptyClassDocument,
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
+  createEmptyActivityDocument,
   createEmptyErDocument,
   createEmptySequenceDocument,
   createLifeline,
@@ -351,6 +352,24 @@ describe("serializeDocumentFile / parseDocumentFile", () => {
     expect(parsed.value.formatVersion).toBe(3);
   });
 
+  it("hace round-trip de un documento activity en formatVersion 3", () => {
+    const document = createEmptyActivityDocument({
+      createId: sequentialIds(80),
+      now: () => FIXED_NOW,
+    });
+    const json = serializeDocumentFile(document, VIEW);
+    const parsed = parseDocumentFileText(json);
+    expect(parsed).toEqual({
+      ok: true,
+      value: toDocumentFile(document, VIEW),
+    });
+    if (!parsed.ok) {
+      return;
+    }
+    expect(parsed.value.document.kind).toBe("activity");
+    expect(parsed.value.formatVersion).toBe(3);
+  });
+
   it("acepta un envelope 3.x válido construido a mano", () => {
     const file = toDocumentFile(sampleUseCaseDocument(), VIEW);
     expect(parseDocumentFile(file)).toEqual({ ok: true, value: file });
@@ -428,7 +447,7 @@ describe("rechazo del archivo de usuario", () => {
     const document = sampleUseCaseDocument();
     expectRejected({
       ...toDocumentFile(document, VIEW),
-      document: { ...document, kind: "activity" },
+      document: { ...document, kind: "interaction-overview" },
     });
   });
 

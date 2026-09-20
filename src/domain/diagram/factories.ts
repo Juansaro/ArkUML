@@ -1,7 +1,11 @@
 import {
+  ACTIVITY_DOCUMENT_KIND,
   CLASS_DOCUMENT_KIND,
   COMPONENT_DOCUMENT_KIND,
   DEFAULT_ASSOCIATION_MULTIPLICITY,
+  DEFAULT_ACTION_GEOMETRY,
+  DEFAULT_ACTIVITY_DOCUMENT_TITLE,
+  DEFAULT_ACTIVITY_FINAL_GEOMETRY,
   DEFAULT_ARTIFACT_GEOMETRY,
   DEFAULT_ATTRIBUTE_GEOMETRY,
   DEFAULT_BOUNDARY_GEOMETRY,
@@ -10,11 +14,14 @@ import {
   DEFAULT_CLASS_GEOMETRY,
   DEFAULT_COMPONENT_DOCUMENT_TITLE,
   DEFAULT_COMPONENT_GEOMETRY,
+  DEFAULT_DECISION_NODE_GEOMETRY,
   DEFAULT_DEPLOYMENT_DOCUMENT_TITLE,
   DEFAULT_DOCUMENT_TITLE,
   DEFAULT_ENTITY_GEOMETRY,
   DEFAULT_ER_DOCUMENT_TITLE,
   DEFAULT_ER_RELATIONSHIP_GEOMETRY,
+  DEFAULT_FORK_NODE_GEOMETRY,
+  DEFAULT_INITIAL_NODE_GEOMETRY,
   DEFAULT_LIFELINE_GEOMETRY,
   DEFAULT_LIFELINE_STEM_LENGTH,
   DEFAULT_NODE_GEOMETRY,
@@ -29,6 +36,9 @@ import {
 } from "./defaults.ts";
 import type {
   Actor,
+  ActivityAction,
+  ActivityControlNode,
+  ActivityControlNodeKind,
   Anchor,
   Artifact,
   AssociationMultiplicity,
@@ -36,6 +46,7 @@ import type {
   ClassRelationshipKind,
   ComponentRelationship,
   ComponentRelationshipKind,
+  ControlFlow,
   DeploymentNode,
   DeploymentRelationship,
   DeploymentRelationshipKind,
@@ -403,6 +414,155 @@ export function createErLink(
   return link;
 }
 
+function defaultGeometryForActivityControl(
+  kind: ActivityControlNodeKind,
+): Geometry {
+  if (kind === "initial-node") {
+    return DEFAULT_INITIAL_NODE_GEOMETRY;
+  }
+  if (kind === "activity-final") {
+    return DEFAULT_ACTIVITY_FINAL_GEOMETRY;
+  }
+  if (kind === "decision-node" || kind === "merge-node") {
+    return DEFAULT_DECISION_NODE_GEOMETRY;
+  }
+  return DEFAULT_FORK_NODE_GEOMETRY;
+}
+
+export function createAction(
+  input: {
+    name: string;
+    geometry?: Geometry;
+  },
+  deps?: DiagramFactoryDeps,
+): ActivityAction {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "action",
+    name: input.name.trim(),
+    geometry: copyGeometry(input.geometry ?? DEFAULT_ACTION_GEOMETRY),
+  };
+}
+
+export function createInitialNode(
+  input: {
+    name?: string;
+    geometry?: Geometry;
+  } = {},
+  deps?: DiagramFactoryDeps,
+): ActivityControlNode {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "initial-node",
+    name: input.name?.trim() ?? "",
+    geometry: copyGeometry(
+      input.geometry ?? defaultGeometryForActivityControl("initial-node"),
+    ),
+  };
+}
+
+export function createActivityFinal(
+  input: {
+    name?: string;
+    geometry?: Geometry;
+  } = {},
+  deps?: DiagramFactoryDeps,
+): ActivityControlNode {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "activity-final",
+    name: input.name?.trim() ?? "",
+    geometry: copyGeometry(
+      input.geometry ?? defaultGeometryForActivityControl("activity-final"),
+    ),
+  };
+}
+
+export function createDecisionNode(
+  input: {
+    name?: string;
+    geometry?: Geometry;
+  } = {},
+  deps?: DiagramFactoryDeps,
+): ActivityControlNode {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "decision-node",
+    name: input.name?.trim() ?? "",
+    geometry: copyGeometry(
+      input.geometry ?? defaultGeometryForActivityControl("decision-node"),
+    ),
+  };
+}
+
+export function createMergeNode(
+  input: {
+    name?: string;
+    geometry?: Geometry;
+  } = {},
+  deps?: DiagramFactoryDeps,
+): ActivityControlNode {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "merge-node",
+    name: input.name?.trim() ?? "",
+    geometry: copyGeometry(
+      input.geometry ?? defaultGeometryForActivityControl("merge-node"),
+    ),
+  };
+}
+
+export function createForkNode(
+  input: {
+    name?: string;
+    geometry?: Geometry;
+  } = {},
+  deps?: DiagramFactoryDeps,
+): ActivityControlNode {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "fork-node",
+    name: input.name?.trim() ?? "",
+    geometry: copyGeometry(
+      input.geometry ?? defaultGeometryForActivityControl("fork-node"),
+    ),
+  };
+}
+
+export function createJoinNode(
+  input: {
+    name?: string;
+    geometry?: Geometry;
+  } = {},
+  deps?: DiagramFactoryDeps,
+): ActivityControlNode {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "join-node",
+    name: input.name?.trim() ?? "",
+    geometry: copyGeometry(
+      input.geometry ?? defaultGeometryForActivityControl("join-node"),
+    ),
+  };
+}
+
+export function createControlFlow(
+  input: {
+    sourceId: string;
+    targetId: string;
+    guard?: string;
+  },
+  deps?: DiagramFactoryDeps,
+): ControlFlow {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "control-flow",
+    sourceId: input.sourceId,
+    targetId: input.targetId,
+    guard: input.guard?.trim() ?? "",
+  };
+}
+
 export function createDocumentMetadata(
   input: { title?: string } = {},
   deps?: DiagramFactoryDeps,
@@ -531,6 +691,24 @@ export function createEmptyErDocument(
     kind: ER_DOCUMENT_KIND,
     metadata: createDocumentMetadata(
       { title: DEFAULT_ER_DOCUMENT_TITLE },
+      deps,
+    ),
+    elements: [],
+    relationships: [],
+  };
+}
+
+export function createEmptyActivityDocument(
+  deps?: DiagramFactoryDeps,
+): DiagramDocument {
+  const createId = resolveCreateId(deps);
+
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    id: createId(),
+    kind: ACTIVITY_DOCUMENT_KIND,
+    metadata: createDocumentMetadata(
+      { title: DEFAULT_ACTIVITY_DOCUMENT_TITLE },
       deps,
     ),
     elements: [],

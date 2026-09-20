@@ -136,13 +136,38 @@ export type DeploymentElement = DeploymentNode | Artifact;
 
 export type ErElement = ErEntity | ErAttribute | ErRelationshipElement;
 
+export type ActivityAction = {
+  id: string;
+  kind: "action";
+  name: string;
+  geometry: Geometry;
+};
+
+export type ActivityControlNodeKind =
+  | "initial-node"
+  | "activity-final"
+  | "decision-node"
+  | "merge-node"
+  | "fork-node"
+  | "join-node";
+
+export type ActivityControlNode = {
+  id: string;
+  kind: ActivityControlNodeKind;
+  name: string;
+  geometry: Geometry;
+};
+
+export type ActivityElement = ActivityAction | ActivityControlNode;
+
 export type DiagramElement =
   | UseCaseElement
   | SequenceElement
   | ClassElement
   | ComponentElement
   | DeploymentElement
-  | ErElement;
+  | ErElement
+  | ActivityElement;
 
 export type UseCaseRelationshipKind = "association" | "include" | "extend";
 
@@ -160,13 +185,16 @@ export type DeploymentRelationshipKind = "communication-path" | "deploy";
 
 export type ErRelationshipKind = "er-link";
 
+export type ActivityRelationshipKind = "control-flow";
+
 export type RelationshipKind =
   | UseCaseRelationshipKind
   | SequenceMessageKind
   | ClassRelationshipKind
   | ComponentRelationshipKind
   | DeploymentRelationshipKind
-  | ErRelationshipKind;
+  | ErRelationshipKind
+  | ActivityRelationshipKind;
 
 export const ASSOCIATION_MULTIPLICITIES = [
   "0..1",
@@ -244,13 +272,22 @@ export type ErLink = {
   cardinality?: ErCardinality;
 };
 
+export type ControlFlow = {
+  id: string;
+  kind: "control-flow";
+  sourceId: string;
+  targetId: string;
+  guard: string;
+};
+
 export type Relationship =
   | UseCaseRelationship
   | SequenceMessage
   | ClassRelationship
   | ComponentRelationship
   | DeploymentRelationship
-  | ErLink;
+  | ErLink
+  | ControlFlow;
 
 export type DocumentMetadata = {
   title: string;
@@ -265,7 +302,8 @@ export type DocumentKind =
   | "class"
   | "component"
   | "deployment"
-  | "entity-relationship";
+  | "entity-relationship"
+  | "activity";
 
 export type DiagramDocumentV1 = {
   schemaVersion: 1;
@@ -412,6 +450,37 @@ export function isDeploymentRelationship(
 
 export function isErLink(relationship: Relationship): relationship is ErLink {
   return relationship.kind === "er-link";
+}
+
+export function isActivityAction(
+  element: DiagramElement,
+): element is ActivityAction {
+  return element.kind === "action";
+}
+
+export function isActivityControlNode(
+  element: DiagramElement,
+): element is ActivityControlNode {
+  return (
+    element.kind === "initial-node" ||
+    element.kind === "activity-final" ||
+    element.kind === "decision-node" ||
+    element.kind === "merge-node" ||
+    element.kind === "fork-node" ||
+    element.kind === "join-node"
+  );
+}
+
+export function isActivityElement(
+  element: DiagramElement,
+): element is ActivityElement {
+  return isActivityAction(element) || isActivityControlNode(element);
+}
+
+export function isControlFlow(
+  relationship: Relationship,
+): relationship is ControlFlow {
+  return relationship.kind === "control-flow";
 }
 
 export function isClassAssociation(

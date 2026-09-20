@@ -2,6 +2,10 @@ import {
   DEFAULT_ASSOCIATION_MULTIPLICITY,
   DEFAULT_ER_CARDINALITY,
   DUPLICATE_OFFSET,
+  MIN_ACTION_HEIGHT,
+  MIN_ACTION_WIDTH,
+  MIN_ACTIVITY_FINAL_HEIGHT,
+  MIN_ACTIVITY_FINAL_WIDTH,
   MIN_ARTIFACT_HEIGHT,
   MIN_ARTIFACT_WIDTH,
   MIN_ATTRIBUTE_HEIGHT,
@@ -12,10 +16,16 @@ import {
   MIN_CLASS_WIDTH,
   MIN_COMPONENT_HEIGHT,
   MIN_COMPONENT_WIDTH,
+  MIN_DECISION_NODE_HEIGHT,
+  MIN_DECISION_NODE_WIDTH,
   MIN_ENTITY_HEIGHT,
   MIN_ENTITY_WIDTH,
   MIN_ER_RELATIONSHIP_HEIGHT,
   MIN_ER_RELATIONSHIP_WIDTH,
+  MIN_FORK_NODE_HEIGHT,
+  MIN_FORK_NODE_WIDTH,
+  MIN_INITIAL_NODE_HEIGHT,
+  MIN_INITIAL_NODE_WIDTH,
   MIN_LIFELINE_HEIGHT,
   MIN_LIFELINE_STEM_LENGTH,
   MIN_LIFELINE_WIDTH,
@@ -26,17 +36,25 @@ import {
 } from "./defaults.ts";
 import {
   createActor,
+  createAction as buildAction,
+  createActivityFinal as buildActivityFinal,
   createArtifact as buildArtifact,
   createAttribute as buildAttribute,
   createClass as buildClass,
   createClassRelationship as buildClassRelationship,
   createComponent as buildComponent,
   createComponentRelationship as buildComponentRelationship,
+  createControlFlow as buildControlFlow,
+  createDecisionNode as buildDecisionNode,
   createDeploymentRelationship as buildDeploymentRelationship,
   createEntity as buildEntity,
   createErLink as buildErLink,
   createErRelationship as buildErRelationship,
+  createForkNode as buildForkNode,
+  createInitialNode as buildInitialNode,
+  createJoinNode as buildJoinNode,
   createLifeline as buildLifeline,
+  createMergeNode as buildMergeNode,
   createNode as buildNode,
   createRelationship as buildRelationship,
   createSequenceMessage as buildSequenceMessage,
@@ -46,11 +64,14 @@ import {
 } from "./factories.ts";
 import {
   err,
+  isActivityControlNode,
+  isActivityElement,
   isArtifact,
   isAssociationMultiplicity,
   isClassAssociation,
   isClassRelationship,
   isComponentRelationship,
+  isControlFlow,
   isDeploymentNode,
   isDeploymentRelationship,
   isErAttribute,
@@ -65,6 +86,7 @@ import {
   isUmlComponent,
   isUseCaseRelationship,
   ok,
+  type ActivityControlNodeKind,
   type Anchor,
   type AssociationMultiplicity,
   type ClassRelationshipKind,
@@ -144,13 +166,21 @@ export type CreateErLinkInput = {
   cardinality?: ErCardinality;
 };
 
+export type CreateControlFlowInput = {
+  kind: "control-flow";
+  sourceId: string;
+  targetId: string;
+  guard?: string;
+};
+
 export type CreateRelationshipInput =
   | CreateUseCaseRelationshipInput
   | CreateSequenceMessageInput
   | CreateClassRelationshipInput
   | CreateComponentRelationshipInput
   | CreateDeploymentRelationshipInput
-  | CreateErLinkInput;
+  | CreateErLinkInput
+  | CreateControlFlowInput;
 
 export type ReconnectRelationshipInput = CreateUseCaseRelationshipInput & {
   id: string;
@@ -182,6 +212,8 @@ const DEPLOYMENT_ELEMENT_MESSAGE =
   "El documento de despliegue no admite este elemento.";
 const ER_ELEMENT_MESSAGE =
   "El documento entidad-relación no admite este elemento.";
+const ACTIVITY_ELEMENT_MESSAGE =
+  "El documento de actividades no admite este elemento.";
 const USE_CASE_LIFELINE_MESSAGE =
   "El documento de casos de uso no admite lifelines.";
 const USE_CASE_CLASS_MESSAGE = "El documento de casos de uso no admite clases.";
@@ -191,6 +223,8 @@ const USE_CASE_DEPLOYMENT_MESSAGE =
   "El documento de casos de uso no admite nodos ni artefactos.";
 const USE_CASE_ER_MESSAGE =
   "El documento de casos de uso no admite entidades, atributos ni rombos.";
+const USE_CASE_ACTIVITY_MESSAGE =
+  "El documento de casos de uso no admite nodos de actividad.";
 const CLASS_DOCUMENT_MESSAGE =
   "Solo un documento de clases admite este elemento.";
 const COMPONENT_DOCUMENT_MESSAGE =
@@ -199,6 +233,8 @@ const DEPLOYMENT_DOCUMENT_MESSAGE =
   "Solo un documento de despliegue admite este elemento.";
 const ER_DOCUMENT_MESSAGE =
   "Solo un documento entidad-relación admite este elemento.";
+const ACTIVITY_DOCUMENT_MESSAGE =
+  "Solo un documento de actividades admite este elemento.";
 const RENAME_RELATIONSHIP_MESSAGE =
   "Solo se puede renombrar un mensaje de secuencia o una relación de clases, componentes o despliegue.";
 const CLASS_SIZE_MESSAGE = "La clase debe medir al menos 120×72.";
@@ -209,8 +245,17 @@ const ENTITY_SIZE_MESSAGE = "La entidad debe medir al menos 96×48.";
 const ATTRIBUTE_SIZE_MESSAGE = "El atributo debe medir al menos 80×40.";
 const ER_RELATIONSHIP_SIZE_MESSAGE =
   "La relación entidad-relación debe medir al menos 80×48.";
+const ACTION_SIZE_MESSAGE = "La acción debe medir al menos 96×40.";
+const INITIAL_NODE_SIZE_MESSAGE =
+  "El nodo inicial debe medir al menos 16×16.";
+const ACTIVITY_FINAL_SIZE_MESSAGE =
+  "El nodo final debe medir al menos 20×20.";
+const DECISION_NODE_SIZE_MESSAGE =
+  "El nodo de decisión o fusión debe medir al menos 32×32.";
+const FORK_NODE_SIZE_MESSAGE =
+  "La barra de fork o join debe medir al menos 48×6.";
 const RESIZE_TARGET_ELEMENT_MESSAGE =
-  "Solo se puede redimensionar una clase, un componente, un nodo, un artefacto, una entidad, un atributo o un rombo.";
+  "Solo se puede redimensionar una clase, un componente, un nodo, un artefacto, una entidad, un atributo, un rombo o un nodo de actividad.";
 const GENERALIZATION_ENDS_MESSAGE = "Generalization no admite multiplicidades.";
 const ASSOCIATION_ENDS_MESSAGE =
   "Solo se pueden editar extremos de asociación, agregación o composición.";
@@ -224,6 +269,8 @@ const INVALID_ER_CARDINALITY_MESSAGE =
   "La cardinalidad debe ser 1 o N.";
 const ATTRIBUTE_KEY_TARGET_MESSAGE =
   "Solo se puede marcar isKey en un atributo.";
+const CONTROL_FLOW_GUARD_TARGET_MESSAGE =
+  "Solo se puede fijar la guarda en un flujo de control.";
 const MOVE_MESSAGE_TARGET_MESSAGE =
   "Solo se puede mover un mensaje de secuencia.";
 const RECONNECT_MESSAGE_MESSAGE =
@@ -250,6 +297,9 @@ export function createElement(
   }
   if (document.kind === "entity-relationship") {
     return err("UNKNOWN_KIND", ER_ELEMENT_MESSAGE);
+  }
+  if (document.kind === "activity") {
+    return err("UNKNOWN_KIND", ACTIVITY_ELEMENT_MESSAGE);
   }
 
   const name = normalizeName(input.name);
@@ -683,6 +733,162 @@ export function createErRelationship(
   );
 }
 
+type CreateActivityNodeInput = {
+  name?: string;
+  geometry?: Geometry;
+};
+
+function createActivityNode(
+  document: DiagramDocument,
+  kind: "action" | ActivityControlNodeKind,
+  input: CreateActivityNodeInput,
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  if (document.kind !== "activity") {
+    return err("UNKNOWN_KIND", ACTIVITY_DOCUMENT_MESSAGE);
+  }
+
+  const name =
+    kind === "action"
+      ? normalizeName(input.name ?? "")
+      : normalizeMessageName(input.name ?? "");
+  if (!name.ok) {
+    return name;
+  }
+
+  const geometry = input.geometry;
+  if (geometry !== undefined) {
+    if (!isFiniteGeometry(geometry)) {
+      return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+    }
+    const sizeError = activityNodeSizeError(kind, geometry);
+    if (sizeError !== undefined) {
+      return sizeError;
+    }
+  }
+
+  const built =
+    kind === "action"
+      ? buildAction(
+          {
+            name: name.value,
+            ...(geometry === undefined ? {} : { geometry }),
+          },
+          deps,
+        )
+      : kind === "initial-node"
+        ? buildInitialNode(
+            {
+              name: name.value,
+              ...(geometry === undefined ? {} : { geometry }),
+            },
+            deps,
+          )
+        : kind === "activity-final"
+          ? buildActivityFinal(
+              {
+                name: name.value,
+                ...(geometry === undefined ? {} : { geometry }),
+              },
+              deps,
+            )
+          : kind === "decision-node"
+            ? buildDecisionNode(
+                {
+                  name: name.value,
+                  ...(geometry === undefined ? {} : { geometry }),
+                },
+                deps,
+              )
+            : kind === "merge-node"
+              ? buildMergeNode(
+                  {
+                    name: name.value,
+                    ...(geometry === undefined ? {} : { geometry }),
+                  },
+                  deps,
+                )
+              : kind === "fork-node"
+                ? buildForkNode(
+                    {
+                      name: name.value,
+                      ...(geometry === undefined ? {} : { geometry }),
+                    },
+                    deps,
+                  )
+                : buildJoinNode(
+                    {
+                      name: name.value,
+                      ...(geometry === undefined ? {} : { geometry }),
+                    },
+                    deps,
+                  );
+
+  return commit(
+    document,
+    {
+      elements: [...document.elements, built],
+    },
+    deps,
+  );
+}
+
+export function createAction(
+  document: DiagramDocument,
+  input: { name: string; geometry?: Geometry },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  return createActivityNode(document, "action", input, deps);
+}
+
+export function createInitialNode(
+  document: DiagramDocument,
+  input: CreateActivityNodeInput = {},
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  return createActivityNode(document, "initial-node", input, deps);
+}
+
+export function createActivityFinal(
+  document: DiagramDocument,
+  input: CreateActivityNodeInput = {},
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  return createActivityNode(document, "activity-final", input, deps);
+}
+
+export function createDecisionNode(
+  document: DiagramDocument,
+  input: CreateActivityNodeInput = {},
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  return createActivityNode(document, "decision-node", input, deps);
+}
+
+export function createMergeNode(
+  document: DiagramDocument,
+  input: CreateActivityNodeInput = {},
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  return createActivityNode(document, "merge-node", input, deps);
+}
+
+export function createForkNode(
+  document: DiagramDocument,
+  input: CreateActivityNodeInput = {},
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  return createActivityNode(document, "fork-node", input, deps);
+}
+
+export function createJoinNode(
+  document: DiagramDocument,
+  input: CreateActivityNodeInput = {},
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  return createActivityNode(document, "join-node", input, deps);
+}
+
 export function renameElement(
   document: DiagramDocument,
   elementId: string,
@@ -694,7 +900,9 @@ export function renameElement(
     return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
   }
 
-  const normalized = normalizeName(name);
+  const normalized = isActivityControlNode(element)
+    ? normalizeMessageName(name)
+    : normalizeName(name);
   if (!normalized.ok) {
     return normalized;
   }
@@ -925,7 +1133,8 @@ export function resizeElement(
     !isArtifact(element) &&
     !isErEntity(element) &&
     !isErAttribute(element) &&
-    !isErRelationshipElement(element)
+    !isErRelationshipElement(element) &&
+    !isActivityElement(element)
   ) {
     return err("INVALID_GEOMETRY", RESIZE_TARGET_ELEMENT_MESSAGE);
   }
@@ -944,7 +1153,9 @@ export function resizeElement(
             ? entitySizeError(input.geometry)
             : isErAttribute(element)
               ? attributeSizeError(input.geometry)
-              : erRelationshipSizeError(input.geometry);
+              : isErRelationshipElement(element)
+                ? erRelationshipSizeError(input.geometry)
+                : activityNodeSizeError(element.kind, input.geometry);
   if (sizeError !== undefined) {
     return sizeError;
   }
@@ -1110,7 +1321,14 @@ export type ElementCopy =
   | { kind: "artifact"; name: string; geometry: Geometry }
   | { kind: "entity"; name: string; geometry: Geometry }
   | { kind: "attribute"; name: string; geometry: Geometry; isKey: boolean }
-  | { kind: "er-relationship"; name: string; geometry: Geometry };
+  | { kind: "er-relationship"; name: string; geometry: Geometry }
+  | { kind: "action"; name: string; geometry: Geometry }
+  | { kind: "initial-node"; name: string; geometry: Geometry }
+  | { kind: "activity-final"; name: string; geometry: Geometry }
+  | { kind: "decision-node"; name: string; geometry: Geometry }
+  | { kind: "merge-node"; name: string; geometry: Geometry }
+  | { kind: "fork-node"; name: string; geometry: Geometry }
+  | { kind: "join-node"; name: string; geometry: Geometry };
 
 export function snapshotDuplicableElements(
   document: DiagramDocument,
@@ -1208,6 +1426,14 @@ export function snapshotDuplicableElements(
       });
       continue;
     }
+    if (isActivityElement(element)) {
+      copies.push({
+        kind: element.kind,
+        name: element.name,
+        geometry,
+      });
+      continue;
+    }
 
     if (element.parentId !== undefined) {
       copies.push({
@@ -1262,6 +1488,18 @@ export function insertElementCopies(
       return err("UNKNOWN_KIND", ER_ELEMENT_MESSAGE);
     }
     if (
+      document.kind === "activity" &&
+      copy.kind !== "action" &&
+      copy.kind !== "initial-node" &&
+      copy.kind !== "activity-final" &&
+      copy.kind !== "decision-node" &&
+      copy.kind !== "merge-node" &&
+      copy.kind !== "fork-node" &&
+      copy.kind !== "join-node"
+    ) {
+      return err("UNKNOWN_KIND", ACTIVITY_ELEMENT_MESSAGE);
+    }
+    if (
       document.kind === "use-case" &&
       copy.kind !== "actor" &&
       copy.kind !== "use-case"
@@ -1278,7 +1516,15 @@ export function insertElementCopies(
                   copy.kind === "attribute" ||
                   copy.kind === "er-relationship"
                 ? USE_CASE_ER_MESSAGE
-                : USE_CASE_LIFELINE_MESSAGE,
+                : copy.kind === "action" ||
+                    copy.kind === "initial-node" ||
+                    copy.kind === "activity-final" ||
+                    copy.kind === "decision-node" ||
+                    copy.kind === "merge-node" ||
+                    copy.kind === "fork-node" ||
+                    copy.kind === "join-node"
+                  ? USE_CASE_ACTIVITY_MESSAGE
+                  : USE_CASE_LIFELINE_MESSAGE,
       );
     }
     if (!isFiniteGeometry(copy.geometry)) {
@@ -1348,6 +1594,34 @@ export function insertElementCopies(
       created.push(buildErRelationship({ name: copy.name, geometry }, deps));
       continue;
     }
+    if (copy.kind === "action") {
+      created.push(buildAction({ name: copy.name, geometry }, deps));
+      continue;
+    }
+    if (copy.kind === "initial-node") {
+      created.push(buildInitialNode({ name: copy.name, geometry }, deps));
+      continue;
+    }
+    if (copy.kind === "activity-final") {
+      created.push(buildActivityFinal({ name: copy.name, geometry }, deps));
+      continue;
+    }
+    if (copy.kind === "decision-node") {
+      created.push(buildDecisionNode({ name: copy.name, geometry }, deps));
+      continue;
+    }
+    if (copy.kind === "merge-node") {
+      created.push(buildMergeNode({ name: copy.name, geometry }, deps));
+      continue;
+    }
+    if (copy.kind === "fork-node") {
+      created.push(buildForkNode({ name: copy.name, geometry }, deps));
+      continue;
+    }
+    if (copy.kind === "join-node") {
+      created.push(buildJoinNode({ name: copy.name, geometry }, deps));
+      continue;
+    }
 
     const parentId = copy.parentId;
     if (parentId !== undefined) {
@@ -1400,6 +1674,9 @@ export function createRelationship(
   }
   if (isErLinkInput(input)) {
     return createErDiagramLink(document, input, deps);
+  }
+  if (isControlFlowInput(input)) {
+    return createActivityControlFlow(document, input, deps);
   }
   if (isSequenceMessageInput(input)) {
     return createSequenceRelationship(document, input, deps);
@@ -1602,6 +1879,42 @@ export function setErCardinality(
       relationships: document.relationships.map((relationship) =>
         relationship.id === input.id
           ? { ...existing, cardinality: input.cardinality }
+          : relationship,
+      ),
+    },
+    deps,
+  );
+}
+
+export function setControlFlowGuard(
+  document: DiagramDocument,
+  input: { id: string; guard: string },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  const existing = document.relationships.find(
+    (relationship) => relationship.id === input.id,
+  );
+  if (existing === undefined) {
+    return err("UNKNOWN_RELATIONSHIP", UNKNOWN_RELATIONSHIP_MESSAGE);
+  }
+  if (!isControlFlow(existing)) {
+    return err("INVALID_CONNECTION", CONTROL_FLOW_GUARD_TARGET_MESSAGE);
+  }
+
+  const guard = normalizeMessageName(input.guard);
+  if (!guard.ok) {
+    return guard;
+  }
+  if (existing.guard === guard.value) {
+    return ok(document);
+  }
+
+  return commit(
+    document,
+    {
+      relationships: document.relationships.map((relationship) =>
+        relationship.id === input.id
+          ? { ...existing, guard: guard.value }
           : relationship,
       ),
     },
@@ -1860,6 +2173,12 @@ function isErLinkInput(
   return input.kind === "er-link";
 }
 
+function isControlFlowInput(
+  input: CreateRelationshipInput,
+): input is CreateControlFlowInput {
+  return input.kind === "control-flow";
+}
+
 function createClassDiagramRelationship(
   document: DiagramDocument,
   input: CreateClassRelationshipInput,
@@ -2060,6 +2379,40 @@ function createErDiagramLink(
             sourceId: allowed.value.sourceId,
             targetId: allowed.value.targetId,
             cardinality: input.cardinality ?? DEFAULT_ER_CARDINALITY,
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
+}
+
+function createActivityControlFlow(
+  document: DiagramDocument,
+  input: CreateControlFlowInput,
+  deps: OperationDeps | undefined,
+): Result<DiagramDocument> {
+  const guard = normalizeMessageName(input.guard ?? "");
+  if (!guard.ok) {
+    return guard;
+  }
+
+  const allowed = canConnect(document, input);
+  if (!allowed.ok) {
+    return allowed;
+  }
+
+  return commit(
+    document,
+    {
+      relationships: [
+        ...document.relationships,
+        buildControlFlow(
+          {
+            sourceId: allowed.value.sourceId,
+            targetId: allowed.value.targetId,
+            guard: guard.value,
           },
           deps,
         ),
@@ -2303,6 +2656,55 @@ function erRelationshipSizeError(
     geometry.height < MIN_ER_RELATIONSHIP_HEIGHT
   ) {
     return err("INVALID_GEOMETRY", ER_RELATIONSHIP_SIZE_MESSAGE);
+  }
+  return undefined;
+}
+
+function activityNodeSizeError(
+  kind: "action" | ActivityControlNodeKind,
+  geometry: Geometry,
+): Result<never> | undefined {
+  if (kind === "action") {
+    if (
+      geometry.width < MIN_ACTION_WIDTH ||
+      geometry.height < MIN_ACTION_HEIGHT
+    ) {
+      return err("INVALID_GEOMETRY", ACTION_SIZE_MESSAGE);
+    }
+    return undefined;
+  }
+  if (kind === "initial-node") {
+    if (
+      geometry.width < MIN_INITIAL_NODE_WIDTH ||
+      geometry.height < MIN_INITIAL_NODE_HEIGHT
+    ) {
+      return err("INVALID_GEOMETRY", INITIAL_NODE_SIZE_MESSAGE);
+    }
+    return undefined;
+  }
+  if (kind === "activity-final") {
+    if (
+      geometry.width < MIN_ACTIVITY_FINAL_WIDTH ||
+      geometry.height < MIN_ACTIVITY_FINAL_HEIGHT
+    ) {
+      return err("INVALID_GEOMETRY", ACTIVITY_FINAL_SIZE_MESSAGE);
+    }
+    return undefined;
+  }
+  if (kind === "decision-node" || kind === "merge-node") {
+    if (
+      geometry.width < MIN_DECISION_NODE_WIDTH ||
+      geometry.height < MIN_DECISION_NODE_HEIGHT
+    ) {
+      return err("INVALID_GEOMETRY", DECISION_NODE_SIZE_MESSAGE);
+    }
+    return undefined;
+  }
+  if (
+    geometry.width < MIN_FORK_NODE_WIDTH ||
+    geometry.height < MIN_FORK_NODE_HEIGHT
+  ) {
+    return err("INVALID_GEOMETRY", FORK_NODE_SIZE_MESSAGE);
   }
   return undefined;
 }

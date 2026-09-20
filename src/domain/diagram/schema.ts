@@ -148,6 +148,55 @@ const erRelationshipElementSchema = z.strictObject({
   geometry: geometrySchema,
 });
 
+const actionSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("action"),
+  name: nameSchema,
+  geometry: geometrySchema,
+});
+
+const initialNodeSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("initial-node"),
+  name: messageNameSchema,
+  geometry: geometrySchema,
+});
+
+const activityFinalSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("activity-final"),
+  name: messageNameSchema,
+  geometry: geometrySchema,
+});
+
+const decisionNodeSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("decision-node"),
+  name: messageNameSchema,
+  geometry: geometrySchema,
+});
+
+const mergeNodeSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("merge-node"),
+  name: messageNameSchema,
+  geometry: geometrySchema,
+});
+
+const forkNodeSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("fork-node"),
+  name: messageNameSchema,
+  geometry: geometrySchema,
+});
+
+const joinNodeSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("join-node"),
+  name: messageNameSchema,
+  geometry: geometrySchema,
+});
+
 const useCaseElementSchema = z.discriminatedUnion(
   "kind",
   [actorSchema, useCaseSchema, systemBoundarySchema],
@@ -174,6 +223,13 @@ const diagramElementSchema = z.discriminatedUnion(
     erEntitySchema,
     erAttributeSchema,
     erRelationshipElementSchema,
+    actionSchema,
+    initialNodeSchema,
+    activityFinalSchema,
+    decisionNodeSchema,
+    mergeNodeSchema,
+    forkNodeSchema,
+    joinNodeSchema,
   ],
   { error: "Tipo de elemento no soportado." },
 );
@@ -256,6 +312,14 @@ const erLinkSchema = z.strictObject({
   cardinality: erCardinalitySchema.exactOptional(),
 });
 
+const controlFlowSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("control-flow"),
+  sourceId: uuidSchema,
+  targetId: uuidSchema,
+  guard: messageNameSchema,
+});
+
 const relationshipSchemaV2 = z.union([
   useCaseRelationshipSchema,
   sequenceMessageSchema,
@@ -269,6 +333,7 @@ const relationshipSchema = z.union([
   componentRelationshipSchema,
   deploymentRelationshipSchema,
   erLinkSchema,
+  controlFlowSchema,
 ]);
 
 const metadataSchema = z.strictObject({
@@ -287,6 +352,15 @@ const CLASS_ELEMENT_KINDS = new Set(["class"]);
 const COMPONENT_ELEMENT_KINDS = new Set(["component"]);
 const DEPLOYMENT_ELEMENT_KINDS = new Set(["node", "artifact"]);
 const ER_ELEMENT_KINDS = new Set(["entity", "attribute", "er-relationship"]);
+const ACTIVITY_ELEMENT_KINDS = new Set([
+  "action",
+  "initial-node",
+  "activity-final",
+  "decision-node",
+  "merge-node",
+  "fork-node",
+  "join-node",
+]);
 const USE_CASE_RELATIONSHIP_KINDS = new Set([
   "association",
   "include",
@@ -308,6 +382,7 @@ const DEPLOYMENT_RELATIONSHIP_KINDS = new Set([
   "deploy",
 ]);
 const ER_RELATIONSHIP_KINDS = new Set(["er-link"]);
+const ACTIVITY_RELATIONSHIP_KINDS = new Set(["control-flow"]);
 
 type KindCardinalityDocument = {
   kind:
@@ -316,7 +391,8 @@ type KindCardinalityDocument = {
     | "class"
     | "component"
     | "deployment"
-    | "entity-relationship";
+    | "entity-relationship"
+    | "activity";
   elements: readonly { kind: string; id?: string }[];
   relationships: readonly {
     kind: string;
@@ -404,7 +480,9 @@ function addKindCardinalityIssues(
             ? DEPLOYMENT_ELEMENT_KINDS
             : document.kind === "entity-relationship"
               ? ER_ELEMENT_KINDS
-              : USE_CASE_ELEMENT_KINDS;
+              : document.kind === "activity"
+                ? ACTIVITY_ELEMENT_KINDS
+                : USE_CASE_ELEMENT_KINDS;
   const allowedRelationships =
     document.kind === "sequence"
       ? SEQUENCE_RELATIONSHIP_KINDS
@@ -416,7 +494,9 @@ function addKindCardinalityIssues(
             ? DEPLOYMENT_RELATIONSHIP_KINDS
             : document.kind === "entity-relationship"
               ? ER_RELATIONSHIP_KINDS
-              : USE_CASE_RELATIONSHIP_KINDS;
+              : document.kind === "activity"
+                ? ACTIVITY_RELATIONSHIP_KINDS
+                : USE_CASE_RELATIONSHIP_KINDS;
 
   document.elements.forEach((element, index) => {
     if (allowedElements.has(element.kind)) {
@@ -565,6 +645,7 @@ export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
         "component",
         "deployment",
         "entity-relationship",
+        "activity",
       ],
       {
         error: "kind de documento no soportado.",
@@ -712,7 +793,8 @@ function domainCodeForIssue(issue: z.core.$ZodIssue): DomainErrorCode {
     path.includes("name") ||
     path.includes("title") ||
     path.includes("attributes") ||
-    path.includes("operations")
+    path.includes("operations") ||
+    path.includes("guard")
   ) {
     return "INVALID_NAME";
   }

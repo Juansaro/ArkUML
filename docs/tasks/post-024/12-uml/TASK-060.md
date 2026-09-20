@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -60,9 +60,9 @@ Zod `strictObject`. `src/domain` sin UI.
 
 ## Criterios de aceptación
 
-- [ ] Factories de los siete nodos; cascada de flujos.
-- [ ] `control-flow` + guarda; self ilegal; reglas initial/final.
-- [ ] Mezclas `UNKNOWN_KIND`. Archivo 3.x round-trip.
+- [x] Factories de los siete nodos; cascada de flujos.
+- [x] `control-flow` + guarda; self ilegal; reglas initial/final.
+- [x] Mezclas `UNKNOWN_KIND`. Archivo 3.x round-trip.
 
 ## Tests
 
@@ -85,4 +85,12 @@ Dominio activity testeado; sin chrome.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-20: dominio `"activity"` schema 3; siete nodos + `control-flow`
+con `guard`; `initial-node` no destino / `activity-final` no origen;
+`createEmptyActivityDocument`; mezclas `UNKNOWN_KIND`; envelope 3.x
+round-trip; `interaction-overview` sigue rechazado. Ajuste mínimo en
+`cloneElementCopy` del store para compilar tras ampliar `ElementCopy`.
+Verificación: `npx vitest run src/domain` (185 ok); `npx tsc -b
+--pretty false`: app limpia; fallos previos en
+`e2e/include-extend.spec.ts` (`SVGPathElement` / `DOMPoint` sin DOM en
+`tsconfig.node.json`).

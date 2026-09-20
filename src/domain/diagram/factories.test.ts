@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_ACTIVITY_DOCUMENT_TITLE,
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_BOUNDARY_NAME,
   DEFAULT_CLASS_DOCUMENT_TITLE,
@@ -13,6 +14,7 @@ import {
 import {
   createActor,
   createDiagramDocument,
+  createEmptyActivityDocument,
   createEmptyClassDocument,
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
@@ -224,6 +226,22 @@ describe("createEmptyErDocument", () => {
     expect(document.schemaVersion).toBe(3);
     expect(document.kind).toBe("entity-relationship");
     expect(document.metadata.title).toBe(DEFAULT_ER_DOCUMENT_TITLE);
+    expect(document.elements).toEqual([]);
+    expect(document.relationships).toEqual([]);
+  });
+});
+
+describe("createEmptyActivityDocument", () => {
+  it("crea un documento activity vacío con título por defecto", () => {
+    const createId = sequentialIds();
+    const document = createEmptyActivityDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+
+    expect(document.schemaVersion).toBe(3);
+    expect(document.kind).toBe("activity");
+    expect(document.metadata.title).toBe(DEFAULT_ACTIVITY_DOCUMENT_TITLE);
     expect(document.elements).toEqual([]);
     expect(document.relationships).toEqual([]);
   });

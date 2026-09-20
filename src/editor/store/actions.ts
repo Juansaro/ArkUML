@@ -774,6 +774,17 @@ function cloneElementCopy(copy: ElementCopy): ElementCopy {
   if (copy.kind === "er-relationship") {
     return { kind: "er-relationship", name: copy.name, geometry };
   }
+  if (
+    copy.kind === "action" ||
+    copy.kind === "initial-node" ||
+    copy.kind === "activity-final" ||
+    copy.kind === "decision-node" ||
+    copy.kind === "merge-node" ||
+    copy.kind === "fork-node" ||
+    copy.kind === "join-node"
+  ) {
+    return { kind: copy.kind, name: copy.name, geometry };
+  }
   if (copy.kind === "use-case" && copy.parentId !== undefined) {
     return {
       kind: "use-case",

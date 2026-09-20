@@ -11,6 +11,7 @@ export const CLASS_DOCUMENT_KIND = "class";
 export const COMPONENT_DOCUMENT_KIND = "component";
 export const DEPLOYMENT_DOCUMENT_KIND = "deployment";
 export const ER_DOCUMENT_KIND = "entity-relationship";
+export const ACTIVITY_DOCUMENT_KIND = "activity";
 
 export const DEFAULT_DOCUMENT_TITLE = "Diagrama de casos de uso";
 export const DEFAULT_SEQUENCE_DOCUMENT_TITLE = "Diagrama de secuencia";
@@ -18,6 +19,7 @@ export const DEFAULT_CLASS_DOCUMENT_TITLE = "Diagrama de clases";
 export const DEFAULT_COMPONENT_DOCUMENT_TITLE = "Diagrama de componentes";
 export const DEFAULT_DEPLOYMENT_DOCUMENT_TITLE = "Diagrama de despliegue";
 export const DEFAULT_ER_DOCUMENT_TITLE = "Diagrama entidad-relación";
+export const DEFAULT_ACTIVITY_DOCUMENT_TITLE = "Diagrama de actividades";
 export const DEFAULT_BOUNDARY_NAME = "Sistema";
 export const DEFAULT_LIFELINE_NAME = "Lifeline";
 export const DEFAULT_ASSOCIATION_MULTIPLICITY = "1";
@@ -71,6 +73,31 @@ export const DEFAULT_ER_RELATIONSHIP_WIDTH = 120;
 export const DEFAULT_ER_RELATIONSHIP_HEIGHT = 80;
 export const MIN_ER_RELATIONSHIP_WIDTH = 80;
 export const MIN_ER_RELATIONSHIP_HEIGHT = 48;
+
+export const DEFAULT_ACTION_WIDTH = 160;
+export const DEFAULT_ACTION_HEIGHT = 64;
+export const MIN_ACTION_WIDTH = 96;
+export const MIN_ACTION_HEIGHT = 40;
+
+export const DEFAULT_INITIAL_NODE_WIDTH = 24;
+export const DEFAULT_INITIAL_NODE_HEIGHT = 24;
+export const MIN_INITIAL_NODE_WIDTH = 16;
+export const MIN_INITIAL_NODE_HEIGHT = 16;
+
+export const DEFAULT_ACTIVITY_FINAL_WIDTH = 28;
+export const DEFAULT_ACTIVITY_FINAL_HEIGHT = 28;
+export const MIN_ACTIVITY_FINAL_WIDTH = 20;
+export const MIN_ACTIVITY_FINAL_HEIGHT = 20;
+
+export const DEFAULT_DECISION_NODE_WIDTH = 48;
+export const DEFAULT_DECISION_NODE_HEIGHT = 48;
+export const MIN_DECISION_NODE_WIDTH = 32;
+export const MIN_DECISION_NODE_HEIGHT = 32;
+
+export const DEFAULT_FORK_NODE_WIDTH = 80;
+export const DEFAULT_FORK_NODE_HEIGHT = 8;
+export const MIN_FORK_NODE_WIDTH = 48;
+export const MIN_FORK_NODE_HEIGHT = 6;
 
 export const DEFAULT_BOUNDARY_GEOMETRY: Geometry = {
   x: 0,
@@ -133,6 +160,41 @@ export const DEFAULT_ER_RELATIONSHIP_GEOMETRY: Geometry = {
   y: 0,
   width: DEFAULT_ER_RELATIONSHIP_WIDTH,
   height: DEFAULT_ER_RELATIONSHIP_HEIGHT,
+};
+
+export const DEFAULT_ACTION_GEOMETRY: Geometry = {
+  x: 0,
+  y: 0,
+  width: DEFAULT_ACTION_WIDTH,
+  height: DEFAULT_ACTION_HEIGHT,
+};
+
+export const DEFAULT_INITIAL_NODE_GEOMETRY: Geometry = {
+  x: 0,
+  y: 0,
+  width: DEFAULT_INITIAL_NODE_WIDTH,
+  height: DEFAULT_INITIAL_NODE_HEIGHT,
+};
+
+export const DEFAULT_ACTIVITY_FINAL_GEOMETRY: Geometry = {
+  x: 0,
+  y: 0,
+  width: DEFAULT_ACTIVITY_FINAL_WIDTH,
+  height: DEFAULT_ACTIVITY_FINAL_HEIGHT,
+};
+
+export const DEFAULT_DECISION_NODE_GEOMETRY: Geometry = {
+  x: 0,
+  y: 0,
+  width: DEFAULT_DECISION_NODE_WIDTH,
+  height: DEFAULT_DECISION_NODE_HEIGHT,
+};
+
+export const DEFAULT_FORK_NODE_GEOMETRY: Geometry = {
+  x: 0,
+  y: 0,
+  width: DEFAULT_FORK_NODE_WIDTH,
+  height: DEFAULT_FORK_NODE_HEIGHT,
 };
 
 export const DEFAULT_VIEWPORT: Viewport = {
