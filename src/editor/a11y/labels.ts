@@ -55,6 +55,9 @@ export function elementTypeLabel(kind: DiagramElement["kind"]): string {
   if (kind === "join-node") {
     return "Join";
   }
+  if (kind === "interaction-occurrence") {
+    return "Interacción";
+  }
   return "Límite del sistema";
 }
 

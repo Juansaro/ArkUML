@@ -7,6 +7,7 @@ import {
   isErEntity,
   isErLink,
   isErRelationshipElement,
+  isInteractionOverviewElement,
   isLifeline,
   isUmlClass,
   isUmlComponent,
@@ -76,6 +77,8 @@ const ACTIVITY_KIND_MESSAGE =
   "Este documento solo admite flujos de control.";
 const ACTIVITY_ENDPOINT_MESSAGE =
   "Un flujo de control solo puede unir nodos de actividad.";
+const INTERACTION_OVERVIEW_ENDPOINT_MESSAGE =
+  "Un flujo de control solo puede unir ocurrencias de interacción o nodos de control.";
 const INITIAL_AS_TARGET_MESSAGE =
   "Un nodo inicial no puede ser destino de un flujo.";
 const FINAL_AS_SOURCE_MESSAGE =
@@ -118,6 +121,9 @@ export function canConnect(
   }
   if (document.kind === "activity") {
     return canConnectActivity(document, input);
+  }
+  if (document.kind === "interaction-overview") {
+    return canConnectInteractionOverview(document, input);
   }
   return canConnectUseCase(document, input);
 }
@@ -319,6 +325,48 @@ function canConnectActivity(
 
   if (!isActivityElement(source) || !isActivityElement(target)) {
     return err("INVALID_CONNECTION", ACTIVITY_ENDPOINT_MESSAGE);
+  }
+
+  if (target.kind === "initial-node") {
+    return err("INVALID_CONNECTION", INITIAL_AS_TARGET_MESSAGE);
+  }
+
+  if (source.kind === "activity-final") {
+    return err("INVALID_CONNECTION", FINAL_AS_SOURCE_MESSAGE);
+  }
+
+  return ok({
+    kind: input.kind,
+    sourceId: source.id,
+    targetId: target.id,
+  });
+}
+
+function canConnectInteractionOverview(
+  document: DiagramDocument,
+  input: ConnectInput,
+): Result<AllowedConnection> {
+  if (input.kind !== "control-flow") {
+    return err("INVALID_CONNECTION", ACTIVITY_KIND_MESSAGE);
+  }
+
+  const byId = indexElements(document);
+  const source = byId.get(input.sourceId);
+  const target = byId.get(input.targetId);
+
+  if (source === undefined || target === undefined) {
+    return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
+  }
+
+  if (source.id === target.id) {
+    return err("SELF_RELATIONSHIP", SELF_RELATIONSHIP_MESSAGE);
+  }
+
+  if (
+    !isInteractionOverviewElement(source) ||
+    !isInteractionOverviewElement(target)
+  ) {
+    return err("INVALID_CONNECTION", INTERACTION_OVERVIEW_ENDPOINT_MESSAGE);
   }
 
   if (target.kind === "initial-node") {

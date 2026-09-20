@@ -48,6 +48,7 @@ export const ICON_NAMES = [
   "forkNode",
   "joinNode",
   "controlFlow",
+  "interactionOccurrence",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -402,6 +403,14 @@ export function IconPaths({ name }: { name: IconName }) {
         <>
           <path d="M3 12h14" />
           <path d="M14 9l5 3-5 3" />
+        </>
+      );
+    case "interactionOccurrence":
+      return (
+        <>
+          <path d="M4 5h16v14H4z" />
+          <path d="M4 5h6l2 2.5-2 2.5H4z" />
+          <path d="M9 15h6" />
         </>
       );
   }

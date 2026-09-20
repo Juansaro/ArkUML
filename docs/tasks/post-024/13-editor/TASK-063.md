@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -71,11 +71,11 @@ Host vacío prohibido. Notación = `interaction-overview-model.md`. Sin kit.
 
 ## Criterios de aceptación
 
-- [ ] Paleta y lienzo propios; marco `ref` visible.
-- [ ] Nuevo Interacción general añade a la biblioteca.
-- [ ] PNG sin shell. Módulos previos intactos.
-- [ ] Iconos en addendum de marca.
-- [ ] Nuevo no ofrece kinds fuera de los ocho módulos cerrados.
+- [x] Paleta y lienzo propios; marco `ref` visible.
+- [x] Nuevo Interacción general añade a la biblioteca.
+- [x] PNG sin shell. Módulos previos intactos.
+- [x] Iconos en addendum de marca.
+- [x] Nuevo no ofrece kinds fuera de los ocho módulos cerrados.
 
 ## Tests
 
@@ -101,4 +101,15 @@ esta TASK esté `Hecha`.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-20: módulo interaction-overview; paleta Interacción/Inicial/
+Final/Decisión/Fusión/Fork/Join/Flujo; InteractionOccurrenceNode con
+pentágono «ref»; nodos de control reutilizados; ControlFlowEdge +
+guarda; inspector `ref` / Guarda; Nuevo y combobox «Interacción
+general»; addendum `interactionOccurrence` en `brand-system.md`.
+`npx vitest run src/editor src/domain` (440 tests). `npx playwright
+test --project=chromium` (74 tests). `tsc -p tsconfig.app.json` limpio.
+`tsc -b` sigue fallando por `e2e/include-extend.spec.ts`
+(`SVGPathElement`/`DOMPoint` en `tsconfig.node` sin lib DOM; preexistente,
+fuera de alcance). Pin `html-to-image@1.11.11` intacto. Sin inline
+Interaction ni `ref` a id de biblioteca. Release 2 de TASKs ejecutables
+cerrada.

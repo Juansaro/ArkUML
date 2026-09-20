@@ -8,6 +8,7 @@ import {
   DEFAULT_DEPLOYMENT_DOCUMENT_TITLE,
   DEFAULT_DOCUMENT_TITLE,
   DEFAULT_ER_DOCUMENT_TITLE,
+  DEFAULT_INTERACTION_OVERVIEW_DOCUMENT_TITLE,
   DEFAULT_SEQUENCE_DOCUMENT_TITLE,
   DEFAULT_VIEWPORT,
 } from "./defaults.ts";
@@ -19,6 +20,7 @@ import {
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
   createEmptyErDocument,
+  createEmptyInteractionOverviewDocument,
   createEmptySequenceDocument,
   createRelationship,
   createSystemBoundary,
@@ -242,6 +244,24 @@ describe("createEmptyActivityDocument", () => {
     expect(document.schemaVersion).toBe(3);
     expect(document.kind).toBe("activity");
     expect(document.metadata.title).toBe(DEFAULT_ACTIVITY_DOCUMENT_TITLE);
+    expect(document.elements).toEqual([]);
+    expect(document.relationships).toEqual([]);
+  });
+});
+
+describe("createEmptyInteractionOverviewDocument", () => {
+  it("crea un documento interaction-overview vacío con título por defecto", () => {
+    const createId = sequentialIds();
+    const document = createEmptyInteractionOverviewDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+
+    expect(document.schemaVersion).toBe(3);
+    expect(document.kind).toBe("interaction-overview");
+    expect(document.metadata.title).toBe(
+      DEFAULT_INTERACTION_OVERVIEW_DOCUMENT_TITLE,
+    );
     expect(document.elements).toEqual([]);
     expect(document.relationships).toEqual([]);
   });

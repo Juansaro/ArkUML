@@ -54,6 +54,7 @@ const PALETTE_ICONS: Record<string, IconName> = {
   "fork-node": "forkNode",
   "join-node": "joinNode",
   "control-flow": "controlFlow",
+  "interaction-occurrence": "interactionOccurrence",
 };
 
 const PALETTE_DESCRIPTIONS: Record<string, string> = {
@@ -102,6 +103,7 @@ const PALETTE_DESCRIPTIONS: Record<string, string> = {
   "join-node": "Crear barra de unión.",
   "control-flow":
     "Unir dos nodos con flujo de control. Arrastra del origen al destino. La guarda es opcional al salir de una decisión.",
+  "interaction-occurrence": "Crear ocurrencia de interacción (ref).",
 };
 
 function paletteIcon(id: string): IconName {

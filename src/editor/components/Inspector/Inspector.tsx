@@ -263,12 +263,14 @@ function InspectorBody({
     <div className={styles.fields}>
       <TypeField label={view.typeLabel} />
       <label className={styles.field}>
-        <span className={styles.label}>Nombre</span>
+        <span className={styles.label}>
+          {view.kind === "interaction-occurrence" ? "ref" : "Nombre"}
+        </span>
         <ElementNameField
           key={view.id}
           elementId={view.id}
           name={view.name}
-          ariaLabel="Nombre"
+          ariaLabel={view.kind === "interaction-occurrence" ? "ref" : "Nombre"}
           showError
         />
       </label>

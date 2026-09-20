@@ -11,6 +11,7 @@ import {
   DEFAULT_ER_RELATIONSHIP_GEOMETRY,
   DEFAULT_FORK_NODE_GEOMETRY,
   DEFAULT_INITIAL_NODE_GEOMETRY,
+  DEFAULT_INTERACTION_OCCURRENCE_GEOMETRY,
   DEFAULT_LIFELINE_GEOMETRY,
   DEFAULT_LIFELINE_WIDTH,
   DEFAULT_NODE_GEOMETRY,
@@ -44,6 +45,7 @@ export const CREATE_ELEMENT_TOOLS = [
   "merge-node",
   "fork-node",
   "join-node",
+  "interaction-occurrence",
 ] as const;
 
 export type CreateElementTool = (typeof CREATE_ELEMENT_TOOLS)[number];
@@ -67,6 +69,7 @@ export const DEFAULT_ELEMENT_NAMES = {
   "merge-node": "",
   "fork-node": "",
   "join-node": "",
+  "interaction-occurrence": "Interacción",
 } as const;
 
 export const DEFAULT_ELEMENT_SIZES: Record<
@@ -139,6 +142,10 @@ export const DEFAULT_ELEMENT_SIZES: Record<
     width: DEFAULT_FORK_NODE_GEOMETRY.width,
     height: DEFAULT_FORK_NODE_GEOMETRY.height,
   },
+  "interaction-occurrence": {
+    width: DEFAULT_INTERACTION_OCCURRENCE_GEOMETRY.width,
+    height: DEFAULT_INTERACTION_OCCURRENCE_GEOMETRY.height,
+  },
 };
 
 export function isCreateElementTool(
@@ -162,7 +169,8 @@ export function isCreateElementTool(
     tool === "decision-node" ||
     tool === "merge-node" ||
     tool === "fork-node" ||
-    tool === "join-node"
+    tool === "join-node" ||
+    tool === "interaction-occurrence"
   );
 }
 
@@ -270,7 +278,8 @@ export function defaultPlacementPosition(
     kind === "decision-node" ||
     kind === "merge-node" ||
     kind === "fork-node" ||
-    kind === "join-node"
+    kind === "join-node" ||
+    kind === "interaction-occurrence"
   ) {
     return { x: 80 + offset, y: 80 + offset };
   }
@@ -470,6 +479,13 @@ function createByKind(
 
   if (kind === "join-node") {
     return state.createJoinNode({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "interaction-occurrence") {
+    return state.createInteractionOccurrence({
       name,
       geometry: geometryAt(kind, flowPosition),
     });

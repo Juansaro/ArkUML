@@ -12,6 +12,7 @@ export const COMPONENT_DOCUMENT_KIND = "component";
 export const DEPLOYMENT_DOCUMENT_KIND = "deployment";
 export const ER_DOCUMENT_KIND = "entity-relationship";
 export const ACTIVITY_DOCUMENT_KIND = "activity";
+export const INTERACTION_OVERVIEW_DOCUMENT_KIND = "interaction-overview";
 
 export const DEFAULT_DOCUMENT_TITLE = "Diagrama de casos de uso";
 export const DEFAULT_SEQUENCE_DOCUMENT_TITLE = "Diagrama de secuencia";
@@ -20,6 +21,8 @@ export const DEFAULT_COMPONENT_DOCUMENT_TITLE = "Diagrama de componentes";
 export const DEFAULT_DEPLOYMENT_DOCUMENT_TITLE = "Diagrama de despliegue";
 export const DEFAULT_ER_DOCUMENT_TITLE = "Diagrama entidad-relación";
 export const DEFAULT_ACTIVITY_DOCUMENT_TITLE = "Diagrama de actividades";
+export const DEFAULT_INTERACTION_OVERVIEW_DOCUMENT_TITLE =
+  "Diagrama de interacción general";
 export const DEFAULT_BOUNDARY_NAME = "Sistema";
 export const DEFAULT_LIFELINE_NAME = "Lifeline";
 export const DEFAULT_ASSOCIATION_MULTIPLICITY = "1";
@@ -78,6 +81,11 @@ export const DEFAULT_ACTION_WIDTH = 160;
 export const DEFAULT_ACTION_HEIGHT = 64;
 export const MIN_ACTION_WIDTH = 96;
 export const MIN_ACTION_HEIGHT = 40;
+
+export const DEFAULT_INTERACTION_OCCURRENCE_WIDTH = 200;
+export const DEFAULT_INTERACTION_OCCURRENCE_HEIGHT = 80;
+export const MIN_INTERACTION_OCCURRENCE_WIDTH = 140;
+export const MIN_INTERACTION_OCCURRENCE_HEIGHT = 56;
 
 export const DEFAULT_INITIAL_NODE_WIDTH = 24;
 export const DEFAULT_INITIAL_NODE_HEIGHT = 24;
@@ -167,6 +175,13 @@ export const DEFAULT_ACTION_GEOMETRY: Geometry = {
   y: 0,
   width: DEFAULT_ACTION_WIDTH,
   height: DEFAULT_ACTION_HEIGHT,
+};
+
+export const DEFAULT_INTERACTION_OCCURRENCE_GEOMETRY: Geometry = {
+  x: 0,
+  y: 0,
+  width: DEFAULT_INTERACTION_OCCURRENCE_WIDTH,
+  height: DEFAULT_INTERACTION_OCCURRENCE_HEIGHT,
 };
 
 export const DEFAULT_INITIAL_NODE_GEOMETRY: Geometry = {

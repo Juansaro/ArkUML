@@ -53,6 +53,7 @@ export const EDITOR_TOOLS = [
   "fork-node",
   "join-node",
   "control-flow",
+  "interaction-occurrence",
 ] as const;
 
 export type EditorTool = (typeof EDITOR_TOOLS)[number];

@@ -143,7 +143,7 @@ export function DiagramMinimapNode({
     );
   }
 
-  if (className === "component" || className === "class" || className === "artifact" || className === "entity" || className === "action") {
+  if (className === "component" || className === "class" || className === "artifact" || className === "entity" || className === "action" || className === "interaction-occurrence") {
     const radius = className === "action" ? 8 : 0;
     return (
       <g data-minimap-kind={className} onClick={handleClick}>

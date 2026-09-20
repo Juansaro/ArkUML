@@ -47,6 +47,18 @@ export const ACTIVITY_CREATE_TOOLS = [
 
 export const ACTIVITY_RELATIONSHIP_TOOLS = ["control-flow"] as const;
 
+export const INTERACTION_OVERVIEW_CREATE_TOOLS = [
+  "interaction-occurrence",
+  "initial-node",
+  "activity-final",
+  "decision-node",
+  "merge-node",
+  "fork-node",
+  "join-node",
+] as const;
+
+export const INTERACTION_OVERVIEW_RELATIONSHIP_TOOLS = ["control-flow"] as const;
+
 export function isToolForDocumentKind(
   kind: DocumentKind,
   tool: EditorTool,
@@ -96,6 +108,18 @@ export function isToolForDocumentKind(
   if (kind === "activity") {
     return (
       tool === "action" ||
+      tool === "initial-node" ||
+      tool === "activity-final" ||
+      tool === "decision-node" ||
+      tool === "merge-node" ||
+      tool === "fork-node" ||
+      tool === "join-node" ||
+      tool === "control-flow"
+    );
+  }
+  if (kind === "interaction-overview") {
+    return (
+      tool === "interaction-occurrence" ||
       tool === "initial-node" ||
       tool === "activity-final" ||
       tool === "decision-node" ||

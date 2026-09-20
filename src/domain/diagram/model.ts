@@ -160,6 +160,17 @@ export type ActivityControlNode = {
 
 export type ActivityElement = ActivityAction | ActivityControlNode;
 
+export type InteractionOccurrence = {
+  id: string;
+  kind: "interaction-occurrence";
+  name: string;
+  geometry: Geometry;
+};
+
+export type InteractionOverviewElement =
+  | InteractionOccurrence
+  | ActivityControlNode;
+
 export type DiagramElement =
   | UseCaseElement
   | SequenceElement
@@ -167,7 +178,8 @@ export type DiagramElement =
   | ComponentElement
   | DeploymentElement
   | ErElement
-  | ActivityElement;
+  | ActivityElement
+  | InteractionOccurrence;
 
 export type UseCaseRelationshipKind = "association" | "include" | "extend";
 
@@ -303,7 +315,8 @@ export type DocumentKind =
   | "component"
   | "deployment"
   | "entity-relationship"
-  | "activity";
+  | "activity"
+  | "interaction-overview";
 
 export type DiagramDocumentV1 = {
   schemaVersion: 1;
@@ -475,6 +488,20 @@ export function isActivityElement(
   element: DiagramElement,
 ): element is ActivityElement {
   return isActivityAction(element) || isActivityControlNode(element);
+}
+
+export function isInteractionOccurrence(
+  element: DiagramElement,
+): element is InteractionOccurrence {
+  return element.kind === "interaction-occurrence";
+}
+
+export function isInteractionOverviewElement(
+  element: DiagramElement,
+): element is InteractionOverviewElement {
+  return (
+    isInteractionOccurrence(element) || isActivityControlNode(element)
+  );
 }
 
 export function isControlFlow(

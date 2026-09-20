@@ -135,7 +135,8 @@ export async function createNewDiagram(
     | "Componentes"
     | "Despliegue"
     | "Entidad relación"
-    | "Actividades" = "Casos de uso",
+    | "Actividades"
+    | "Interacción general" = "Casos de uso",
 ): Promise<void> {
   await page.getByRole("button", { name: "Nuevo" }).click();
   const dialog = page.getByRole("dialog", { name: "Nuevo diagrama" });

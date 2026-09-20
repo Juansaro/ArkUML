@@ -7,6 +7,7 @@ import {
   createEmptyDeploymentDocument,
   createEmptyActivityDocument,
   createEmptyErDocument,
+  createEmptyInteractionOverviewDocument,
   createEmptySequenceDocument,
   createLifeline,
   createRelationship,
@@ -151,7 +152,7 @@ describe("parseWorkspaceSnapshot", () => {
     expectRejected(
       withActiveDocument(snapshot, {
         ...activeDocument(snapshot),
-        kind: "interaction-overview",
+        kind: "state",
       }),
       "UNKNOWN_KIND",
       /kind|no soportado/i,
@@ -492,6 +493,40 @@ describe("parser schema 3 — clases, componentes, despliegue y kinds futuros", 
     });
   });
 
+  it("acepta un documento interaction-overview vacío", () => {
+    const document = createEmptyInteractionOverviewDocument({
+      createId: sequentialIds(),
+      now: () => FIXED_NOW,
+    });
+    expect(parseDiagramDocument(document)).toEqual({
+      ok: true,
+      value: document,
+    });
+  });
+
+  it("rechaza un action en un documento interaction-overview", () => {
+    const document = createEmptyInteractionOverviewDocument({
+      createId: sequentialIds(),
+      now: () => FIXED_NOW,
+    });
+    const parsed = parseDiagramDocument({
+      ...document,
+      elements: [
+        {
+          id: "00000000-0000-4000-8000-0000000000a1",
+          kind: "action",
+          name: "Validar",
+          geometry: { x: 0, y: 0, width: 160, height: 64 },
+        },
+      ],
+    });
+    expect(parsed.ok).toBe(false);
+    if (parsed.ok) {
+      return;
+    }
+    expect(parsed.error.code).toBe("UNKNOWN_KIND");
+  });
+
   it("rechaza un actor en un documento class", () => {
     const createId = sequentialIds();
     const document = createEmptyClassDocument({
@@ -537,14 +572,14 @@ describe("parser schema 3 — clases, componentes, despliegue y kinds futuros", 
     expect(parsed.error.code).toBe("UNKNOWN_KIND");
   });
 
-  it("rechaza un kind de documento aún no en la unión", () => {
+  it("rechaza un kind de documento desconocido fuera de la unión", () => {
     const document = createEmptyClassDocument({
       createId: sequentialIds(),
       now: () => FIXED_NOW,
     });
     const parsed = parseDiagramDocument({
       ...document,
-      kind: "interaction-overview",
+      kind: "state",
     });
     expect(parsed.ok).toBe(false);
     if (parsed.ok) {

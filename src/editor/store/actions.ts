@@ -6,6 +6,7 @@ import {
   COMPONENT_DOCUMENT_KIND,
   DEPLOYMENT_DOCUMENT_KIND,
   ER_DOCUMENT_KIND,
+  INTERACTION_OVERVIEW_DOCUMENT_KIND,
   SEQUENCE_DOCUMENT_KIND,
 } from "../../domain/diagram/defaults.ts";
 import {
@@ -15,6 +16,7 @@ import {
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
   createEmptyErDocument,
+  createEmptyInteractionOverviewDocument,
   createEmptySequenceDocument,
   createUuid,
   type DiagramFactoryDeps,
@@ -47,6 +49,7 @@ import {
   createMergeNode as createMergeNodeOperation,
   createForkNode as createForkNodeOperation,
   createJoinNode as createJoinNodeOperation,
+  createInteractionOccurrence as createInteractionOccurrenceOperation,
   createRelationship,
   deleteElements as deleteElementsOperation,
   deleteRelationships as deleteRelationshipsOperation,
@@ -166,6 +169,10 @@ export type EditorActions = {
   }) => Result<DiagramDocument>;
   createJoinNode: (input: {
     name?: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createInteractionOccurrence: (input: {
+    name: string;
     geometry?: Geometry;
   }) => Result<DiagramDocument>;
   renameElement: (elementId: string, name: string) => Result<DiagramDocument>;
@@ -321,6 +328,10 @@ export function createEditorActions(
       apply((document) => createForkNodeOperation(document, input, deps)),
     createJoinNode: (input) =>
       apply((document) => createJoinNodeOperation(document, input, deps)),
+    createInteractionOccurrence: (input) =>
+      apply((document) =>
+        createInteractionOccurrenceOperation(document, input, deps),
+      ),
     renameElement: (elementId, name) =>
       apply((document) =>
         renameElementOperation(document, elementId, name, deps),
@@ -684,7 +695,9 @@ export function createEditorActions(
                   ? createEmptyErDocument(deps)
                   : nextKind === ACTIVITY_DOCUMENT_KIND
                     ? createEmptyActivityDocument(deps)
-                    : createDiagramDocument(deps);
+                    : nextKind === INTERACTION_OVERVIEW_DOCUMENT_KIND
+                      ? createEmptyInteractionOverviewDocument(deps)
+                      : createDiagramDocument(deps);
       return get().addDocument(document);
     },
     activateDocument: (documentId) => {
@@ -841,7 +854,8 @@ function cloneElementCopy(copy: ElementCopy): ElementCopy {
     copy.kind === "decision-node" ||
     copy.kind === "merge-node" ||
     copy.kind === "fork-node" ||
-    copy.kind === "join-node"
+    copy.kind === "join-node" ||
+    copy.kind === "interaction-occurrence"
   ) {
     return { kind: copy.kind, name: copy.name, geometry };
   }

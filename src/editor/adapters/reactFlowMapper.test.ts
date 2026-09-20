@@ -6,6 +6,7 @@ import {
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
   createEmptyErDocument,
+  createEmptyInteractionOverviewDocument,
   createEmptySequenceDocument,
   type IdFactory,
 } from "../../domain/diagram/factories.ts";
@@ -22,6 +23,7 @@ import {
   createEntity,
   createErRelationship,
   createInitialNode,
+  createInteractionOccurrence,
   createLifeline,
   createNode,
   createRelationship,
@@ -870,6 +872,81 @@ describe("mapDocumentToReactFlow", () => {
       type: "control-flow",
       selected: true,
       data: { kind: "control-flow", guard: "sí" },
+    });
+  });
+
+  it("proyecta interaction-occurrence, control y control-flow", () => {
+    const deps = { createId: sequentialIds(320), now: () => CREATED_AT };
+    const empty = createEmptyInteractionOverviewDocument(deps);
+    const withInitial = expectOk(
+      createInitialNode(
+        empty,
+        { geometry: { x: 0, y: 0, width: 24, height: 24 } },
+        deps,
+      ),
+    );
+    const withOccurrence = expectOk(
+      createInteractionOccurrence(
+        withInitial,
+        {
+          name: "Login",
+          geometry: { x: 80, y: 0, width: 200, height: 80 },
+        },
+        deps,
+      ),
+    );
+    const withFinal = expectOk(
+      createActivityFinal(
+        withOccurrence,
+        { geometry: { x: 360, y: 24, width: 28, height: 28 } },
+        deps,
+      ),
+    );
+    const initial = withFinal.elements[0];
+    const occurrence = withFinal.elements[1];
+    const activityFinal = withFinal.elements[2];
+    if (
+      initial === undefined ||
+      occurrence === undefined ||
+      activityFinal === undefined
+    ) {
+      throw new Error("Faltan nodos interaction-overview");
+    }
+    const document = expectOk(
+      createRelationship(
+        withFinal,
+        {
+          kind: "control-flow",
+          sourceId: occurrence.id,
+          targetId: activityFinal.id,
+        },
+        deps,
+      ),
+    );
+
+    const { nodes, edges } = mapDocumentToReactFlow(document, {
+      elementIds: [occurrence.id],
+      relationshipIds: [document.relationships[0]!.id],
+    });
+
+    expect(nodes).toHaveLength(3);
+    expect(nodes[0]).toMatchObject({
+      type: "initial-node",
+      data: { kind: "initial-node", name: "" },
+    });
+    expect(nodes[1]).toMatchObject({
+      type: "interaction-occurrence",
+      data: { kind: "interaction-occurrence", name: "Login" },
+      selected: true,
+    });
+    expect(nodes[2]).toMatchObject({
+      type: "activity-final",
+      data: { kind: "activity-final" },
+    });
+    expect(edges[0]).toMatchObject({
+      type: "control-flow",
+      selected: true,
+      data: { kind: "control-flow" },
     });
   });
 });

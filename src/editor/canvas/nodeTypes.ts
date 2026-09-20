@@ -12,6 +12,7 @@ import { EntityNode } from "../nodes/EntityNode.tsx";
 import { ErRelationshipNode } from "../nodes/ErRelationshipNode.tsx";
 import { ForkNode } from "../nodes/ForkNode.tsx";
 import { InitialNode } from "../nodes/InitialNode.tsx";
+import { InteractionOccurrenceNode } from "../nodes/InteractionOccurrenceNode.tsx";
 import { LifelineNode } from "../nodes/LifelineNode.tsx";
 import { SystemBoundaryNode } from "../nodes/SystemBoundaryNode.tsx";
 import { UseCaseNode } from "../nodes/UseCaseNode.tsx";
@@ -35,4 +36,5 @@ export const nodeTypes = {
   "merge-node": DecisionNode,
   "fork-node": ForkNode,
   "join-node": ForkNode,
+  "interaction-occurrence": InteractionOccurrenceNode,
 } satisfies NodeTypes;

@@ -26,6 +26,8 @@ import {
   MIN_FORK_NODE_WIDTH,
   MIN_INITIAL_NODE_HEIGHT,
   MIN_INITIAL_NODE_WIDTH,
+  MIN_INTERACTION_OCCURRENCE_HEIGHT,
+  MIN_INTERACTION_OCCURRENCE_WIDTH,
   MIN_LIFELINE_HEIGHT,
   MIN_LIFELINE_STEM_LENGTH,
   MIN_LIFELINE_WIDTH,
@@ -52,6 +54,7 @@ import {
   createErRelationship as buildErRelationship,
   createForkNode as buildForkNode,
   createInitialNode as buildInitialNode,
+  createInteractionOccurrence as buildInteractionOccurrence,
   createJoinNode as buildJoinNode,
   createLifeline as buildLifeline,
   createMergeNode as buildMergeNode,
@@ -80,6 +83,7 @@ import {
   isErLink,
   isErRelationshipElement,
   isGeneralization,
+  isInteractionOccurrence,
   isLifeline,
   isSequenceMessage,
   isUmlClass,
@@ -214,6 +218,8 @@ const ER_ELEMENT_MESSAGE =
   "El documento entidad-relación no admite este elemento.";
 const ACTIVITY_ELEMENT_MESSAGE =
   "El documento de actividades no admite este elemento.";
+const INTERACTION_OVERVIEW_ELEMENT_MESSAGE =
+  "El documento de interacción general no admite este elemento.";
 const USE_CASE_LIFELINE_MESSAGE =
   "El documento de casos de uso no admite lifelines.";
 const USE_CASE_CLASS_MESSAGE = "El documento de casos de uso no admite clases.";
@@ -225,6 +231,8 @@ const USE_CASE_ER_MESSAGE =
   "El documento de casos de uso no admite entidades, atributos ni rombos.";
 const USE_CASE_ACTIVITY_MESSAGE =
   "El documento de casos de uso no admite nodos de actividad.";
+const USE_CASE_INTERACTION_OVERVIEW_MESSAGE =
+  "El documento de casos de uso no admite ocurrencias de interacción.";
 const CLASS_DOCUMENT_MESSAGE =
   "Solo un documento de clases admite este elemento.";
 const COMPONENT_DOCUMENT_MESSAGE =
@@ -235,6 +243,10 @@ const ER_DOCUMENT_MESSAGE =
   "Solo un documento entidad-relación admite este elemento.";
 const ACTIVITY_DOCUMENT_MESSAGE =
   "Solo un documento de actividades admite este elemento.";
+const INTERACTION_OVERVIEW_DOCUMENT_MESSAGE =
+  "Solo un documento de interacción general admite este elemento.";
+const CONTROL_NODE_DOCUMENT_MESSAGE =
+  "Solo un documento de actividades o de interacción general admite este elemento.";
 const RENAME_RELATIONSHIP_MESSAGE =
   "Solo se puede renombrar un mensaje de secuencia o una relación de clases, componentes o despliegue.";
 const CLASS_SIZE_MESSAGE = "La clase debe medir al menos 120×72.";
@@ -246,6 +258,8 @@ const ATTRIBUTE_SIZE_MESSAGE = "El atributo debe medir al menos 80×40.";
 const ER_RELATIONSHIP_SIZE_MESSAGE =
   "La relación entidad-relación debe medir al menos 80×48.";
 const ACTION_SIZE_MESSAGE = "La acción debe medir al menos 96×40.";
+const INTERACTION_OCCURRENCE_SIZE_MESSAGE =
+  "La ocurrencia de interacción debe medir al menos 140×56.";
 const INITIAL_NODE_SIZE_MESSAGE =
   "El nodo inicial debe medir al menos 16×16.";
 const ACTIVITY_FINAL_SIZE_MESSAGE =
@@ -255,7 +269,7 @@ const DECISION_NODE_SIZE_MESSAGE =
 const FORK_NODE_SIZE_MESSAGE =
   "La barra de fork o join debe medir al menos 48×6.";
 const RESIZE_TARGET_ELEMENT_MESSAGE =
-  "Solo se puede redimensionar una clase, un componente, un nodo, un artefacto, una entidad, un atributo, un rombo o un nodo de actividad.";
+  "Solo se puede redimensionar una clase, un componente, un nodo, un artefacto, una entidad, un atributo, un rombo, un nodo de actividad o una ocurrencia de interacción.";
 const GENERALIZATION_ENDS_MESSAGE = "Generalization no admite multiplicidades.";
 const ASSOCIATION_ENDS_MESSAGE =
   "Solo se pueden editar extremos de asociación, agregación o composición.";
@@ -300,6 +314,9 @@ export function createElement(
   }
   if (document.kind === "activity") {
     return err("UNKNOWN_KIND", ACTIVITY_ELEMENT_MESSAGE);
+  }
+  if (document.kind === "interaction-overview") {
+    return err("UNKNOWN_KIND", INTERACTION_OVERVIEW_ELEMENT_MESSAGE);
   }
 
   const name = normalizeName(input.name);
@@ -744,8 +761,15 @@ function createActivityNode(
   input: CreateActivityNodeInput,
   deps?: OperationDeps,
 ): Result<DiagramDocument> {
-  if (document.kind !== "activity") {
-    return err("UNKNOWN_KIND", ACTIVITY_DOCUMENT_MESSAGE);
+  if (kind === "action") {
+    if (document.kind !== "activity") {
+      return err("UNKNOWN_KIND", ACTIVITY_DOCUMENT_MESSAGE);
+    }
+  } else if (
+    document.kind !== "activity" &&
+    document.kind !== "interaction-overview"
+  ) {
+    return err("UNKNOWN_KIND", CONTROL_NODE_DOCUMENT_MESSAGE);
   }
 
   const name =
@@ -839,6 +863,49 @@ export function createAction(
   deps?: OperationDeps,
 ): Result<DiagramDocument> {
   return createActivityNode(document, "action", input, deps);
+}
+
+export function createInteractionOccurrence(
+  document: DiagramDocument,
+  input: { name: string; geometry?: Geometry },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  if (document.kind !== "interaction-overview") {
+    return err("UNKNOWN_KIND", INTERACTION_OVERVIEW_DOCUMENT_MESSAGE);
+  }
+
+  const name = normalizeName(input.name);
+  if (!name.ok) {
+    return name;
+  }
+
+  const geometry = input.geometry;
+  if (geometry !== undefined) {
+    if (!isFiniteGeometry(geometry)) {
+      return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+    }
+    const sizeError = interactionOccurrenceSizeError(geometry);
+    if (sizeError !== undefined) {
+      return sizeError;
+    }
+  }
+
+  return commit(
+    document,
+    {
+      elements: [
+        ...document.elements,
+        buildInteractionOccurrence(
+          {
+            name: name.value,
+            ...(geometry === undefined ? {} : { geometry }),
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
 }
 
 export function createInitialNode(
@@ -1134,7 +1201,8 @@ export function resizeElement(
     !isErEntity(element) &&
     !isErAttribute(element) &&
     !isErRelationshipElement(element) &&
-    !isActivityElement(element)
+    !isActivityElement(element) &&
+    !isInteractionOccurrence(element)
   ) {
     return err("INVALID_GEOMETRY", RESIZE_TARGET_ELEMENT_MESSAGE);
   }
@@ -1155,7 +1223,9 @@ export function resizeElement(
               ? attributeSizeError(input.geometry)
               : isErRelationshipElement(element)
                 ? erRelationshipSizeError(input.geometry)
-                : activityNodeSizeError(element.kind, input.geometry);
+                : isInteractionOccurrence(element)
+                  ? interactionOccurrenceSizeError(input.geometry)
+                  : activityNodeSizeError(element.kind, input.geometry);
   if (sizeError !== undefined) {
     return sizeError;
   }
@@ -1328,7 +1398,8 @@ export type ElementCopy =
   | { kind: "decision-node"; name: string; geometry: Geometry }
   | { kind: "merge-node"; name: string; geometry: Geometry }
   | { kind: "fork-node"; name: string; geometry: Geometry }
-  | { kind: "join-node"; name: string; geometry: Geometry };
+  | { kind: "join-node"; name: string; geometry: Geometry }
+  | { kind: "interaction-occurrence"; name: string; geometry: Geometry };
 
 export function snapshotDuplicableElements(
   document: DiagramDocument,
@@ -1426,7 +1497,7 @@ export function snapshotDuplicableElements(
       });
       continue;
     }
-    if (isActivityElement(element)) {
+    if (isActivityElement(element) || isInteractionOccurrence(element)) {
       copies.push({
         kind: element.kind,
         name: element.name,
@@ -1500,6 +1571,18 @@ export function insertElementCopies(
       return err("UNKNOWN_KIND", ACTIVITY_ELEMENT_MESSAGE);
     }
     if (
+      document.kind === "interaction-overview" &&
+      copy.kind !== "interaction-occurrence" &&
+      copy.kind !== "initial-node" &&
+      copy.kind !== "activity-final" &&
+      copy.kind !== "decision-node" &&
+      copy.kind !== "merge-node" &&
+      copy.kind !== "fork-node" &&
+      copy.kind !== "join-node"
+    ) {
+      return err("UNKNOWN_KIND", INTERACTION_OVERVIEW_ELEMENT_MESSAGE);
+    }
+    if (
       document.kind === "use-case" &&
       copy.kind !== "actor" &&
       copy.kind !== "use-case"
@@ -1524,7 +1607,9 @@ export function insertElementCopies(
                     copy.kind === "fork-node" ||
                     copy.kind === "join-node"
                   ? USE_CASE_ACTIVITY_MESSAGE
-                  : USE_CASE_LIFELINE_MESSAGE,
+                  : copy.kind === "interaction-occurrence"
+                    ? USE_CASE_INTERACTION_OVERVIEW_MESSAGE
+                    : USE_CASE_LIFELINE_MESSAGE,
       );
     }
     if (!isFiniteGeometry(copy.geometry)) {
@@ -1620,6 +1705,12 @@ export function insertElementCopies(
     }
     if (copy.kind === "join-node") {
       created.push(buildJoinNode({ name: copy.name, geometry }, deps));
+      continue;
+    }
+    if (copy.kind === "interaction-occurrence") {
+      created.push(
+        buildInteractionOccurrence({ name: copy.name, geometry }, deps),
+      );
       continue;
     }
 
@@ -2656,6 +2747,18 @@ function erRelationshipSizeError(
     geometry.height < MIN_ER_RELATIONSHIP_HEIGHT
   ) {
     return err("INVALID_GEOMETRY", ER_RELATIONSHIP_SIZE_MESSAGE);
+  }
+  return undefined;
+}
+
+function interactionOccurrenceSizeError(
+  geometry: Geometry,
+): Result<never> | undefined {
+  if (
+    geometry.width < MIN_INTERACTION_OCCURRENCE_WIDTH ||
+    geometry.height < MIN_INTERACTION_OCCURRENCE_HEIGHT
+  ) {
+    return err("INVALID_GEOMETRY", INTERACTION_OCCURRENCE_SIZE_MESSAGE);
   }
   return undefined;
 }

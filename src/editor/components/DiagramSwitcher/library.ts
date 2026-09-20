@@ -25,6 +25,9 @@ export function documentKindLabel(kind: DocumentKind): string {
   if (kind === "activity") {
     return "Actividades";
   }
+  if (kind === "interaction-overview") {
+    return "Interacción general";
+  }
   return "Casos de uso";
 }
 
@@ -47,6 +50,9 @@ export function documentKindTagline(kind: DocumentKind): string {
   if (kind === "activity") {
     return "Editor de diagramas de actividades";
   }
+  if (kind === "interaction-overview") {
+    return "Editor de diagramas de interacción general";
+  }
   return "Editor de diagramas de casos de uso";
 }
 
@@ -58,6 +64,7 @@ export const CREATABLE_DOCUMENT_KINDS = [
   { value: "deployment", label: "Despliegue" },
   { value: "entity-relationship", label: "Entidad relación" },
   { value: "activity", label: "Actividades" },
+  { value: "interaction-overview", label: "Interacción general" },
 ] as const satisfies readonly { value: DocumentKind; label: string }[];
 
 export function filterLibraryDocuments(

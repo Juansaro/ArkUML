@@ -98,6 +98,37 @@ export const ACTIVITY_ELEMENT_TOOLS = [
   },
 ] as const;
 
+export const INTERACTION_OVERVIEW_ELEMENT_TOOLS = [
+  {
+    id: "interaction-occurrence",
+    label: "Interacción",
+  },
+  {
+    id: "initial-node",
+    label: "Inicial",
+  },
+  {
+    id: "activity-final",
+    label: "Final",
+  },
+  {
+    id: "decision-node",
+    label: "Decisión",
+  },
+  {
+    id: "merge-node",
+    label: "Fusión",
+  },
+  {
+    id: "fork-node",
+    label: "Fork",
+  },
+  {
+    id: "join-node",
+    label: "Join",
+  },
+] as const;
+
 export const BOUNDARY_EXISTS_REASON =
   "Ya existe un límite del sistema. El documento admite uno solo.";
 
@@ -214,6 +245,9 @@ export function paletteElementTools(kind: DocumentKind) {
   if (kind === "activity") {
     return ACTIVITY_ELEMENT_TOOLS;
   }
+  if (kind === "interaction-overview") {
+    return INTERACTION_OVERVIEW_ELEMENT_TOOLS;
+  }
   return PALETTE_ELEMENT_TOOLS;
 }
 
@@ -233,7 +267,7 @@ export function paletteRelationshipTools(kind: DocumentKind) {
   if (kind === "entity-relationship") {
     return ER_RELATIONSHIP_TOOLS;
   }
-  if (kind === "activity") {
+  if (kind === "activity" || kind === "interaction-overview") {
     return ACTIVITY_RELATIONSHIP_TOOLS;
   }
   return PALETTE_RELATIONSHIP_TOOLS;

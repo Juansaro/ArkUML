@@ -21,6 +21,9 @@ describe("documentKindLabel", () => {
     expect(documentKindLabel("deployment")).toBe("Despliegue");
     expect(documentKindLabel("entity-relationship")).toBe("Entidad relación");
     expect(documentKindLabel("activity")).toBe("Actividades");
+    expect(documentKindLabel("interaction-overview")).toBe(
+      "Interacción general",
+    );
   });
 });
 
@@ -46,6 +49,9 @@ describe("documentKindTagline", () => {
     );
     expect(documentKindTagline("activity")).toBe(
       "Editor de diagramas de actividades",
+    );
+    expect(documentKindTagline("interaction-overview")).toBe(
+      "Editor de diagramas de interacción general",
     );
   });
 });

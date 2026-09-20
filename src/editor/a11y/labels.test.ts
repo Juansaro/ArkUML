@@ -26,6 +26,7 @@ describe("accessible labels", () => {
     expect(elementTypeLabel("merge-node")).toBe("Fusión");
     expect(elementTypeLabel("fork-node")).toBe("Fork");
     expect(elementTypeLabel("join-node")).toBe("Join");
+    expect(elementTypeLabel("interaction-occurrence")).toBe("Interacción");
     expect(elementAccessibleName({ kind: "actor", name: "Usuario" })).toBe(
       "Actor Usuario",
     );

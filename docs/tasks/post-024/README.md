@@ -33,7 +33,7 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 congeló **Release 1** (biblioteca + secuencia, schema 2). TASK-046,
 TASK-047, TASK-048, TASK-049 y TASK-050 están `Hecha`. Release 1
 cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
-(seis kinds, schema 3). TASK-052 está `Hecha`. TASK-053, TASK-054, TASK-055, TASK-056, TASK-057, TASK-058, TASK-059, TASK-060 y TASK-061 están `Hecha`.
+(seis kinds, schema 3). TASK-052 está `Hecha`. TASK-053, TASK-054, TASK-055, TASK-056, TASK-057, TASK-058, TASK-059, TASK-060, TASK-061, TASK-062 y TASK-063 están `Hecha`. Release 2 cerrada a nivel de TASKs ejecutables.
 
 ## Estado
 
@@ -76,8 +76,8 @@ cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
 | 059 | [`13-editor/TASK-059.md`](13-editor/TASK-059.md) | Hecha | P0 | 058 | 2026-09-20: módulo ER; paleta, Chen, enlace, cardinalidad, inspector, Nuevo |
 | 060 | [`12-uml/TASK-060.md`](12-uml/TASK-060.md) | Hecha | P0 | 059 | 2026-09-20: dominio activity; control-flow+guard; initial/final; mezclas UNKNOWN_KIND; envelope 3.x; sin chrome |
 | 061 | [`13-editor/TASK-061.md`](13-editor/TASK-061.md) | Hecha | P0 | 060 | 2026-09-20: módulo actividades; paleta, nodos de control, flujo+guarda, inspector, Nuevo |
-| 062 | [`12-uml/TASK-062.md`](12-uml/TASK-062.md) | Lista | P0 | 061 | Dominio interacción general |
-| 063 | [`13-editor/TASK-063.md`](13-editor/TASK-063.md) | Lista | P0 | 062 | Módulo interacción general |
+| 062 | [`12-uml/TASK-062.md`](12-uml/TASK-062.md) | Hecha | P0 | 061 | 2026-09-20: dominio interaction-overview; occurrence+control-flow; sin action; mezclas UNKNOWN_KIND; envelope 3.x; sin chrome |
+| 063 | [`13-editor/TASK-063.md`](13-editor/TASK-063.md) | Hecha | P0 | 062 | 2026-09-20: módulo interacción general; paleta, marco ref, flujo+guarda, inspector, Nuevo; Release 2 TASKs cerrada |
 
 ## Fases y gates
 
@@ -145,8 +145,10 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-TASK-055 está `Hecha` (módulo chrome de componentes). El próximo contrato
-ejecutable es [TASK-056](12-uml/TASK-056.md) (dominio de despliegue).
+TASK-063 está `Hecha` (módulo chrome de interacción general). Release 2
+de TASKs ejecutables cerrada. El catálogo restante vive en
+[roadmap.md](roadmap.md); no hay siguiente TASK ejecutable en este árbol
+sin un nuevo freeze.
 Una TASK por chat. IndexedDB: no elegido (condicional C-QUOTA). No
 implementar Generalization en casos de uso, PDF, temas, fragmentos de
 secuencia, Crow’s foot, Interaction inline ni un kind cuyo dominio no

@@ -98,6 +98,7 @@ describe("DiagramCanvas", () => {
       "merge-node",
       "fork-node",
       "join-node",
+      "interaction-occurrence",
     ]);
     expect(Object.keys(edgeTypes)).toEqual([
       "association",

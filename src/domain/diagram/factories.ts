@@ -22,6 +22,8 @@ import {
   DEFAULT_ER_RELATIONSHIP_GEOMETRY,
   DEFAULT_FORK_NODE_GEOMETRY,
   DEFAULT_INITIAL_NODE_GEOMETRY,
+  DEFAULT_INTERACTION_OCCURRENCE_GEOMETRY,
+  DEFAULT_INTERACTION_OVERVIEW_DOCUMENT_TITLE,
   DEFAULT_LIFELINE_GEOMETRY,
   DEFAULT_LIFELINE_STEM_LENGTH,
   DEFAULT_NODE_GEOMETRY,
@@ -30,6 +32,7 @@ import {
   DEPLOYMENT_DOCUMENT_KIND,
   DOCUMENT_KIND,
   ER_DOCUMENT_KIND,
+  INTERACTION_OVERVIEW_DOCUMENT_KIND,
   SCHEMA_VERSION,
   SEQUENCE_DOCUMENT_KIND,
   STORAGE_VERSION,
@@ -58,6 +61,7 @@ import type {
   ErLink,
   ErRelationshipElement,
   Geometry,
+  InteractionOccurrence,
   Lifeline,
   SequenceMessage,
   SequenceMessageKind,
@@ -546,6 +550,23 @@ export function createJoinNode(
   };
 }
 
+export function createInteractionOccurrence(
+  input: {
+    name: string;
+    geometry?: Geometry;
+  },
+  deps?: DiagramFactoryDeps,
+): InteractionOccurrence {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "interaction-occurrence",
+    name: input.name.trim(),
+    geometry: copyGeometry(
+      input.geometry ?? DEFAULT_INTERACTION_OCCURRENCE_GEOMETRY,
+    ),
+  };
+}
+
 export function createControlFlow(
   input: {
     sourceId: string;
@@ -709,6 +730,24 @@ export function createEmptyActivityDocument(
     kind: ACTIVITY_DOCUMENT_KIND,
     metadata: createDocumentMetadata(
       { title: DEFAULT_ACTIVITY_DOCUMENT_TITLE },
+      deps,
+    ),
+    elements: [],
+    relationships: [],
+  };
+}
+
+export function createEmptyInteractionOverviewDocument(
+  deps?: DiagramFactoryDeps,
+): DiagramDocument {
+  const createId = resolveCreateId(deps);
+
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    id: createId(),
+    kind: INTERACTION_OVERVIEW_DOCUMENT_KIND,
+    metadata: createDocumentMetadata(
+      { title: DEFAULT_INTERACTION_OVERVIEW_DOCUMENT_TITLE },
       deps,
     ),
     elements: [],

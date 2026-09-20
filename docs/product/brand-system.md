@@ -590,6 +590,19 @@ distinguen solo por color: rectángulo redondeado vs círculo relleno vs
 bullseye vs rombo vs rombo+trazo vs barra↑ vs barra↓ vs flecha abierta.
 Estos iconos no sustituyen la notación del lienzo ni el texto `[guard]`.
 
+**`interactionOccurrence`** — marco con pentágono «ref» (InteractionUse):
+
+```text
+<path d="M4 5h16v14H4z" />
+<path d="M4 5h6l2 2.5-2 2.5H4z" />
+<path d="M9 15h6" />
+```
+
+Marco `ref` e iconos de control compartidos no se distinguen solo por
+color: rectángulo+pentágono vs círculo relleno vs bullseye vs rombo vs
+rombo+trazo vs barra↑ vs barra↓ vs flecha abierta. Este icono no
+sustituye el pentágono «ref» ni el nombre del lienzo.
+
 Los ids de `Icon` van en camelCase. En paleta se conectan a los `EditorTool`
 existentes sin renombrar ni el icono ni la herramienta: `useCase` →
 `use-case`, `systemBoundary` → `system-boundary`, `syncMessage` →
@@ -600,7 +613,8 @@ existentes sin renombrar ni el icono ni la herramienta: `useCase` →
 `erLink` → `er-link`, `initialNode` → `initial-node`,
 `activityFinal` → `activity-final`, `decisionNode` → `decision-node`,
 `mergeNode` → `merge-node`, `forkNode` → `fork-node`,
-`joinNode` → `join-node`, `controlFlow` → `control-flow`. El resto
+`joinNode` → `join-node`, `controlFlow` → `control-flow`,
+`interactionOccurrence` → `interaction-occurrence`. El resto
 coincide (`select`, `actor`, `association`, `include`, `extend`,
 `lifeline`, `class`, `aggregation`, `composition`, `generalization`,
 `component`, `node`, `artifact`, `deploy`, `entity`, `attribute`,
@@ -653,13 +667,14 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Paleta | `erRelationship` | Icono + etiqueta. Solo ER | Relación | «Crear relación (rombo).» | — |
 | Paleta | `erLink` | Icono + etiqueta. Solo ER | Enlace | «Unir atributo–entidad o entidad–relación. Arrastra del origen al destino.» | — |
 | Paleta | `action` | Icono + etiqueta. Solo `document.kind` `"activity"` | Acción | «Crear acción.» | — |
-| Paleta | `initialNode` | Icono + etiqueta. Solo actividades | Inicial | «Crear nodo inicial.» | — |
-| Paleta | `activityFinal` | Icono + etiqueta. Solo actividades | Final | «Crear nodo final.» | — |
-| Paleta | `decisionNode` | Icono + etiqueta. Solo actividades | Decisión | «Crear nodo de decisión.» | — |
-| Paleta | `mergeNode` | Icono + etiqueta. Solo actividades | Fusión | «Crear nodo de fusión.» | — |
-| Paleta | `forkNode` | Icono + etiqueta. Solo actividades | Fork | «Crear barra de bifurcación.» | — |
-| Paleta | `joinNode` | Icono + etiqueta. Solo actividades | Join | «Crear barra de unión.» | — |
-| Paleta | `controlFlow` | Icono + etiqueta. Solo actividades | Flujo | «Unir dos nodos con flujo de control. Arrastra del origen al destino. La guarda es opcional al salir de una decisión.» | — |
+| Paleta | `interactionOccurrence` | Icono + etiqueta. Solo `document.kind` `"interaction-overview"` | Interacción | «Crear ocurrencia de interacción (ref).» | — |
+| Paleta | `initialNode` | Icono + etiqueta. Solo actividades o interacción general | Inicial | «Crear nodo inicial.» | — |
+| Paleta | `activityFinal` | Icono + etiqueta. Solo actividades o interacción general | Final | «Crear nodo final.» | — |
+| Paleta | `decisionNode` | Icono + etiqueta. Solo actividades o interacción general | Decisión | «Crear nodo de decisión.» | — |
+| Paleta | `mergeNode` | Icono + etiqueta. Solo actividades o interacción general | Fusión | «Crear nodo de fusión.» | — |
+| Paleta | `forkNode` | Icono + etiqueta. Solo actividades o interacción general | Fork | «Crear barra de bifurcación.» | — |
+| Paleta | `joinNode` | Icono + etiqueta. Solo actividades o interacción general | Join | «Crear barra de unión.» | — |
+| Paleta | `controlFlow` | Icono + etiqueta. Solo actividades o interacción general | Flujo | «Unir dos nodos con flujo de control. Arrastra del origen al destino. La guarda es opcional al salir de una decisión.» | — |
 | Lienzo | `zoomIn` | Icon-only | Acercar | «Acercar.» | «El zoom ya está en el máximo (200%).» cuando `zoom >= 2` |
 | Lienzo | `zoomOut` | Icon-only | Alejar | «Alejar.» | «El zoom ya está en el mínimo (50%).» cuando `zoom <= 0.5` |
 | Lienzo | `fitView` | Icon-only | Ajustar vista | «Ajustar todo el diagrama (Ctrl/Cmd+0).» | — |

@@ -18,6 +18,7 @@ import {
   isControlFlow,
   isDeploymentRelationship,
   isErLink,
+  isInteractionOccurrence,
   isLifeline,
   isSequenceMessage,
   isUseCaseRelationship,
@@ -378,7 +379,7 @@ function isConnectableEndpoint(
     );
   }
   if (kind === "control-flow") {
-    return isActivityElement(element);
+    return isActivityElement(element) || isInteractionOccurrence(element);
   }
   if (kind === "sync-message" || kind === "reply-message") {
     return isLifeline(element);

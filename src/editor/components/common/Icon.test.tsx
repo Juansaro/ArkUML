@@ -171,4 +171,12 @@ describe("Icon", () => {
     rerender(<Icon name="controlFlow" />);
     expect(document.querySelector("svg")?.innerHTML).toContain("M14 9l5 3-5 3");
   });
+
+  it("pinta el glifo de interacción general", () => {
+    render(<Icon name="interactionOccurrence" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M4 5h6l2 2.5-2 2.5H4z",
+    );
+    expect(document.querySelector("svg")?.innerHTML).toContain("M9 15h6");
+  });
 });

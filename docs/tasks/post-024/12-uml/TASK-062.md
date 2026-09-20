@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -64,10 +64,10 @@ documento en `ref`.
 
 ## Criterios de aceptación
 
-- [ ] Factory occurrence + nodos de control; cascada de flujos.
-- [ ] `ref` 1–80; reglas initial/final iguales que activity.
-- [ ] No hay `action` en este kind. Mezclas `UNKNOWN_KIND`.
-- [ ] Archivo 3.x round-trip.
+- [x] Factory occurrence + nodos de control; cascada de flujos.
+- [x] `ref` 1–80; reglas initial/final iguales que activity.
+- [x] No hay `action` en este kind. Mezclas `UNKNOWN_KIND`.
+- [x] Archivo 3.x round-trip.
 
 ## Tests
 
@@ -91,4 +91,13 @@ Dominio IOD testeado; sin chrome.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-20: dominio `"interaction-overview"` schema 3;
+`interaction-occurrence` (`name` = ref 1–80) + nodos de control +
+`control-flow` con `guard`; mismas reglas initial/final que activity;
+sin `action`; `createEmptyInteractionOverviewDocument`; mezclas
+`UNKNOWN_KIND`; envelope 3.x round-trip; UUID-as-ref aceptado como
+string. Ajuste mínimo en `cloneElementCopy` del store para
+`interaction-occurrence`. Verificación: `npx vitest run src/domain`
+(195 ok); `npx tsc -b --pretty false`: app limpia; fallos previos en
+`e2e/include-extend.spec.ts` (`SVGPathElement` / `DOMPoint` sin DOM en
+`tsconfig.node.json`).

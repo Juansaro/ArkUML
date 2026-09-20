@@ -197,6 +197,13 @@ const joinNodeSchema = z.strictObject({
   geometry: geometrySchema,
 });
 
+const interactionOccurrenceSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("interaction-occurrence"),
+  name: nameSchema,
+  geometry: geometrySchema,
+});
+
 const useCaseElementSchema = z.discriminatedUnion(
   "kind",
   [actorSchema, useCaseSchema, systemBoundarySchema],
@@ -230,6 +237,7 @@ const diagramElementSchema = z.discriminatedUnion(
     mergeNodeSchema,
     forkNodeSchema,
     joinNodeSchema,
+    interactionOccurrenceSchema,
   ],
   { error: "Tipo de elemento no soportado." },
 );
@@ -361,6 +369,15 @@ const ACTIVITY_ELEMENT_KINDS = new Set([
   "fork-node",
   "join-node",
 ]);
+const INTERACTION_OVERVIEW_ELEMENT_KINDS = new Set([
+  "interaction-occurrence",
+  "initial-node",
+  "activity-final",
+  "decision-node",
+  "merge-node",
+  "fork-node",
+  "join-node",
+]);
 const USE_CASE_RELATIONSHIP_KINDS = new Set([
   "association",
   "include",
@@ -392,7 +409,8 @@ type KindCardinalityDocument = {
     | "component"
     | "deployment"
     | "entity-relationship"
-    | "activity";
+    | "activity"
+    | "interaction-overview";
   elements: readonly { kind: string; id?: string }[];
   relationships: readonly {
     kind: string;
@@ -482,7 +500,9 @@ function addKindCardinalityIssues(
               ? ER_ELEMENT_KINDS
               : document.kind === "activity"
                 ? ACTIVITY_ELEMENT_KINDS
-                : USE_CASE_ELEMENT_KINDS;
+                : document.kind === "interaction-overview"
+                  ? INTERACTION_OVERVIEW_ELEMENT_KINDS
+                  : USE_CASE_ELEMENT_KINDS;
   const allowedRelationships =
     document.kind === "sequence"
       ? SEQUENCE_RELATIONSHIP_KINDS
@@ -494,7 +514,8 @@ function addKindCardinalityIssues(
             ? DEPLOYMENT_RELATIONSHIP_KINDS
             : document.kind === "entity-relationship"
               ? ER_RELATIONSHIP_KINDS
-              : document.kind === "activity"
+              : document.kind === "activity" ||
+                  document.kind === "interaction-overview"
                 ? ACTIVITY_RELATIONSHIP_KINDS
                 : USE_CASE_RELATIONSHIP_KINDS;
 
@@ -646,6 +667,7 @@ export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
         "deployment",
         "entity-relationship",
         "activity",
+        "interaction-overview",
       ],
       {
         error: "kind de documento no soportado.",
