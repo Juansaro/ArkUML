@@ -2,8 +2,10 @@ import {
   err,
   isLifeline,
   isUmlClass,
+  isUmlComponent,
   ok,
   type ClassRelationshipKind,
+  type ComponentRelationshipKind,
   type DiagramDocument,
   type DiagramElement,
   type RelationshipKind,
@@ -45,6 +47,10 @@ const USE_CASE_KIND_MESSAGE =
 const CLASS_KIND_MESSAGE =
   "Este documento solo admite asociación, agregación, composición y generalization.";
 const CLASS_ENDPOINT_MESSAGE = "Una relación de clases solo puede unir clases.";
+const COMPONENT_KIND_MESSAGE =
+  "Este documento solo admite uso y ensamblaje entre componentes.";
+const COMPONENT_ENDPOINT_MESSAGE =
+  "Una relación de componentes solo puede unir componentes.";
 
 export function relationshipLabel(kind: RelationshipKind): string | undefined {
   if (kind === "include") {
@@ -65,6 +71,9 @@ export function canConnect(
   }
   if (document.kind === "class") {
     return canConnectClass(document, input);
+  }
+  if (document.kind === "component") {
+    return canConnectComponent(document, input);
   }
   return canConnectUseCase(document, input);
 }
@@ -118,6 +127,37 @@ function canConnectClass(
 
   if (!isUmlClass(source) || !isUmlClass(target)) {
     return err("INVALID_CONNECTION", CLASS_ENDPOINT_MESSAGE);
+  }
+
+  return ok({
+    kind: input.kind,
+    sourceId: source.id,
+    targetId: target.id,
+  });
+}
+
+function canConnectComponent(
+  document: DiagramDocument,
+  input: ConnectInput,
+): Result<AllowedConnection> {
+  if (!isComponentRelationshipKind(input.kind)) {
+    return err("INVALID_CONNECTION", COMPONENT_KIND_MESSAGE);
+  }
+
+  const byId = indexElements(document);
+  const source = byId.get(input.sourceId);
+  const target = byId.get(input.targetId);
+
+  if (source === undefined || target === undefined) {
+    return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
+  }
+
+  if (source.id === target.id) {
+    return err("SELF_RELATIONSHIP", SELF_RELATIONSHIP_MESSAGE);
+  }
+
+  if (!isUmlComponent(source) || !isUmlComponent(target)) {
+    return err("INVALID_CONNECTION", COMPONENT_ENDPOINT_MESSAGE);
   }
 
   return ok({
@@ -192,6 +232,12 @@ function isClassRelationshipKind(
     kind === "composition" ||
     kind === "generalization"
   );
+}
+
+function isComponentRelationshipKind(
+  kind: RelationshipKind,
+): kind is ComponentRelationshipKind {
+  return kind === "component-usage" || kind === "assembly-connector";
 }
 
 function indexElements(document: DiagramDocument): Map<string, DiagramElement> {

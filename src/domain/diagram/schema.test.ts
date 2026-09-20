@@ -3,6 +3,7 @@ import { DEFAULT_BOUNDARY_GEOMETRY } from "./defaults.ts";
 import {
   createActor,
   createEmptyClassDocument,
+  createEmptyComponentDocument,
   createEmptySequenceDocument,
   createLifeline,
   createRelationship,
@@ -147,7 +148,7 @@ describe("parseWorkspaceSnapshot", () => {
     expectRejected(
       withActiveDocument(snapshot, {
         ...activeDocument(snapshot),
-        kind: "component",
+        kind: "deployment",
       }),
       "UNKNOWN_KIND",
       /kind|no soportado/i,
@@ -432,9 +433,20 @@ describe("parser schema 2 — secuencia y mezclas", () => {
   });
 });
 
-describe("parser schema 3 — clases y kinds futuros", () => {
+describe("parser schema 3 — clases, componentes y kinds futuros", () => {
   it("acepta un documento class vacío", () => {
     const document = createEmptyClassDocument({
+      createId: sequentialIds(),
+      now: () => FIXED_NOW,
+    });
+    expect(parseDiagramDocument(document)).toEqual({
+      ok: true,
+      value: document,
+    });
+  });
+
+  it("acepta un documento component vacío", () => {
+    const document = createEmptyComponentDocument({
       createId: sequentialIds(),
       now: () => FIXED_NOW,
     });
@@ -496,7 +508,7 @@ describe("parser schema 3 — clases y kinds futuros", () => {
     });
     const parsed = parseDiagramDocument({
       ...document,
-      kind: "component",
+      kind: "deployment",
     });
     expect(parsed.ok).toBe(false);
     if (parsed.ok) {

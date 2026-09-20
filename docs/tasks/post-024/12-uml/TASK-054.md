@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -64,10 +64,10 @@ Zod `strictObject`. `src/domain` sin UI. Pins intactos.
 
 ## Criterios de aceptación
 
-- [ ] Factory vacía; create/rename/move/delete de component; cascada.
-- [ ] `component-usage` y `assembly-connector`; self ilegal.
-- [ ] Mezclas `UNKNOWN_KIND`. Use-case/sequence/class intactos.
-- [ ] Archivo 3.x round-trip de un document component.
+- [x] Factory vacía; create/rename/move/delete de component; cascada.
+- [x] `component-usage` y `assembly-connector`; self ilegal.
+- [x] Mezclas `UNKNOWN_KIND`. Use-case/sequence/class intactos.
+- [x] Archivo 3.x round-trip de un document component.
 
 ## Tests
 
@@ -91,4 +91,16 @@ Dominio component testeado; sin chrome.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-20. Dominio component en schema 3. Unión
+`"use-case" | "sequence" | "class" | "component"`. Parser rechaza
+`deployment` y mezclas (`UNKNOWN_KIND`). Elemento `component`;
+relaciones `component-usage` / `assembly-connector`; self ilegal;
+duplicados permitidos; cascada al borrar; `createEmptyComponentDocument()`;
+geometría por defecto `200×120`, mínimo `120×72`. Envelope
+`formatVersion` 3 round-trip. Use-case/sequence/class intactos. Sin
+paleta ni nodos (TASK-055).
+
+Comandos: `npx vitest run src/domain` (157 tests) y
+`npx tsc -b --pretty false`: app limpia; fallos previos en
+`e2e/include-extend.spec.ts` (`SVGPathElement` / `DOMPoint` sin DOM
+en `tsconfig.node.json`) — sucio anterior, no tocado.

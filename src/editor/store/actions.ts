@@ -680,6 +680,9 @@ function cloneElementCopy(copy: ElementCopy): ElementCopy {
       operations: [...copy.operations],
     };
   }
+  if (copy.kind === "component") {
+    return { kind: "component", name: copy.name, geometry };
+  }
   if (copy.parentId !== undefined) {
     return {
       kind: "use-case",

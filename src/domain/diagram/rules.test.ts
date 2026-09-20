@@ -3,8 +3,10 @@ import { DEFAULT_BOUNDARY_GEOMETRY } from "./defaults.ts";
 import {
   createActor,
   createClass,
+  createComponent,
   createDiagramDocument,
   createEmptyClassDocument,
+  createEmptyComponentDocument,
   createEmptySequenceDocument,
   createLifeline,
   createRelationship,
@@ -511,6 +513,59 @@ describe("canConnect class", () => {
         kind: "association",
         sourceId: pedido.id,
         targetId: cliente.id,
+      }),
+      "INVALID_CONNECTION",
+    );
+  });
+});
+
+describe("canConnect component", () => {
+  it("acepta componente con componente, rechaza self y kinds ajenos", () => {
+    const createId = sequentialIds();
+    const document = createEmptyComponentDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const billing = createComponent({ name: "Billing" }, { createId });
+    const catalog = createComponent(
+      {
+        name: "Catalog",
+        geometry: { x: 240, y: 0, width: 200, height: 120 },
+      },
+      { createId },
+    );
+    const componentDocument: DiagramDocument = {
+      ...document,
+      elements: [billing, catalog],
+    };
+
+    expect(
+      canConnect(componentDocument, {
+        kind: "component-usage",
+        sourceId: billing.id,
+        targetId: catalog.id,
+      }).ok,
+    ).toBe(true);
+    expect(
+      canConnect(componentDocument, {
+        kind: "assembly-connector",
+        sourceId: billing.id,
+        targetId: catalog.id,
+      }).ok,
+    ).toBe(true);
+    expectCode(
+      canConnect(componentDocument, {
+        kind: "component-usage",
+        sourceId: billing.id,
+        targetId: billing.id,
+      }),
+      "SELF_RELATIONSHIP",
+    );
+    expectCode(
+      canConnect(componentDocument, {
+        kind: "class-association",
+        sourceId: billing.id,
+        targetId: catalog.id,
       }),
       "INVALID_CONNECTION",
     );

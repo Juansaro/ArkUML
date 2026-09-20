@@ -3,6 +3,7 @@ import {
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_BOUNDARY_NAME,
   DEFAULT_CLASS_DOCUMENT_TITLE,
+  DEFAULT_COMPONENT_DOCUMENT_TITLE,
   DEFAULT_DOCUMENT_TITLE,
   DEFAULT_SEQUENCE_DOCUMENT_TITLE,
   DEFAULT_VIEWPORT,
@@ -11,6 +12,7 @@ import {
   createActor,
   createDiagramDocument,
   createEmptyClassDocument,
+  createEmptyComponentDocument,
   createEmptySequenceDocument,
   createRelationship,
   createSystemBoundary,
@@ -170,6 +172,22 @@ describe("createEmptyClassDocument", () => {
     expect(document.schemaVersion).toBe(3);
     expect(document.kind).toBe("class");
     expect(document.metadata.title).toBe(DEFAULT_CLASS_DOCUMENT_TITLE);
+    expect(document.elements).toEqual([]);
+    expect(document.relationships).toEqual([]);
+  });
+});
+
+describe("createEmptyComponentDocument", () => {
+  it("crea un documento component vacío con título por defecto", () => {
+    const createId = sequentialIds();
+    const document = createEmptyComponentDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+
+    expect(document.schemaVersion).toBe(3);
+    expect(document.kind).toBe("component");
+    expect(document.metadata.title).toBe(DEFAULT_COMPONENT_DOCUMENT_TITLE);
     expect(document.elements).toEqual([]);
     expect(document.relationships).toEqual([]);
   });

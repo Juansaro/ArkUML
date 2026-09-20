@@ -68,7 +68,7 @@ cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
 | 051 | [`11-governance/TASK-051.md`](11-governance/TASK-051.md) | Hecha | P0 | 045, 050 | 2026-09-14: freeze **Release 2** (schema 3); ADR-008; seis metamodelos; TASK-052–063 |
 | 052 | [`12-uml/TASK-052.md`](12-uml/TASK-052.md) | Hecha | P0 | 051 | 2026-09-14: schema 3; `migrateDocument` 2→3; clases (class, asociación/agregación/composición/generalization); mezclas `UNKNOWN_KIND`; envelope formatVersion 3 |
 | 053 | [`13-editor/TASK-053.md`](13-editor/TASK-053.md) | Hecha | P0 | 052 | 2026-09-16: módulo de clases; paleta, ClassNode, relaciones, inspector, Nuevo y combobox |
-| 054 | [`12-uml/TASK-054.md`](12-uml/TASK-054.md) | Lista | P0 | 053 | Dominio componentes |
+| 054 | [`12-uml/TASK-054.md`](12-uml/TASK-054.md) | Hecha | P0 | 053 | 2026-09-20: dominio component; usage/assembly; mezclas UNKNOWN_KIND; envelope 3.x; sin chrome |
 | 055 | [`13-editor/TASK-055.md`](13-editor/TASK-055.md) | Lista | P0 | 054 | Módulo componentes |
 | 056 | [`12-uml/TASK-056.md`](12-uml/TASK-056.md) | Lista | P0 | 055 | Dominio despliegue |
 | 057 | [`13-editor/TASK-057.md`](13-editor/TASK-057.md) | Lista | P0 | 056 | Módulo despliegue |

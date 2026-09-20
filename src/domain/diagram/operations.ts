@@ -5,6 +5,8 @@ import {
   MIN_BOUNDARY_WIDTH,
   MIN_CLASS_HEIGHT,
   MIN_CLASS_WIDTH,
+  MIN_COMPONENT_HEIGHT,
+  MIN_COMPONENT_WIDTH,
   MIN_LIFELINE_HEIGHT,
   MIN_LIFELINE_STEM_LENGTH,
   MIN_LIFELINE_WIDTH,
@@ -15,6 +17,8 @@ import {
   createActor,
   createClass as buildClass,
   createClassRelationship as buildClassRelationship,
+  createComponent as buildComponent,
+  createComponentRelationship as buildComponentRelationship,
   createLifeline as buildLifeline,
   createRelationship as buildRelationship,
   createSequenceMessage as buildSequenceMessage,
@@ -27,15 +31,18 @@ import {
   isAssociationMultiplicity,
   isClassAssociation,
   isClassRelationship,
+  isComponentRelationship,
   isGeneralization,
   isLifeline,
   isSequenceMessage,
   isUmlClass,
+  isUmlComponent,
   isUseCaseRelationship,
   ok,
   type Anchor,
   type AssociationMultiplicity,
   type ClassRelationshipKind,
+  type ComponentRelationshipKind,
   type DiagramDocument,
   type DiagramElement,
   type Geometry,
@@ -87,10 +94,18 @@ export type CreateClassRelationshipInput = {
   targetMultiplicity?: AssociationMultiplicity;
 };
 
+export type CreateComponentRelationshipInput = {
+  kind: ComponentRelationshipKind;
+  sourceId: string;
+  targetId: string;
+  name?: string;
+};
+
 export type CreateRelationshipInput =
   | CreateUseCaseRelationshipInput
   | CreateSequenceMessageInput
-  | CreateClassRelationshipInput;
+  | CreateClassRelationshipInput
+  | CreateComponentRelationshipInput;
 
 export type ReconnectRelationshipInput = CreateUseCaseRelationshipInput & {
   id: string;
@@ -116,14 +131,23 @@ const REPARENT_TARGET_MESSAGE = "Solo se puede reparentar un caso de uso.";
 const SEQUENCE_ELEMENT_MESSAGE =
   "El documento de secuencia no admite este elemento.";
 const CLASS_ELEMENT_MESSAGE = "El documento de clases no admite este elemento.";
+const COMPONENT_ELEMENT_MESSAGE =
+  "El documento de componentes no admite este elemento.";
 const USE_CASE_LIFELINE_MESSAGE =
   "El documento de casos de uso no admite lifelines.";
 const USE_CASE_CLASS_MESSAGE = "El documento de casos de uso no admite clases.";
+const USE_CASE_COMPONENT_MESSAGE =
+  "El documento de casos de uso no admite componentes.";
 const CLASS_DOCUMENT_MESSAGE =
   "Solo un documento de clases admite este elemento.";
+const COMPONENT_DOCUMENT_MESSAGE =
+  "Solo un documento de componentes admite este elemento.";
 const RENAME_RELATIONSHIP_MESSAGE =
-  "Solo se puede renombrar un mensaje de secuencia o una relación de clases.";
+  "Solo se puede renombrar un mensaje de secuencia o una relación de clases o componentes.";
 const CLASS_SIZE_MESSAGE = "La clase debe medir al menos 120×72.";
+const COMPONENT_SIZE_MESSAGE = "El componente debe medir al menos 120×72.";
+const RESIZE_TARGET_ELEMENT_MESSAGE =
+  "Solo se puede redimensionar una clase o un componente.";
 const GENERALIZATION_ENDS_MESSAGE = "Generalization no admite multiplicidades.";
 const ASSOCIATION_ENDS_MESSAGE =
   "Solo se pueden editar extremos de asociación, agregación o composición.";
@@ -146,6 +170,9 @@ export function createElement(
   }
   if (document.kind === "class") {
     return err("UNKNOWN_KIND", CLASS_ELEMENT_MESSAGE);
+  }
+  if (document.kind === "component") {
+    return err("UNKNOWN_KIND", COMPONENT_ELEMENT_MESSAGE);
   }
 
   const name = normalizeName(input.name);
@@ -308,6 +335,49 @@ export function createClass(
       elements: [
         ...document.elements,
         buildClass(
+          {
+            name: name.value,
+            ...(geometry === undefined ? {} : { geometry }),
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
+}
+
+export function createComponent(
+  document: DiagramDocument,
+  input: { name: string; geometry?: Geometry },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  if (document.kind !== "component") {
+    return err("UNKNOWN_KIND", COMPONENT_DOCUMENT_MESSAGE);
+  }
+
+  const name = normalizeName(input.name);
+  if (!name.ok) {
+    return name;
+  }
+
+  const geometry = input.geometry;
+  if (geometry !== undefined) {
+    if (!isFiniteGeometry(geometry)) {
+      return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+    }
+    const sizeError = componentSizeError(geometry);
+    if (sizeError !== undefined) {
+      return sizeError;
+    }
+  }
+
+  return commit(
+    document,
+    {
+      elements: [
+        ...document.elements,
+        buildComponent(
           {
             name: name.value,
             ...(geometry === undefined ? {} : { geometry }),
@@ -518,13 +588,15 @@ export function resizeElement(
   if (element === undefined) {
     return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
   }
-  if (!isUmlClass(element)) {
-    return err("INVALID_GEOMETRY", CLASS_DOCUMENT_MESSAGE);
+  if (!isUmlClass(element) && !isUmlComponent(element)) {
+    return err("INVALID_GEOMETRY", RESIZE_TARGET_ELEMENT_MESSAGE);
   }
   if (!isFiniteGeometry(input.geometry)) {
     return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
   }
-  const sizeError = classSizeError(input.geometry);
+  const sizeError = isUmlClass(element)
+    ? classSizeError(input.geometry)
+    : componentSizeError(input.geometry);
   if (sizeError !== undefined) {
     return sizeError;
   }
@@ -684,7 +756,8 @@ export type ElementCopy =
       geometry: Geometry;
       attributes: string[];
       operations: string[];
-    };
+    }
+  | { kind: "component"; name: string; geometry: Geometry };
 
 export function snapshotDuplicableElements(
   document: DiagramDocument,
@@ -733,6 +806,14 @@ export function snapshotDuplicableElements(
       });
       continue;
     }
+    if (element.kind === "component") {
+      copies.push({
+        kind: "component",
+        name: element.name,
+        geometry,
+      });
+      continue;
+    }
 
     if (element.parentId !== undefined) {
       copies.push({
@@ -768,6 +849,9 @@ export function insertElementCopies(
     if (document.kind === "class" && copy.kind !== "class") {
       return err("UNKNOWN_KIND", CLASS_ELEMENT_MESSAGE);
     }
+    if (document.kind === "component" && copy.kind !== "component") {
+      return err("UNKNOWN_KIND", COMPONENT_ELEMENT_MESSAGE);
+    }
     if (
       document.kind === "use-case" &&
       copy.kind !== "actor" &&
@@ -777,7 +861,9 @@ export function insertElementCopies(
         "UNKNOWN_KIND",
         copy.kind === "class"
           ? USE_CASE_CLASS_MESSAGE
-          : USE_CASE_LIFELINE_MESSAGE,
+          : copy.kind === "component"
+            ? USE_CASE_COMPONENT_MESSAGE
+            : USE_CASE_LIFELINE_MESSAGE,
       );
     }
     if (!isFiniteGeometry(copy.geometry)) {
@@ -809,6 +895,12 @@ export function insertElementCopies(
           },
           deps,
         ),
+      );
+      continue;
+    }
+    if (copy.kind === "component") {
+      created.push(
+        buildComponent({ name: copy.name, geometry }, deps),
       );
       continue;
     }
@@ -855,6 +947,9 @@ export function createRelationship(
 ): Result<DiagramDocument> {
   if (isClassRelationshipInput(input)) {
     return createClassDiagramRelationship(document, input, deps);
+  }
+  if (isComponentRelationshipInput(input)) {
+    return createComponentDiagramRelationship(document, input, deps);
   }
   if (isSequenceMessageInput(input)) {
     return createSequenceRelationship(document, input, deps);
@@ -1070,6 +1165,26 @@ export function renameRelationship(
       deps,
     );
   }
+  if (isComponentRelationship(existing)) {
+    const normalized = normalizeMessageName(name);
+    if (!normalized.ok) {
+      return normalized;
+    }
+    if (existing.name === normalized.value) {
+      return ok(document);
+    }
+    return commit(
+      document,
+      {
+        relationships: document.relationships.map((relationship) =>
+          relationship.id === relationshipId
+            ? { ...existing, name: normalized.value }
+            : relationship,
+        ),
+      },
+      deps,
+    );
+  }
   if (!isSequenceMessage(existing)) {
     return err("UNKNOWN_KIND", RENAME_RELATIONSHIP_MESSAGE);
   }
@@ -1199,6 +1314,14 @@ function isClassRelationshipInput(
   );
 }
 
+function isComponentRelationshipInput(
+  input: CreateRelationshipInput,
+): input is CreateComponentRelationshipInput {
+  return (
+    input.kind === "component-usage" || input.kind === "assembly-connector"
+  );
+}
+
 function createClassDiagramRelationship(
   document: DiagramDocument,
   input: CreateClassRelationshipInput,
@@ -1253,6 +1376,41 @@ function createClassDiagramRelationship(
                     input.targetMultiplicity ??
                     DEFAULT_ASSOCIATION_MULTIPLICITY,
                 }),
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
+}
+
+function createComponentDiagramRelationship(
+  document: DiagramDocument,
+  input: CreateComponentRelationshipInput,
+  deps: OperationDeps | undefined,
+): Result<DiagramDocument> {
+  const name = normalizeMessageName(input.name ?? "");
+  if (!name.ok) {
+    return name;
+  }
+
+  const allowed = canConnect(document, input);
+  if (!allowed.ok) {
+    return allowed;
+  }
+
+  return commit(
+    document,
+    {
+      relationships: [
+        ...document.relationships,
+        buildComponentRelationship(
+          {
+            kind: input.kind,
+            sourceId: allowed.value.sourceId,
+            targetId: allowed.value.targetId,
+            name: name.value,
           },
           deps,
         ),
@@ -1437,6 +1595,16 @@ function lifelineHeadSizeError(geometry: Geometry): Result<never> | undefined {
 function classSizeError(geometry: Geometry): Result<never> | undefined {
   if (geometry.width < MIN_CLASS_WIDTH || geometry.height < MIN_CLASS_HEIGHT) {
     return err("INVALID_GEOMETRY", CLASS_SIZE_MESSAGE);
+  }
+  return undefined;
+}
+
+function componentSizeError(geometry: Geometry): Result<never> | undefined {
+  if (
+    geometry.width < MIN_COMPONENT_WIDTH ||
+    geometry.height < MIN_COMPONENT_HEIGHT
+  ) {
+    return err("INVALID_GEOMETRY", COMPONENT_SIZE_MESSAGE);
   }
   return undefined;
 }

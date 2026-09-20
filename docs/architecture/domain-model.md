@@ -4,8 +4,8 @@ El dominio es independiente de React, del DOM y de React Flow. Las pruebas de `s
 
 ## Tipos conceptuales
 
-Release 1 (schema **2**). Release 2 (TASK-052): schema **3**, unión
-`"use-case" | "sequence" | "class"`. `storageVersion` permanece 2. El
+Release 1 (schema **2**). Release 2 (TASK-052+): schema **3**, unión
+`"use-case" | "sequence" | "class" | "component"`. `storageVersion` permanece 2. El
 árbol v1 del MVP permanece el origen de `migrateDocument` `1→2`. `2→3`
 copia el documento 2 y solo escribe `schemaVersion: 3`.
 
@@ -17,7 +17,7 @@ WorkspaceSnapshot
    └─ document
       ├─ schemaVersion: 3
       ├─ id: UUID
-      ├─ kind: "use-case" | "sequence" | "class"
+      ├─ kind: "use-case" | "sequence" | "class" | "component"
       ├─ metadata: { title, createdAt, updatedAt }
       ├─ elements: DiagramElement[]
       └─ relationships: Relationship[]
@@ -35,6 +35,7 @@ coincide con exactamente un `document.id`. Envelope v1 (un `document` +
 - `SystemBoundary`: `{ id, kind: "system-boundary", name, geometry }`
 - `Lifeline`: `{ id, kind: "lifeline", name, geometry, stemLength }` (solo `kind: "sequence"`)
 - `Class`: `{ id, kind: "class", name, geometry, attributes, operations }` (solo `kind: "class"`)
+- `Component`: `{ id, kind: "component", name, geometry }` (solo `kind: "component"`)
 
 `Relationship` es una unión discriminada por `kind`.
 
@@ -77,12 +78,27 @@ Clases (forma cerrada en [class-model.md](class-model.md)):
 }
 ```
 
+Componentes (forma cerrada en [component-model.md](component-model.md)):
+
+```text
+{
+  id,
+  kind: "component-usage" | "assembly-connector",
+  sourceId,
+  targetId,
+  name   // 0–80; vacío = sin etiqueta
+}
+```
+
 Un documento `use-case` no contiene lifelines ni mensajes. Un documento
 `sequence` no contiene actor, caso, boundary ni Association/Include/Extend.
 Un documento `class` no contiene actor, caso, boundary, lifeline ni
 mensajes; un `use-case` o `sequence` no contiene `class` ni relaciones
-de clases. Violación al validar: `UNKNOWN_KIND` (el loader de persistencia
-sigue mapeando a `PARSE_INVALID`).
+de clases. Un documento `component` no mezcla con use-case, sequence ni
+class; un `use-case`, `sequence` o `class` no contiene `component` ni
+`component-usage` / `assembly-connector`. Violación al validar:
+`UNKNOWN_KIND` (el loader de persistencia sigue mapeando a
+`PARSE_INVALID`).
 
 Release 2 (schema 3): cada kind extra tiene forma cerrada en
 [class-model.md](class-model.md), [component-model.md](component-model.md),
@@ -103,7 +119,7 @@ No se persisten: `selected`, `measured`, internals de React Flow, CSS, component
 ## Tiempos y títulos
 
 - `createdAt` / `updatedAt`: ISO-8601.
-- `metadata.title`: string 1–80 tras trim. Default casos de uso: «Diagrama de casos de uso». Default secuencia: «Diagrama de secuencia». Default clases: «Diagrama de clases».
+- `metadata.title`: string 1–80 tras trim. Default casos de uso: «Diagrama de casos de uso». Default secuencia: «Diagrama de secuencia». Default clases: «Diagrama de clases». Default componentes: «Diagrama de componentes».
 - Nombres de elementos: 1–80 tras trim. Duplicados permitidos.
 
 ## Documento por defecto
@@ -128,6 +144,12 @@ Un documento class nuevo (`createEmptyClassDocument`) tiene título
 [class-model.md](class-model.md). `duplicateElements` solo copia clases
 (offset 24, sin relaciones). `sourceId === targetId` es `SELF_RELATIONSHIP`.
 Duplicados de la misma tupla están permitidos.
+
+Un documento component nuevo (`createEmptyComponentDocument`) tiene título
+«Diagrama de componentes», sin componentes ni relaciones. Operaciones:
+[component-model.md](component-model.md). `duplicateElements` solo copia
+componentes (offset 24, sin relaciones). `sourceId === targetId` es
+`SELF_RELATIONSHIP`. Duplicados de la misma tupla están permitidos.
 
 ## Operaciones puras
 
@@ -193,7 +215,7 @@ con `migrateDocument` antes del primer save 3. Política:
 
 ## Compatibilidad futura
 
-- `kind` en documento, elemento y relación permite otros diagramas sin romper el parser si se usa unión exhaustiva y `default` que falle con `UNKNOWN_KIND`. Política: [diagram-kinds.md](diagram-kinds.md). 1.x solo `use-case`. Release 1: `"use-case" | "sequence"`. Release 2 (TASK-052): `"use-case" | "sequence" | "class"`; TASK-054+ amplían la unión.
+- `kind` en documento, elemento y relación permite otros diagramas sin romper el parser si se usa unión exhaustiva y `default` que falle con `UNKNOWN_KIND`. Política: [diagram-kinds.md](diagram-kinds.md). 1.x solo `use-case`. Release 1: `"use-case" | "sequence"`. Release 2 (TASK-052): `"use-case" | "sequence" | "class"`; TASK-054: `+ "component"`; TASK-056+ amplían la unión.
 - Workspace 2.0 (biblioteca): [ADR-007](../decisions/ADR-007-workspace-library.md). Envelope `storageVersion` 2. Release 2 no lo cambia.
 - ER Chen: [ADR-008](../decisions/ADR-008-chen-er.md).
 - Generalization **en casos de uso** será un `kind` de relación nuevo, no un flag en Association; no entra en Release 2.
