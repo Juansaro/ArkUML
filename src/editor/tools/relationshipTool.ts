@@ -6,11 +6,15 @@ import type {
 } from "../../domain/diagram/model.ts";
 import {
   isClassRelationship,
+  isComponentRelationship,
   isLifeline,
   isSequenceMessage,
   isUseCaseRelationship,
 } from "../../domain/diagram/model.ts";
-import type { ClassRelationshipKind } from "../../domain/diagram/model.ts";
+import type {
+  ClassRelationshipKind,
+  ComponentRelationshipKind,
+} from "../../domain/diagram/model.ts";
 import { canConnect } from "../../domain/diagram/rules.ts";
 import type {
   CreateRelationshipInput,
@@ -29,6 +33,8 @@ export const RELATIONSHIP_TOOLS = [
   "aggregation",
   "composition",
   "generalization",
+  "component-usage",
+  "assembly-connector",
 ] as const;
 
 export type RelationshipTool = (typeof RELATIONSHIP_TOOLS)[number];
@@ -54,7 +60,9 @@ export function isRelationshipTool(tool: EditorTool): tool is RelationshipTool {
     tool === "class-association" ||
     tool === "aggregation" ||
     tool === "composition" ||
-    tool === "generalization"
+    tool === "generalization" ||
+    tool === "component-usage" ||
+    tool === "assembly-connector"
   );
 }
 
@@ -67,6 +75,12 @@ export function isClassRelationshipTool(
     tool === "composition" ||
     tool === "generalization"
   );
+}
+
+export function isComponentRelationshipTool(
+  tool: EditorTool,
+): tool is ComponentRelationshipKind {
+  return tool === "component-usage" || tool === "assembly-connector";
 }
 
 export function isSequenceRelationshipTool(
@@ -123,6 +137,12 @@ export function createdRelationshipAnnouncement(
   if (kind === "generalization") {
     return "Se creó la generalización.";
   }
+  if (kind === "component-usage") {
+    return "Se creó el uso.";
+  }
+  if (kind === "assembly-connector") {
+    return "Se creó el ensamblaje.";
+  }
   return "Se creó extend.";
 }
 
@@ -162,6 +182,12 @@ export function relationshipConnectionHelp(
     }
     return "Unir dos clases.";
   }
+  if (isComponentRelationshipTool(tool)) {
+    if (tool === "assembly-connector") {
+      return "Origen: provee (bola). Destino: requiere (zócalo). Arrastra del origen al destino.";
+    }
+    return "Origen: cliente. Destino: proveedor. Arrastra del origen al destino; el sentido no se invierte.";
+  }
   if (tool === "sync-message") {
     return "Mensaje síncrono (llamada).";
   }
@@ -183,6 +209,12 @@ export function relationshipEndpointFieldLabels(kind: RelationshipTool): {
   }
   if (kind === "generalization") {
     return { source: "Origen (específico)", target: "Destino (general)" };
+  }
+  if (kind === "component-usage") {
+    return { source: "Origen (cliente)", target: "Destino (proveedor)" };
+  }
+  if (kind === "assembly-connector") {
+    return { source: "Origen (provee)", target: "Destino (requiere)" };
   }
   return { source: "Origen", target: "Destino" };
 }
@@ -269,6 +301,9 @@ function isConnectableEndpoint(
   if (isClassRelationshipTool(kind)) {
     return element.kind === "class";
   }
+  if (isComponentRelationshipTool(kind)) {
+    return element.kind === "component";
+  }
   if (kind === "sync-message" || kind === "reply-message") {
     return isLifeline(element);
   }
@@ -321,6 +356,13 @@ export function relationshipInputFromConnection(
     };
   }
   if (isClassRelationshipTool(kind)) {
+    return {
+      kind,
+      sourceId: connection.source,
+      targetId: connection.target,
+    };
+  }
+  if (isComponentRelationshipTool(kind)) {
     return {
       kind,
       sourceId: connection.source,
@@ -402,7 +444,8 @@ export function commitRelationship(
     if (
       isUseCaseRelationship(created) ||
       isSequenceMessage(created) ||
-      isClassRelationship(created)
+      isClassRelationship(created) ||
+      isComponentRelationship(created)
     ) {
       store.getState().setMessage(createdRelationshipAnnouncement(created.kind));
     }

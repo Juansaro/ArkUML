@@ -2,6 +2,7 @@ import type {
   Anchor,
   AssociationMultiplicity,
   ClassRelationshipKind,
+  ComponentRelationshipKind,
   DiagramDocument,
   DiagramElement,
   DocumentKind,
@@ -12,6 +13,7 @@ import type {
 import {
   isClassAssociation,
   isClassRelationship,
+  isComponentRelationship,
   isSequenceMessage,
   isUmlClass,
   isUseCaseRelationship,
@@ -227,6 +229,17 @@ export type InspectorView =
       targetLabel: string;
       sourceMultiplicity?: AssociationMultiplicity;
       targetMultiplicity?: AssociationMultiplicity;
+    }
+  | {
+      status: "component-relationship";
+      id: string;
+      kind: ComponentRelationshipKind;
+      typeLabel: string;
+      name: string;
+      sourceId: string;
+      targetId: string;
+      sourceLabel: string;
+      targetLabel: string;
     };
 
 const EMPTY_INSPECTOR_VIEW: InspectorView = { status: "empty" };
@@ -301,6 +314,19 @@ export function selectInspectorView(state: EditorStore): InspectorView {
             targetMultiplicity: relationship.targetMultiplicity,
           }
         : {}),
+    };
+  }
+  if (isComponentRelationship(relationship)) {
+    return {
+      status: "component-relationship",
+      id: relationship.id,
+      kind: relationship.kind,
+      typeLabel: relationshipTypeLabel(relationship.kind),
+      name: relationship.name,
+      sourceId: relationship.sourceId,
+      targetId: relationship.targetId,
+      sourceLabel: endpointLabel(state.document, relationship.sourceId),
+      targetLabel: endpointLabel(state.document, relationship.targetId),
     };
   }
   if (!isUseCaseRelationship(relationship)) {

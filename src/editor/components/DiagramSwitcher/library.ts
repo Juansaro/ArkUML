@@ -13,6 +13,9 @@ export function documentKindLabel(kind: DocumentKind): string {
   if (kind === "class") {
     return "Clases";
   }
+  if (kind === "component") {
+    return "Componentes";
+  }
   return "Casos de uso";
 }
 
@@ -23,6 +26,9 @@ export function documentKindTagline(kind: DocumentKind): string {
   if (kind === "class") {
     return "Editor de diagramas de clases";
   }
+  if (kind === "component") {
+    return "Editor de diagramas de componentes";
+  }
   return "Editor de diagramas de casos de uso";
 }
 
@@ -30,6 +36,7 @@ export const CREATABLE_DOCUMENT_KINDS = [
   { value: "use-case", label: "Casos de uso" },
   { value: "sequence", label: "Secuencia" },
   { value: "class", label: "Clases" },
+  { value: "component", label: "Componentes" },
 ] as const satisfies readonly { value: DocumentKind; label: string }[];
 
 export function filterLibraryDocuments(

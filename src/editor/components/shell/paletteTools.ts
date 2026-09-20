@@ -34,6 +34,13 @@ export const CLASS_ELEMENT_TOOLS = [
   },
 ] as const;
 
+export const COMPONENT_ELEMENT_TOOLS = [
+  {
+    id: "component",
+    label: "Componente",
+  },
+] as const;
+
 export const BOUNDARY_EXISTS_REASON =
   "Ya existe un límite del sistema. El documento admite uno solo.";
 
@@ -89,12 +96,28 @@ export const CLASS_RELATIONSHIP_TOOLS = [
   },
 ] as const;
 
+export const COMPONENT_RELATIONSHIP_TOOLS = [
+  {
+    id: "component-usage",
+    label: "Uso",
+    hint: "Origen: cliente. Destino: proveedor. Arrastra del origen al destino; el sentido no se invierte.",
+  },
+  {
+    id: "assembly-connector",
+    label: "Ensamblaje",
+    hint: "Origen: provee (bola). Destino: requiere (zócalo). Arrastra del origen al destino.",
+  },
+] as const;
+
 export function paletteElementTools(kind: DocumentKind) {
   if (kind === "sequence") {
     return SEQUENCE_ELEMENT_TOOLS;
   }
   if (kind === "class") {
     return CLASS_ELEMENT_TOOLS;
+  }
+  if (kind === "component") {
+    return COMPONENT_ELEMENT_TOOLS;
   }
   return PALETTE_ELEMENT_TOOLS;
 }
@@ -105,6 +128,9 @@ export function paletteRelationshipTools(kind: DocumentKind) {
   }
   if (kind === "class") {
     return CLASS_RELATIONSHIP_TOOLS;
+  }
+  if (kind === "component") {
+    return COMPONENT_RELATIONSHIP_TOOLS;
   }
   return PALETTE_RELATIONSHIP_TOOLS;
 }

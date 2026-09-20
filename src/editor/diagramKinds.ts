@@ -17,6 +17,13 @@ export const CLASS_RELATIONSHIP_TOOLS = [
   "generalization",
 ] as const;
 
+export const COMPONENT_CREATE_TOOLS = ["component"] as const;
+
+export const COMPONENT_RELATIONSHIP_TOOLS = [
+  "component-usage",
+  "assembly-connector",
+] as const;
+
 export function isToolForDocumentKind(
   kind: DocumentKind,
   tool: EditorTool,
@@ -38,6 +45,13 @@ export function isToolForDocumentKind(
       tool === "aggregation" ||
       tool === "composition" ||
       tool === "generalization"
+    );
+  }
+  if (kind === "component") {
+    return (
+      tool === "component" ||
+      tool === "component-usage" ||
+      tool === "assembly-connector"
     );
   }
   return (

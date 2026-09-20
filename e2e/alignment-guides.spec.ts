@@ -43,7 +43,7 @@ test("muestra guías al alinear un actor y las quita al soltar", async ({
     "documents",
     "storageVersion",
   ]);
-  expect(documentSchemaVersion(snapshot)).toBe(2);
+  expect(documentSchemaVersion(snapshot)).toBe(3);
 
   await page.keyboard.press("ControlOrMeta+z");
   await expect

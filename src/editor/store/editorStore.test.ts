@@ -655,6 +655,18 @@ describe("biblioteca local", () => {
     expect(store.getState().documents).toHaveLength(2);
   });
 
+  it("addNewDocument(component) crea el módulo de componentes", () => {
+    const store = createStore();
+    expect(store.getState().addNewDocument("component")).toBe(true);
+    expect(store.getState().document.kind).toBe("component");
+    expect(store.getState().document.metadata.title).toBe(
+      "Diagrama de componentes",
+    );
+    expect(store.getState().document.elements).toEqual([]);
+    expect(store.getState().tool).toBe("select");
+    expect(store.getState().documents).toHaveLength(2);
+  });
+
   it("aisla el historial por document.id", () => {
     const store = createStore();
     const firstId = store.getState().document.id;

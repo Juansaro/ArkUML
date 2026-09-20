@@ -23,6 +23,7 @@ import {
   canConnect,
   EXTEND_STEREOTYPE,
   INCLUDE_STEREOTYPE,
+  USE_STEREOTYPE,
   relationshipLabel,
 } from "./rules.ts";
 
@@ -268,9 +269,12 @@ describe("relationshipLabel", () => {
   it("deriva estereotipos UML y no etiqueta asociaciones", () => {
     expect(relationshipLabel("include")).toBe(INCLUDE_STEREOTYPE);
     expect(relationshipLabel("extend")).toBe(EXTEND_STEREOTYPE);
+    expect(relationshipLabel("component-usage")).toBe(USE_STEREOTYPE);
     expect(relationshipLabel("association")).toBeUndefined();
+    expect(relationshipLabel("assembly-connector")).toBeUndefined();
     expect(INCLUDE_STEREOTYPE).toBe("«include»");
     expect(EXTEND_STEREOTYPE).toBe("«extend»");
+    expect(USE_STEREOTYPE).toBe("«use»");
   });
 });
 

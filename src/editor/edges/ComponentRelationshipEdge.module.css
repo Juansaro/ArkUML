@@ -1,0 +1,53 @@
+.path {
+  fill: none;
+  stroke: var(--color-fg);
+  stroke-width: 2;
+}
+
+.dashed {
+  stroke-dasharray: 8 6;
+}
+
+.marker {
+  fill: none;
+  pointer-events: none;
+  stroke: var(--color-fg);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.ball {
+  fill: var(--color-fg);
+  pointer-events: none;
+  stroke: none;
+}
+
+.socket {
+  fill: none;
+  pointer-events: none;
+  stroke: var(--color-fg);
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.labelBg {
+  fill: var(--color-surface);
+}
+
+.label {
+  fill: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+}
+
+:global(.react-flow__edge.selected) .path,
+:global(.react-flow__edge.selected) .marker,
+:global(.react-flow__edge.selected) .socket {
+  stroke: var(--color-focus);
+  stroke-width: 3;
+}
+
+:global(.react-flow__edge.selected) .ball {
+  fill: var(--color-focus);
+}

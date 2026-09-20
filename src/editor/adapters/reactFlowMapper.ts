@@ -10,6 +10,7 @@ import type {
 import {
   isClassAssociation,
   isClassRelationship,
+  isComponentRelationship,
   isLifeline,
   isSequenceMessage,
   isUmlClass,
@@ -226,6 +227,17 @@ function mapElement(element: DiagramElement): DiagramNode {
     };
   }
 
+  if (element.kind === "component") {
+    return {
+      ...node,
+      style: {
+        width: element.geometry.width,
+        height: element.geometry.height,
+        overflow: "visible",
+      },
+    };
+  }
+
   if (element.kind === "use-case" && element.parentId !== undefined) {
     return {
       ...node,
@@ -284,6 +296,31 @@ function mapEdge(
               targetMultiplicity: relationship.targetMultiplicity,
             }
           : {}),
+      },
+      selected: false,
+      reconnectable: false,
+      ariaLabel: relationshipAriaLabel(relationship, elementsById, false),
+    };
+  }
+
+  if (isComponentRelationship(relationship)) {
+    const source = elementsById.get(relationship.sourceId);
+    const target = elementsById.get(relationship.targetId);
+    const anchors =
+      source === undefined || target === undefined
+        ? { source: "right" as const, target: "left" as const }
+        : inferredAnchors(source.geometry, target.geometry);
+    return {
+      id: relationship.id,
+      type: relationship.kind,
+      source: relationship.sourceId,
+      target: relationship.targetId,
+      sourceHandle: anchors.source,
+      targetHandle: anchors.target,
+      className: `diagram-edge diagram-edge-${relationship.kind}`,
+      data: {
+        kind: relationship.kind,
+        name: relationship.name,
       },
       selected: false,
       reconnectable: false,

@@ -2,11 +2,13 @@ import type { StoreApi } from "zustand/vanilla";
 import {
   DEFAULT_VIEWPORT,
   CLASS_DOCUMENT_KIND,
+  COMPONENT_DOCUMENT_KIND,
   SEQUENCE_DOCUMENT_KIND,
 } from "../../domain/diagram/defaults.ts";
 import {
   createDiagramDocument,
   createEmptyClassDocument,
+  createEmptyComponentDocument,
   createEmptySequenceDocument,
   createUuid,
   type DiagramFactoryDeps,
@@ -25,6 +27,7 @@ import {
   createElement,
   createLifeline as createLifelineOperation,
   createClass as createClassOperation,
+  createComponent as createComponentOperation,
   createRelationship,
   deleteElements as deleteElementsOperation,
   deleteRelationships as deleteRelationshipsOperation,
@@ -88,6 +91,10 @@ export type EditorActions = {
     stemLength?: number;
   }) => Result<DiagramDocument>;
   createClass: (input: {
+    name: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createComponent: (input: {
     name: string;
     geometry?: Geometry;
   }) => Result<DiagramDocument>;
@@ -204,6 +211,8 @@ export function createEditorActions(
       apply((document) => createLifelineOperation(document, input, deps)),
     createClass: (input) =>
       apply((document) => createClassOperation(document, input, deps)),
+    createComponent: (input) =>
+      apply((document) => createComponentOperation(document, input, deps)),
     renameElement: (elementId, name) =>
       apply((document) =>
         renameElementOperation(document, elementId, name, deps),
@@ -553,7 +562,9 @@ export function createEditorActions(
           ? createEmptySequenceDocument(deps)
           : nextKind === CLASS_DOCUMENT_KIND
             ? createEmptyClassDocument(deps)
-            : createDiagramDocument(deps);
+            : nextKind === COMPONENT_DOCUMENT_KIND
+              ? createEmptyComponentDocument(deps)
+              : createDiagramDocument(deps);
       return get().addDocument(document);
     },
     activateDocument: (documentId) => {

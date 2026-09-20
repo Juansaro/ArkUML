@@ -127,3 +127,31 @@ export function multiplicityAnchor(
     y: line.targetY - uy * along + py * offset,
   };
 }
+
+export const ASSEMBLY_BALL_RADIUS = 5;
+export const ASSEMBLY_SOCKET_RADIUS = 8;
+
+export function sourceBallCenter(
+  line: EdgeLine,
+  radius = ASSEMBLY_BALL_RADIUS,
+): { cx: number; cy: number } {
+  const { ux, uy } = lineUnit(line);
+  return {
+    cx: line.sourceX + ux * radius,
+    cy: line.sourceY + uy * radius,
+  };
+}
+
+export function targetSocketPath(
+  line: EdgeLine,
+  radius = ASSEMBLY_SOCKET_RADIUS,
+): string {
+  const { ux, uy, px, py } = lineUnit(line);
+  const cx = line.targetX - ux * radius;
+  const cy = line.targetY - uy * radius;
+  const startX = cx + px * radius;
+  const startY = cy + py * radius;
+  const endX = cx - px * radius;
+  const endY = cy - py * radius;
+  return `M ${startX} ${startY} A ${radius} ${radius} 0 0 1 ${endX} ${endY}`;
+}

@@ -16,6 +16,9 @@ export function elementTypeLabel(kind: DiagramElement["kind"]): string {
   if (kind === "class") {
     return "Clase";
   }
+  if (kind === "component") {
+    return "Componente";
+  }
   return "Límite del sistema";
 }
 
@@ -40,6 +43,12 @@ export function relationshipTypeLabel(kind: RelationshipKind): string {
   }
   if (kind === "generalization") {
     return "Generalización";
+  }
+  if (kind === "component-usage") {
+    return "Uso";
+  }
+  if (kind === "assembly-connector") {
+    return "Ensamblaje";
   }
   return "Extend";
 }

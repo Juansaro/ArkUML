@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   createDiagramDocument,
   createEmptyClassDocument,
+  createEmptyComponentDocument,
   createEmptySequenceDocument,
   type IdFactory,
 } from "../../domain/diagram/factories.ts";
 import type { DiagramDocument, Geometry } from "../../domain/diagram/model.ts";
 import {
   createClass,
+  createComponent,
   createElement,
   createLifeline,
   createRelationship,
@@ -495,5 +497,81 @@ describe("mapDocumentToReactFlow", () => {
       data: { kind: "generalization" },
     });
     expect(edges[1]?.data).not.toHaveProperty("sourceMultiplicity");
+  });
+
+  it("proyecta componentes con uso y ensamblaje", () => {
+    const deps = { createId: sequentialIds(120), now: () => CREATED_AT };
+    const empty = createEmptyComponentDocument(deps);
+    const withBilling = expectOk(
+      createComponent(
+        empty,
+        {
+          name: "Billing",
+          geometry: { x: 0, y: 0, width: 200, height: 120 },
+        },
+        deps,
+      ),
+    );
+    const withCatalog = expectOk(
+      createComponent(
+        withBilling,
+        {
+          name: "Catalog",
+          geometry: { x: 280, y: 0, width: 200, height: 120 },
+        },
+        deps,
+      ),
+    );
+    const billing = withCatalog.elements[0];
+    const catalog = withCatalog.elements[1];
+    if (billing === undefined || catalog === undefined) {
+      throw new Error("Faltan componentes");
+    }
+    const withUsage = expectOk(
+      createRelationship(
+        withCatalog,
+        {
+          kind: "component-usage",
+          sourceId: billing.id,
+          targetId: catalog.id,
+        },
+        deps,
+      ),
+    );
+    const withAssembly = expectOk(
+      createRelationship(
+        withUsage,
+        {
+          kind: "assembly-connector",
+          sourceId: billing.id,
+          targetId: catalog.id,
+          name: "link",
+        },
+        deps,
+      ),
+    );
+
+    const { nodes, edges } = mapDocumentToReactFlow(withAssembly, {
+      elementIds: [billing.id],
+      relationshipIds: [withAssembly.relationships[0]?.id ?? ""],
+    });
+
+    expect(nodes[0]).toMatchObject({
+      type: "component",
+      width: 200,
+      height: 120,
+      data: { kind: "component", name: "Billing" },
+      selected: true,
+    });
+    expect(edges[0]).toMatchObject({
+      type: "component-usage",
+      reconnectable: false,
+      data: { kind: "component-usage", name: "" },
+      selected: true,
+    });
+    expect(edges[1]).toMatchObject({
+      type: "assembly-connector",
+      data: { kind: "assembly-connector", name: "link" },
+    });
   });
 });

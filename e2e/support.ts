@@ -21,7 +21,7 @@ export function canvasElementName(page: Page, name: string): Locator {
 
 export function diagramElement(
   page: Page,
-  kind: "actor" | "use-case" | "lifeline",
+  kind: "actor" | "use-case" | "lifeline" | "class" | "component",
   name: string,
 ): Locator {
   return diagramCanvas(page)
@@ -111,7 +111,11 @@ export async function downloadBytes(download: {
 
 export async function createNewDiagram(
   page: Page,
-  kind: "Casos de uso" | "Secuencia" = "Casos de uso",
+  kind:
+    | "Casos de uso"
+    | "Secuencia"
+    | "Clases"
+    | "Componentes" = "Casos de uso",
 ): Promise<void> {
   await page.getByRole("button", { name: "Nuevo" }).click();
   const dialog = page.getByRole("dialog", { name: "Nuevo diagrama" });

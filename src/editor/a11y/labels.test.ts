@@ -13,6 +13,7 @@ describe("accessible labels", () => {
     expect(elementTypeLabel("system-boundary")).toBe("Límite del sistema");
     expect(elementTypeLabel("lifeline")).toBe("Lifeline");
     expect(elementTypeLabel("class")).toBe("Clase");
+    expect(elementTypeLabel("component")).toBe("Componente");
     expect(elementAccessibleName({ kind: "actor", name: "Usuario" })).toBe(
       "Actor Usuario",
     );
@@ -31,6 +32,8 @@ describe("accessible labels", () => {
     expect(relationshipTypeLabel("aggregation")).toBe("Agregación");
     expect(relationshipTypeLabel("composition")).toBe("Composición");
     expect(relationshipTypeLabel("generalization")).toBe("Generalización");
+    expect(relationshipTypeLabel("component-usage")).toBe("Uso");
+    expect(relationshipTypeLabel("assembly-connector")).toBe("Ensamblaje");
     expect(relationshipAccessibleName("association", "Usuario", "Login")).toBe(
       "Asociación entre Usuario y Login",
     );

@@ -29,6 +29,9 @@ export const ICON_NAMES = [
   "aggregation",
   "composition",
   "generalization",
+  "component",
+  "componentUsage",
+  "assemblyConnector",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -266,6 +269,30 @@ export function IconPaths({ name }: { name: IconName }) {
         <>
           <path d="M3 12h10" />
           <path d="M13 7l8 5-8 5z" />
+        </>
+      );
+    case "component":
+      return (
+        <>
+          <path d="M8 5h12v14H8z" />
+          <path d="M4 8h5v3H4z" />
+          <path d="M4 13h5v3H4z" />
+        </>
+      );
+    case "componentUsage":
+      return (
+        <>
+          <path d="M3 12h10" strokeDasharray="4 3" />
+          <path d="M11 9.5 14 12l-3 2.5" />
+          <path d="M17 8v5a2.5 2.5 0 0 0 5 0V8" />
+        </>
+      );
+    case "assemblyConnector":
+      return (
+        <>
+          <circle cx="6" cy="12" r="2.5" fill="currentColor" stroke="none" />
+          <path d="M9 12h6" />
+          <path d="M18 8a4 4 0 0 1 0 8" />
         </>
       );
   }

@@ -66,7 +66,7 @@ test("arrastrar el mapa mueve el viewport sin mutar el documento ni el historial
     "documents",
     "storageVersion",
   ]);
-  expect(after.document.schemaVersion).toBe(2);
+  expect(after.document.schemaVersion).toBe(3);
   expect(after.document).toEqual(before.document);
   expect(after.view).not.toEqual(before.view);
 

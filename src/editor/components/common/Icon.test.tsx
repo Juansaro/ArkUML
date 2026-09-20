@@ -92,4 +92,24 @@ describe("Icon", () => {
     rerender(<Icon name="generalization" />);
     expect(document.querySelector("svg")?.innerHTML).toContain("M13 7l8 5-8 5z");
   });
+
+  it("pinta los glifos de componentes con uso y ensamblaje", () => {
+    const { rerender } = render(<Icon name="component" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M8 5h12v14H8z");
+    expect(document.querySelector("svg")?.innerHTML).toContain("M4 8h5v3H4z");
+    rerender(<Icon name="componentUsage" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "stroke-dasharray=\"4 3\"",
+    );
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M17 8v5a2.5 2.5 0 0 0 5 0V8",
+    );
+    rerender(<Icon name="assemblyConnector" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      'fill="currentColor"',
+    );
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M18 8a4 4 0 0 1 0 8",
+    );
+  });
 });

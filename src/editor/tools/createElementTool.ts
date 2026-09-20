@@ -1,6 +1,7 @@
 import {
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_CLASS_GEOMETRY,
+  DEFAULT_COMPONENT_GEOMETRY,
   DEFAULT_LIFELINE_GEOMETRY,
   DEFAULT_LIFELINE_WIDTH,
 } from "../../domain/diagram/defaults.ts";
@@ -19,6 +20,7 @@ export const CREATE_ELEMENT_TOOLS = [
   "system-boundary",
   "lifeline",
   "class",
+  "component",
 ] as const;
 
 export type CreateElementTool = (typeof CREATE_ELEMENT_TOOLS)[number];
@@ -29,6 +31,7 @@ export const DEFAULT_ELEMENT_NAMES = {
   "system-boundary": "Sistema",
   lifeline: "Lifeline",
   class: "Clase",
+  component: "Componente",
 } as const;
 
 export const DEFAULT_ELEMENT_SIZES: Record<
@@ -49,6 +52,10 @@ export const DEFAULT_ELEMENT_SIZES: Record<
     width: DEFAULT_CLASS_GEOMETRY.width,
     height: DEFAULT_CLASS_GEOMETRY.height,
   },
+  component: {
+    width: DEFAULT_COMPONENT_GEOMETRY.width,
+    height: DEFAULT_COMPONENT_GEOMETRY.height,
+  },
 };
 
 export function isCreateElementTool(
@@ -59,7 +66,8 @@ export function isCreateElementTool(
     tool === "use-case" ||
     tool === "system-boundary" ||
     tool === "lifeline" ||
-    tool === "class"
+    tool === "class" ||
+    tool === "component"
   );
 }
 
@@ -143,6 +151,10 @@ export function defaultPlacementPosition(
   }
 
   if (kind === "class") {
+    return { x: 80 + offset, y: 80 + offset };
+  }
+
+  if (kind === "component") {
     return { x: 80 + offset, y: 80 + offset };
   }
 
@@ -244,6 +256,13 @@ function createByKind(
 
   if (kind === "class") {
     return state.createClass({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "component") {
+    return state.createComponent({
       name,
       geometry: geometryAt(kind, flowPosition),
     });

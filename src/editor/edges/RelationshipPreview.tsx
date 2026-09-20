@@ -8,11 +8,15 @@ import { selectTool } from "../store/selectors.ts";
 import { useEditorStore } from "../store/EditorStoreProvider.tsx";
 import { relationshipKindFromTool } from "../tools/relationshipTool.ts";
 import {
+  ASSEMBLY_BALL_RADIUS,
+  ASSEMBLY_SOCKET_RADIUS,
   CLASS_MARKER_SIZE,
   filledArrowPath,
   openArrowPath,
   shortenLine,
+  sourceBallCenter,
   sourceDiamondPath,
+  targetSocketPath,
   targetTrianglePath,
 } from "./markers.ts";
 import styles from "./RelationshipPreview.module.css";
@@ -33,14 +37,22 @@ function RelationshipPreviewView({
     targetY: toY,
   };
   const open =
-    kind === "include" || kind === "extend" || kind === "reply-message";
+    kind === "include" ||
+    kind === "extend" ||
+    kind === "reply-message" ||
+    kind === "component-usage";
   const filled = kind === "sync-message";
   const diamond = kind === "aggregation" || kind === "composition";
   const triangle = kind === "generalization";
+  const assembly = kind === "assembly-connector";
   const trimmed = shortenLine(
     line,
-    diamond ? CLASS_MARKER_SIZE : 0,
-    triangle ? CLASS_MARKER_SIZE : 0,
+    diamond ? CLASS_MARKER_SIZE : assembly ? ASSEMBLY_BALL_RADIUS * 2 : 0,
+    triangle
+      ? CLASS_MARKER_SIZE
+      : assembly
+        ? ASSEMBLY_SOCKET_RADIUS
+        : 0,
   );
   const [path] = getStraightPath(trimmed);
 
@@ -82,6 +94,21 @@ function RelationshipPreviewView({
           className={styles.marker}
           data-testid="relationship-preview-triangle"
         />
+      ) : null}
+      {assembly ? (
+        <>
+          <circle
+            {...sourceBallCenter(line)}
+            r={ASSEMBLY_BALL_RADIUS}
+            className={styles.filledMarker}
+            data-testid="relationship-preview-ball"
+          />
+          <path
+            d={targetSocketPath(line)}
+            className={styles.marker}
+            data-testid="relationship-preview-socket"
+          />
+        </>
       ) : null}
     </g>
   );

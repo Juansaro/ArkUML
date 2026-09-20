@@ -15,6 +15,7 @@ import {
 
 export const INCLUDE_STEREOTYPE = "«include»";
 export const EXTEND_STEREOTYPE = "«extend»";
+export const USE_STEREOTYPE = "«use»";
 
 export type ConnectInput = {
   kind: RelationshipKind;
@@ -58,6 +59,9 @@ export function relationshipLabel(kind: RelationshipKind): string | undefined {
   }
   if (kind === "extend") {
     return EXTEND_STEREOTYPE;
+  }
+  if (kind === "component-usage") {
+    return USE_STEREOTYPE;
   }
   return undefined;
 }

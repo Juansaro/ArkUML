@@ -33,7 +33,7 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 congeló **Release 1** (biblioteca + secuencia, schema 2). TASK-046,
 TASK-047, TASK-048, TASK-049 y TASK-050 están `Hecha`. Release 1
 cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
-(seis kinds, schema 3). TASK-052 está `Hecha`.
+(seis kinds, schema 3). TASK-052 está `Hecha`. TASK-053, TASK-054 y TASK-055 están `Hecha`.
 
 ## Estado
 
@@ -69,7 +69,7 @@ cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
 | 052 | [`12-uml/TASK-052.md`](12-uml/TASK-052.md) | Hecha | P0 | 051 | 2026-09-14: schema 3; `migrateDocument` 2→3; clases (class, asociación/agregación/composición/generalization); mezclas `UNKNOWN_KIND`; envelope formatVersion 3 |
 | 053 | [`13-editor/TASK-053.md`](13-editor/TASK-053.md) | Hecha | P0 | 052 | 2026-09-16: módulo de clases; paleta, ClassNode, relaciones, inspector, Nuevo y combobox |
 | 054 | [`12-uml/TASK-054.md`](12-uml/TASK-054.md) | Hecha | P0 | 053 | 2026-09-20: dominio component; usage/assembly; mezclas UNKNOWN_KIND; envelope 3.x; sin chrome |
-| 055 | [`13-editor/TASK-055.md`](13-editor/TASK-055.md) | Lista | P0 | 054 | Módulo componentes |
+| 055 | [`13-editor/TASK-055.md`](13-editor/TASK-055.md) | Hecha | P0 | 054 | 2026-09-20: módulo componentes; paleta, ComponentNode, uso/ensamblaje, inspector, Nuevo |
 | 056 | [`12-uml/TASK-056.md`](12-uml/TASK-056.md) | Lista | P0 | 055 | Dominio despliegue |
 | 057 | [`13-editor/TASK-057.md`](13-editor/TASK-057.md) | Lista | P0 | 056 | Módulo despliegue |
 | 058 | [`12-uml/TASK-058.md`](12-uml/TASK-058.md) | Lista | P0 | 057 | Dominio ER Chen |
@@ -145,8 +145,8 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-TASK-053 está `Hecha` (módulo chrome de clases). El próximo contrato
-ejecutable es [TASK-054](12-uml/TASK-054.md) (dominio de componentes).
+TASK-055 está `Hecha` (módulo chrome de componentes). El próximo contrato
+ejecutable es [TASK-056](12-uml/TASK-056.md) (dominio de despliegue).
 Una TASK por chat. IndexedDB: no elegido (condicional C-QUOTA). No
 implementar Generalization en casos de uso, PDF, temas, fragmentos de
 secuencia, Crow’s foot, Interaction inline ni un kind cuyo dominio no

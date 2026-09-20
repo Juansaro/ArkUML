@@ -17,6 +17,7 @@ describe("documentKindLabel", () => {
     expect(documentKindLabel("use-case")).toBe("Casos de uso");
     expect(documentKindLabel("sequence")).toBe("Secuencia");
     expect(documentKindLabel("class")).toBe("Clases");
+    expect(documentKindLabel("component")).toBe("Componentes");
   });
 });
 
@@ -30,6 +31,9 @@ describe("documentKindTagline", () => {
     );
     expect(documentKindTagline("class")).toBe(
       "Editor de diagramas de clases",
+    );
+    expect(documentKindTagline("component")).toBe(
+      "Editor de diagramas de componentes",
     );
   });
 });

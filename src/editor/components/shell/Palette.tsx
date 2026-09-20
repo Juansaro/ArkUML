@@ -35,6 +35,9 @@ const PALETTE_ICONS: Record<string, IconName> = {
   aggregation: "aggregation",
   composition: "composition",
   generalization: "generalization",
+  component: "component",
+  "component-usage": "componentUsage",
+  "assembly-connector": "assemblyConnector",
 };
 
 const PALETTE_DESCRIPTIONS: Record<string, string> = {
@@ -59,6 +62,11 @@ const PALETTE_DESCRIPTIONS: Record<string, string> = {
     "Origen: compuesto (diamante relleno). Destino: parte. Arrastra del origen al destino.",
   generalization:
     "Origen: específico. Destino: general. Arrastra del origen al destino; el sentido no se invierte.",
+  component: "Crear componente.",
+  "component-usage":
+    "Origen: cliente. Destino: proveedor. Arrastra del origen al destino; el sentido no se invierte.",
+  "assembly-connector":
+    "Origen: provee (bola). Destino: requiere (zócalo). Arrastra del origen al destino.",
 };
 
 function paletteIcon(id: string): IconName {

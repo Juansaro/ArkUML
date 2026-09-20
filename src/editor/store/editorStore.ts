@@ -34,6 +34,9 @@ export const EDITOR_TOOLS = [
   "aggregation",
   "composition",
   "generalization",
+  "component",
+  "component-usage",
+  "assembly-connector",
 ] as const;
 
 export type EditorTool = (typeof EDITOR_TOOLS)[number];

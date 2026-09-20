@@ -430,13 +430,44 @@ relleno. Generalization no se distingue solo por la flecha de Include:
 el triángulo cerrado permanece visible. Estos iconos no sustituyen
 compartimentos, diamante ni triángulo del lienzo.
 
+**`component`** — caja UML con dos rectángulos pequeños a la izquierda
+(fig. 11.28):
+
+```text
+<path d="M8 5h12v14H8z" />
+<path d="M4 8h5v3H4z" />
+<path d="M4 13h5v3H4z" />
+```
+
+**`componentUsage`** — discontinua, flecha abierta, distintivo `U`:
+
+```text
+<path d="M3 12h10" stroke-dasharray="4 3" />
+<path d="M11 9.5 14 12l-3 2.5" />
+<path d="M17 8v5a2.5 2.5 0 0 0 5 0V8" />
+```
+
+**`assemblyConnector`** — bola rellena en el origen + zócalo en el
+destino:
+
+```text
+<circle cx="6" cy="12" r="2.5" fill="currentColor" stroke="none" />
+<path d="M9 12h6" />
+<path d="M18 8a4 4 0 0 1 0 8" />
+```
+
+Uso y ensamblaje no se distinguen solo por color: discontinua + `U` vs
+bola-zócalo. Estos iconos no sustituyen el icono de componente ni el
+edge bola-zócalo del lienzo.
+
 Los ids de `Icon` van en camelCase. En paleta se conectan a los `EditorTool`
 existentes sin renombrar ni el icono ni la herramienta: `useCase` →
 `use-case`, `systemBoundary` → `system-boundary`, `syncMessage` →
 `sync-message`, `replyMessage` → `reply-message`, `classAssociation` →
-`class-association`. El resto coincide (`select`, `actor`, `association`,
-`include`, `extend`, `lifeline`, `class`, `aggregation`, `composition`,
-`generalization`).
+`class-association`, `componentUsage` → `component-usage`,
+`assemblyConnector` → `assembly-connector`. El resto coincide (`select`,
+`actor`, `association`, `include`, `extend`, `lifeline`, `class`,
+`aggregation`, `composition`, `generalization`, `component`).
 
 ## Matriz de controles
 
@@ -473,6 +504,9 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Paleta | `aggregation` | Icono + etiqueta. Solo clases | Agregación | «Origen: todo (diamante vacío). Destino: parte. Arrastra del origen al destino.» | — |
 | Paleta | `composition` | Icono + etiqueta. Solo clases | Composición | «Origen: compuesto (diamante relleno). Destino: parte. Arrastra del origen al destino.» | — |
 | Paleta | `generalization` | Icono + etiqueta. Solo clases | Generalización | «Origen: específico. Destino: general. Arrastra del origen al destino; el sentido no se invierte.» | — |
+| Paleta | `component` | Icono + etiqueta. Solo `document.kind` `"component"` | Componente | «Crear componente.» | — |
+| Paleta | `componentUsage` | Icono + etiqueta. Solo componentes | Uso | «Origen: cliente. Destino: proveedor. Arrastra del origen al destino; el sentido no se invierte.» | — |
+| Paleta | `assemblyConnector` | Icono + etiqueta. Solo componentes | Ensamblaje | «Origen: provee (bola). Destino: requiere (zócalo). Arrastra del origen al destino.» | — |
 | Lienzo | `zoomIn` | Icon-only | Acercar | «Acercar.» | «El zoom ya está en el máximo (200%).» cuando `zoom >= 2` |
 | Lienzo | `zoomOut` | Icon-only | Alejar | «Alejar.» | «El zoom ya está en el mínimo (50%).» cuando `zoom <= 0.5` |
 | Lienzo | `fitView` | Icon-only | Ajustar vista | «Ajustar todo el diagrama (Ctrl/Cmd+0).» | — |

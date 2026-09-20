@@ -143,6 +143,35 @@ export function DiagramMinimapNode({
     );
   }
 
+  if (className === "component" || className === "class") {
+    return (
+      <g data-minimap-kind={className} onClick={handleClick}>
+        <rect
+          x={x + inset}
+          y={y + inset}
+          width={Math.max(0, width - NOTATION_STROKE)}
+          height={Math.max(0, height - NOTATION_STROKE)}
+          fill="var(--color-surface)"
+          stroke="var(--color-fg)"
+          strokeWidth={NOTATION_STROKE}
+        />
+        {name === "" ? null : (
+          <text
+            className={styles.minimapLabel}
+            x={x + width / 2}
+            y={y + height / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize={NAME_FONT_SIZE}
+            aria-hidden="true"
+          >
+            {name}
+          </text>
+        )}
+      </g>
+    );
+  }
+
   const scale = Math.min(
     width / ACTOR_VIEWBOX.width,
     height / ACTOR_VIEWBOX.height,
