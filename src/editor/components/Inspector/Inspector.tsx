@@ -97,6 +97,7 @@ function InspectorBody({
   view: ReturnType<typeof selectInspectorView>;
   connectionHelp: string | undefined;
 }) {
+  const store = useEditorStoreApi();
   if (view.status === "empty") {
     return null;
   }
@@ -143,6 +144,17 @@ function InspectorBody({
           <ConnectionHelp text={connectionHelp} />
         ) : null}
         <TypeField label={view.typeLabel} />
+        <label className={styles.field}>
+          <span className={styles.label}>Nombre</span>
+          <ElementNameField
+            key={view.id}
+            elementId={view.id}
+            name={view.name}
+            ariaLabel="Nombre"
+            showError
+            commitName={(id, name) => store.getState().renameRelationship(id, name)}
+          />
+        </label>
         <ClassRelationshipEndpoints view={view} labels={endpoints} />
         {view.kind === "generalization" ? null : (
           <ClassMultiplicityFields view={view} />

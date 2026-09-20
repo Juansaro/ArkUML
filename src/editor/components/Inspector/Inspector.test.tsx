@@ -5,7 +5,6 @@ import { describe, expect, it } from "vitest";
 import { NAME_MAX_LENGTH } from "../../../domain/diagram/defaults.ts";
 import {
   createDiagramDocument,
-  createEmptyClassDocument,
   createEmptySequenceDocument,
   type IdFactory,
 } from "../../../domain/diagram/factories.ts";

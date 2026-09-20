@@ -8,10 +8,12 @@ export const STORAGE_VERSION = 2;
 export const DOCUMENT_KIND = "use-case";
 export const SEQUENCE_DOCUMENT_KIND = "sequence";
 export const CLASS_DOCUMENT_KIND = "class";
+export const COMPONENT_DOCUMENT_KIND = "component";
 
 export const DEFAULT_DOCUMENT_TITLE = "Diagrama de casos de uso";
 export const DEFAULT_SEQUENCE_DOCUMENT_TITLE = "Diagrama de secuencia";
 export const DEFAULT_CLASS_DOCUMENT_TITLE = "Diagrama de clases";
+export const DEFAULT_COMPONENT_DOCUMENT_TITLE = "Diagrama de componentes";
 export const DEFAULT_BOUNDARY_NAME = "Sistema";
 export const DEFAULT_LIFELINE_NAME = "Lifeline";
 export const DEFAULT_ASSOCIATION_MULTIPLICITY = "1";
@@ -35,6 +37,11 @@ export const DEFAULT_CLASS_HEIGHT = 96;
 export const MIN_CLASS_WIDTH = 120;
 export const MIN_CLASS_HEIGHT = 72;
 
+export const DEFAULT_COMPONENT_WIDTH = 200;
+export const DEFAULT_COMPONENT_HEIGHT = 120;
+export const MIN_COMPONENT_WIDTH = 120;
+export const MIN_COMPONENT_HEIGHT = 72;
+
 export const DEFAULT_BOUNDARY_GEOMETRY: Geometry = {
   x: 0,
   y: 0,
@@ -54,6 +61,13 @@ export const DEFAULT_CLASS_GEOMETRY: Geometry = {
   y: 0,
   width: DEFAULT_CLASS_WIDTH,
   height: DEFAULT_CLASS_HEIGHT,
+};
+
+export const DEFAULT_COMPONENT_GEOMETRY: Geometry = {
+  x: 0,
+  y: 0,
+  width: DEFAULT_COMPONENT_WIDTH,
+  height: DEFAULT_COMPONENT_HEIGHT,
 };
 
 export const DEFAULT_VIEWPORT: Viewport = {

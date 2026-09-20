@@ -67,7 +67,7 @@ cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
 | 050 | [`14-persistence/TASK-050.md`](14-persistence/TASK-050.md) | Hecha | P0 | 049 | 2026-09-14: envelope `arkuml-document-json` v2; 1.x `arkuml-usecase-json` migra y añade |
 | 051 | [`11-governance/TASK-051.md`](11-governance/TASK-051.md) | Hecha | P0 | 045, 050 | 2026-09-14: freeze **Release 2** (schema 3); ADR-008; seis metamodelos; TASK-052–063 |
 | 052 | [`12-uml/TASK-052.md`](12-uml/TASK-052.md) | Hecha | P0 | 051 | 2026-09-14: schema 3; `migrateDocument` 2→3; clases (class, asociación/agregación/composición/generalization); mezclas `UNKNOWN_KIND`; envelope formatVersion 3 |
-| 053 | [`13-editor/TASK-053.md`](13-editor/TASK-053.md) | Lista | P0 | 052 | Módulo clases |
+| 053 | [`13-editor/TASK-053.md`](13-editor/TASK-053.md) | Hecha | P0 | 052 | 2026-09-16: módulo de clases; paleta, ClassNode, relaciones, inspector, Nuevo y combobox |
 | 054 | [`12-uml/TASK-054.md`](12-uml/TASK-054.md) | Lista | P0 | 053 | Dominio componentes |
 | 055 | [`13-editor/TASK-055.md`](13-editor/TASK-055.md) | Lista | P0 | 054 | Módulo componentes |
 | 056 | [`12-uml/TASK-056.md`](12-uml/TASK-056.md) | Lista | P0 | 055 | Dominio despliegue |
@@ -145,8 +145,8 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-TASK-052 está `Hecha` (schema 3 + dominio de clases). El próximo contrato
-ejecutable es [TASK-053](13-editor/TASK-053.md) (módulo chrome de clases).
+TASK-053 está `Hecha` (módulo chrome de clases). El próximo contrato
+ejecutable es [TASK-054](12-uml/TASK-054.md) (dominio de componentes).
 Una TASK por chat. IndexedDB: no elegido (condicional C-QUOTA). No
 implementar Generalization en casos de uso, PDF, temas, fragmentos de
 secuencia, Crow’s foot, Interaction inline ni un kind cuyo dominio no

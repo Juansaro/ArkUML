@@ -104,6 +104,13 @@ const umlClassSchema = z.strictObject({
   operations: z.array(classMemberSchema),
 });
 
+const umlComponentSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("component"),
+  name: nameSchema,
+  geometry: geometrySchema,
+});
+
 const useCaseElementSchema = z.discriminatedUnion(
   "kind",
   [actorSchema, useCaseSchema, systemBoundarySchema],
@@ -124,6 +131,7 @@ const diagramElementSchema = z.discriminatedUnion(
     systemBoundarySchema,
     lifelineSchema,
     umlClassSchema,
+    umlComponentSchema,
   ],
   { error: "Tipo de elemento no soportado." },
 );
@@ -174,6 +182,16 @@ const generalizationSchema = z.strictObject({
   name: messageNameSchema,
 });
 
+const componentRelationshipSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.enum(["component-usage", "assembly-connector"], {
+    error: "Tipo de relación no soportado.",
+  }),
+  sourceId: uuidSchema,
+  targetId: uuidSchema,
+  name: messageNameSchema,
+});
+
 const relationshipSchemaV2 = z.union([
   useCaseRelationshipSchema,
   sequenceMessageSchema,
@@ -184,6 +202,7 @@ const relationshipSchema = z.union([
   sequenceMessageSchema,
   classAssociationSchema,
   generalizationSchema,
+  componentRelationshipSchema,
 ]);
 
 const metadataSchema = z.strictObject({
@@ -199,6 +218,7 @@ const USE_CASE_ELEMENT_KINDS = new Set([
 ]);
 const SEQUENCE_ELEMENT_KINDS = new Set(["lifeline"]);
 const CLASS_ELEMENT_KINDS = new Set(["class"]);
+const COMPONENT_ELEMENT_KINDS = new Set(["component"]);
 const USE_CASE_RELATIONSHIP_KINDS = new Set([
   "association",
   "include",
@@ -211,9 +231,13 @@ const CLASS_RELATIONSHIP_KINDS = new Set([
   "composition",
   "generalization",
 ]);
+const COMPONENT_RELATIONSHIP_KINDS = new Set([
+  "component-usage",
+  "assembly-connector",
+]);
 
 type KindCardinalityDocument = {
-  kind: "use-case" | "sequence" | "class";
+  kind: "use-case" | "sequence" | "class" | "component";
   elements: readonly { kind: string }[];
   relationships: readonly { kind: string }[];
 };
@@ -290,13 +314,17 @@ function addKindCardinalityIssues(
       ? SEQUENCE_ELEMENT_KINDS
       : document.kind === "class"
         ? CLASS_ELEMENT_KINDS
-        : USE_CASE_ELEMENT_KINDS;
+        : document.kind === "component"
+          ? COMPONENT_ELEMENT_KINDS
+          : USE_CASE_ELEMENT_KINDS;
   const allowedRelationships =
     document.kind === "sequence"
       ? SEQUENCE_RELATIONSHIP_KINDS
       : document.kind === "class"
         ? CLASS_RELATIONSHIP_KINDS
-        : USE_CASE_RELATIONSHIP_KINDS;
+        : document.kind === "component"
+          ? COMPONENT_RELATIONSHIP_KINDS
+          : USE_CASE_RELATIONSHIP_KINDS;
 
   document.elements.forEach((element, index) => {
     if (allowedElements.has(element.kind)) {
@@ -364,7 +392,7 @@ export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
       error: "schemaVersion debe ser 3.",
     }),
     id: uuidSchema,
-    kind: z.enum(["use-case", "sequence", "class"], {
+    kind: z.enum(["use-case", "sequence", "class", "component"], {
       error: "kind de documento no soportado.",
     }),
     metadata: metadataSchema,

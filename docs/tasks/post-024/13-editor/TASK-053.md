@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -86,13 +86,13 @@ Use-case y sequence no se rompen.
 
 ## Criterios de aceptación
 
-- [ ] Documento class vacío se abre con paleta y lienzo propios.
-- [ ] Crear/mover/borrar clases y las cuatro relaciones; self ilegal.
-- [ ] Compartimentos y multiplicidades visibles y persistidos.
-- [ ] Nuevo con kind Clases añade a la biblioteca.
-- [ ] Export PNG no incluye shell.
-- [ ] Use-case y sequence intactos al volver al documento.
-- [ ] Iconos en addendum de marca; sin kit.
+- [x] Documento class vacío se abre con paleta y lienzo propios.
+- [x] Crear/mover/borrar clases y las cuatro relaciones; self ilegal.
+- [x] Compartimentos y multiplicidades visibles y persistidos.
+- [x] Nuevo con kind Clases añade a la biblioteca.
+- [x] Export PNG no incluye shell.
+- [x] Use-case y sequence intactos al volver al documento.
+- [x] Iconos en addendum de marca; sin kit.
 
 ## Tests
 
@@ -119,4 +119,12 @@ Módulo clases completo; use-case y sequence intactos.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-16. Módulo de clases conectado al shell: paleta y creación por click,
+`ClassNode` con tres compartimentos, mapper y `ClassRelationshipEdge` con
+diamantes, triángulo y multiplicidades. Inspector para miembros, extremos y
+multiplicidades; Nuevo y combobox incluyen Clases; use-case y sequence
+conservan sus herramientas.
+
+Verificación: `npx vitest run src/editor src/domain` (367 tests pasan). El
+build TypeScript de la aplicación pasa; `tsc -b` conserva únicamente los dos
+errores previos de tipos DOM en `e2e/include-extend.spec.ts`.

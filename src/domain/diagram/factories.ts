@@ -1,10 +1,13 @@
 import {
   CLASS_DOCUMENT_KIND,
+  COMPONENT_DOCUMENT_KIND,
   DEFAULT_ASSOCIATION_MULTIPLICITY,
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_BOUNDARY_NAME,
   DEFAULT_CLASS_DOCUMENT_TITLE,
   DEFAULT_CLASS_GEOMETRY,
+  DEFAULT_COMPONENT_DOCUMENT_TITLE,
+  DEFAULT_COMPONENT_GEOMETRY,
   DEFAULT_DOCUMENT_TITLE,
   DEFAULT_LIFELINE_GEOMETRY,
   DEFAULT_LIFELINE_STEM_LENGTH,
@@ -21,6 +24,8 @@ import type {
   AssociationMultiplicity,
   ClassRelationship,
   ClassRelationshipKind,
+  ComponentRelationship,
+  ComponentRelationshipKind,
   DiagramDocument,
   DocumentMetadata,
   Geometry,
@@ -29,6 +34,7 @@ import type {
   SequenceMessageKind,
   SystemBoundary,
   UmlClass,
+  UmlComponent,
   UseCase,
   UseCaseRelationship,
   UseCaseRelationshipKind,
@@ -228,6 +234,39 @@ export function createClassRelationship(
   };
 }
 
+export function createComponent(
+  input: {
+    name: string;
+    geometry?: Geometry;
+  },
+  deps?: DiagramFactoryDeps,
+): UmlComponent {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "component",
+    name: input.name.trim(),
+    geometry: copyGeometry(input.geometry ?? DEFAULT_COMPONENT_GEOMETRY),
+  };
+}
+
+export function createComponentRelationship(
+  input: {
+    kind: ComponentRelationshipKind;
+    sourceId: string;
+    targetId: string;
+    name?: string;
+  },
+  deps?: DiagramFactoryDeps,
+): ComponentRelationship {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: input.kind,
+    sourceId: input.sourceId,
+    targetId: input.targetId,
+    name: input.name?.trim() ?? "",
+  };
+}
+
 export function createDocumentMetadata(
   input: { title?: string } = {},
   deps?: DiagramFactoryDeps,
@@ -302,6 +341,24 @@ export function createEmptyClassDocument(
     kind: CLASS_DOCUMENT_KIND,
     metadata: createDocumentMetadata(
       { title: DEFAULT_CLASS_DOCUMENT_TITLE },
+      deps,
+    ),
+    elements: [],
+    relationships: [],
+  };
+}
+
+export function createEmptyComponentDocument(
+  deps?: DiagramFactoryDeps,
+): DiagramDocument {
+  const createId = resolveCreateId(deps);
+
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    id: createId(),
+    kind: COMPONENT_DOCUMENT_KIND,
+    metadata: createDocumentMetadata(
+      { title: DEFAULT_COMPONENT_DOCUMENT_TITLE },
       deps,
     ),
     elements: [],

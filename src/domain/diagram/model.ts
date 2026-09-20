@@ -81,13 +81,26 @@ export type UmlClass = {
   operations: string[];
 };
 
+export type UmlComponent = {
+  id: string;
+  kind: "component";
+  name: string;
+  geometry: Geometry;
+};
+
 export type UseCaseElement = Actor | UseCase | SystemBoundary;
 
 export type SequenceElement = Lifeline;
 
 export type ClassElement = UmlClass;
 
-export type DiagramElement = UseCaseElement | SequenceElement | ClassElement;
+export type ComponentElement = UmlComponent;
+
+export type DiagramElement =
+  | UseCaseElement
+  | SequenceElement
+  | ClassElement
+  | ComponentElement;
 
 export type UseCaseRelationshipKind = "association" | "include" | "extend";
 
@@ -98,8 +111,14 @@ export type ClassAssociationKind =
 
 export type ClassRelationshipKind = ClassAssociationKind | "generalization";
 
+export type ComponentRelationshipKind =
+  "component-usage" | "assembly-connector";
+
 export type RelationshipKind =
-  UseCaseRelationshipKind | SequenceMessageKind | ClassRelationshipKind;
+  | UseCaseRelationshipKind
+  | SequenceMessageKind
+  | ClassRelationshipKind
+  | ComponentRelationshipKind;
 
 export const ASSOCIATION_MULTIPLICITIES = [
   "0..1",
@@ -149,8 +168,19 @@ export type Generalization = {
 
 export type ClassRelationship = ClassAssociation | Generalization;
 
+export type ComponentRelationship = {
+  id: string;
+  kind: ComponentRelationshipKind;
+  sourceId: string;
+  targetId: string;
+  name: string;
+};
+
 export type Relationship =
-  UseCaseRelationship | SequenceMessage | ClassRelationship;
+  | UseCaseRelationship
+  | SequenceMessage
+  | ClassRelationship
+  | ComponentRelationship;
 
 export type DocumentMetadata = {
   title: string;
@@ -160,7 +190,7 @@ export type DocumentMetadata = {
 
 export type DocumentKindV2 = "use-case" | "sequence";
 
-export type DocumentKind = DocumentKindV2 | "class";
+export type DocumentKind = DocumentKindV2 | "class" | "component";
 
 export type DiagramDocumentV1 = {
   schemaVersion: 1;
@@ -247,6 +277,12 @@ export function isUmlClass(element: DiagramElement): element is UmlClass {
   return element.kind === "class";
 }
 
+export function isUmlComponent(
+  element: DiagramElement,
+): element is UmlComponent {
+  return element.kind === "component";
+}
+
 export function isClassRelationship(
   relationship: Relationship,
 ): relationship is ClassRelationship {
@@ -255,6 +291,15 @@ export function isClassRelationship(
     relationship.kind === "aggregation" ||
     relationship.kind === "composition" ||
     relationship.kind === "generalization"
+  );
+}
+
+export function isComponentRelationship(
+  relationship: Relationship,
+): relationship is ComponentRelationship {
+  return (
+    relationship.kind === "component-usage" ||
+    relationship.kind === "assembly-connector"
   );
 }
 
