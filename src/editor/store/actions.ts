@@ -718,7 +718,21 @@ function cloneElementCopy(copy: ElementCopy): ElementCopy {
   if (copy.kind === "artifact") {
     return { kind: "artifact", name: copy.name, geometry };
   }
-  if (copy.parentId !== undefined) {
+  if (copy.kind === "entity") {
+    return { kind: "entity", name: copy.name, geometry };
+  }
+  if (copy.kind === "attribute") {
+    return {
+      kind: "attribute",
+      name: copy.name,
+      geometry,
+      isKey: copy.isKey,
+    };
+  }
+  if (copy.kind === "er-relationship") {
+    return { kind: "er-relationship", name: copy.name, geometry };
+  }
+  if (copy.kind === "use-case" && copy.parentId !== undefined) {
     return {
       kind: "use-case",
       name: copy.name,

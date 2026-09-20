@@ -33,7 +33,7 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 congeló **Release 1** (biblioteca + secuencia, schema 2). TASK-046,
 TASK-047, TASK-048, TASK-049 y TASK-050 están `Hecha`. Release 1
 cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
-(seis kinds, schema 3). TASK-052 está `Hecha`. TASK-053, TASK-054, TASK-055, TASK-056 y TASK-057 están `Hecha`.
+(seis kinds, schema 3). TASK-052 está `Hecha`. TASK-053, TASK-054, TASK-055, TASK-056, TASK-057 y TASK-058 están `Hecha`.
 
 ## Estado
 
@@ -72,7 +72,7 @@ cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
 | 055 | [`13-editor/TASK-055.md`](13-editor/TASK-055.md) | Hecha | P0 | 054 | 2026-09-20: módulo componentes; paleta, ComponentNode, uso/ensamblaje, inspector, Nuevo |
 | 056 | [`12-uml/TASK-056.md`](12-uml/TASK-056.md) | Hecha | P0 | 055 | 2026-09-20: dominio deployment; path/deploy; mezclas UNKNOWN_KIND; envelope 3.x; sin chrome |
 | 057 | [`13-editor/TASK-057.md`](13-editor/TASK-057.md) | Hecha | P0 | 056 | 2026-09-20: módulo despliegue; paleta, prisma/artefacto, path/deploy, inspector, Nuevo |
-| 058 | [`12-uml/TASK-058.md`](12-uml/TASK-058.md) | Lista | P0 | 057 | Dominio ER Chen |
+| 058 | [`12-uml/TASK-058.md`](12-uml/TASK-058.md) | Hecha | P0 | 057 | 2026-09-20: dominio ER Chen; er-link; isKey; mezclas UNKNOWN_KIND; envelope 3.x; sin chrome |
 | 059 | [`13-editor/TASK-059.md`](13-editor/TASK-059.md) | Lista | P0 | 058 | Módulo ER |
 | 060 | [`12-uml/TASK-060.md`](12-uml/TASK-060.md) | Lista | P0 | 059 | Dominio actividades |
 | 061 | [`13-editor/TASK-061.md`](13-editor/TASK-061.md) | Lista | P0 | 060 | Módulo actividades |

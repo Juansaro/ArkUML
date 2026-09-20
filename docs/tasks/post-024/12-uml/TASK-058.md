@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -62,11 +62,11 @@ Zod `strictObject`. `src/domain` sin UI. No inventar Chen fuera del modelo.
 
 ## Criterios de aceptación
 
-- [ ] Factories entidad/atributo/rombo; `isKey`; cascada de `er-link`.
-- [ ] `canConnect` solo los pares de `er-model.md`; cardinalidad en
+- [x] Factories entidad/atributo/rombo; `isKey`; cascada de `er-link`.
+- [x] `canConnect` solo los pares de `er-model.md`; cardinalidad en
       entidad–rombo; prohibida en atributo–entidad.
-- [ ] Segundo enlace de un atributo → `INVALID_CONNECTION`.
-- [ ] Mezclas `UNKNOWN_KIND`. Archivo 3.x round-trip.
+- [x] Segundo enlace de un atributo → `INVALID_CONNECTION`.
+- [x] Mezclas `UNKNOWN_KIND`. Archivo 3.x round-trip.
 
 ## Tests
 
@@ -89,4 +89,21 @@ Dominio ER testeado; sin chrome.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-20. Dominio ER Chen en schema 3. Unión
+`"use-case" | "sequence" | "class" | "component" | "deployment" | "entity-relationship"`.
+Parser rechaza `activity` y mezclas (`UNKNOWN_KIND`). Elementos
+`entity` / `attribute` (`isKey`) / `er-relationship`; relación `er-link`;
+`canConnect` solo atributo–entidad y entidad–rombo; cardinalidad `"1"|"N"`
+solo en entidad–rombo (default `"N"`); prohibida en atributo–entidad;
+segundo enlace de un atributo → `INVALID_CONNECTION`; self ilegal;
+cascada al borrar; `createEmptyErDocument()`; entidad `160×80` (mín.
+`96×48`), atributo `120×56` (mín. `80×40`), rombo `120×80` (mín. `80×48`).
+Envelope `formatVersion` 3 round-trip. Kinds previos intactos. Sin
+paleta ni nodos (TASK-059). Navegador no usado: verificación solo
+dominio/unitaria. Ajuste mínimo en `cloneElementCopy` del store para
+compilar tras ampliar `ElementCopy`.
+
+Comandos: `npx vitest run src/domain` (177 tests) y
+`npx tsc -b --pretty false`: app limpia; fallos previos en
+`e2e/include-extend.spec.ts` (`SVGPathElement` / `DOMPoint` sin DOM
+en `tsconfig.node.json`) — sucio anterior, no tocado.

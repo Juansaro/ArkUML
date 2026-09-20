@@ -102,6 +102,28 @@ export type Artifact = {
   geometry: Geometry;
 };
 
+export type ErEntity = {
+  id: string;
+  kind: "entity";
+  name: string;
+  geometry: Geometry;
+};
+
+export type ErAttribute = {
+  id: string;
+  kind: "attribute";
+  name: string;
+  geometry: Geometry;
+  isKey?: boolean;
+};
+
+export type ErRelationshipElement = {
+  id: string;
+  kind: "er-relationship";
+  name: string;
+  geometry: Geometry;
+};
+
 export type UseCaseElement = Actor | UseCase | SystemBoundary;
 
 export type SequenceElement = Lifeline;
@@ -112,12 +134,15 @@ export type ComponentElement = UmlComponent;
 
 export type DeploymentElement = DeploymentNode | Artifact;
 
+export type ErElement = ErEntity | ErAttribute | ErRelationshipElement;
+
 export type DiagramElement =
   | UseCaseElement
   | SequenceElement
   | ClassElement
   | ComponentElement
-  | DeploymentElement;
+  | DeploymentElement
+  | ErElement;
 
 export type UseCaseRelationshipKind = "association" | "include" | "extend";
 
@@ -133,12 +158,15 @@ export type ComponentRelationshipKind =
 
 export type DeploymentRelationshipKind = "communication-path" | "deploy";
 
+export type ErRelationshipKind = "er-link";
+
 export type RelationshipKind =
   | UseCaseRelationshipKind
   | SequenceMessageKind
   | ClassRelationshipKind
   | ComponentRelationshipKind
-  | DeploymentRelationshipKind;
+  | DeploymentRelationshipKind
+  | ErRelationshipKind;
 
 export const ASSOCIATION_MULTIPLICITIES = [
   "0..1",
@@ -149,6 +177,10 @@ export const ASSOCIATION_MULTIPLICITIES = [
 
 export type AssociationMultiplicity =
   (typeof ASSOCIATION_MULTIPLICITIES)[number];
+
+export const ER_CARDINALITIES = ["1", "N"] as const;
+
+export type ErCardinality = (typeof ER_CARDINALITIES)[number];
 
 export type UseCaseRelationship = {
   id: string;
@@ -204,12 +236,21 @@ export type DeploymentRelationship = {
   name: string;
 };
 
+export type ErLink = {
+  id: string;
+  kind: "er-link";
+  sourceId: string;
+  targetId: string;
+  cardinality?: ErCardinality;
+};
+
 export type Relationship =
   | UseCaseRelationship
   | SequenceMessage
   | ClassRelationship
   | ComponentRelationship
-  | DeploymentRelationship;
+  | DeploymentRelationship
+  | ErLink;
 
 export type DocumentMetadata = {
   title: string;
@@ -223,7 +264,8 @@ export type DocumentKind =
   | DocumentKindV2
   | "class"
   | "component"
-  | "deployment";
+  | "deployment"
+  | "entity-relationship";
 
 export type DiagramDocumentV1 = {
   schemaVersion: 1;
@@ -326,6 +368,20 @@ export function isArtifact(element: DiagramElement): element is Artifact {
   return element.kind === "artifact";
 }
 
+export function isErEntity(element: DiagramElement): element is ErEntity {
+  return element.kind === "entity";
+}
+
+export function isErAttribute(element: DiagramElement): element is ErAttribute {
+  return element.kind === "attribute";
+}
+
+export function isErRelationshipElement(
+  element: DiagramElement,
+): element is ErRelationshipElement {
+  return element.kind === "er-relationship";
+}
+
 export function isClassRelationship(
   relationship: Relationship,
 ): relationship is ClassRelationship {
@@ -354,6 +410,10 @@ export function isDeploymentRelationship(
   );
 }
 
+export function isErLink(relationship: Relationship): relationship is ErLink {
+  return relationship.kind === "er-link";
+}
+
 export function isClassAssociation(
   relationship: Relationship,
 ): relationship is ClassAssociation {
@@ -374,4 +434,8 @@ export function isAssociationMultiplicity(
   value: string,
 ): value is AssociationMultiplicity {
   return (ASSOCIATION_MULTIPLICITIES as readonly string[]).includes(value);
+}
+
+export function isErCardinality(value: string): value is ErCardinality {
+  return (ER_CARDINALITIES as readonly string[]).includes(value);
 }

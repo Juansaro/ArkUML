@@ -5,6 +5,7 @@ import {
   createEmptyClassDocument,
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
+  createEmptyErDocument,
   createEmptySequenceDocument,
   createLifeline,
   createRelationship,
@@ -149,7 +150,7 @@ describe("parseWorkspaceSnapshot", () => {
     expectRejected(
       withActiveDocument(snapshot, {
         ...activeDocument(snapshot),
-        kind: "entity-relationship",
+        kind: "activity",
       }),
       "UNKNOWN_KIND",
       /kind|no soportado/i,
@@ -468,6 +469,17 @@ describe("parser schema 3 — clases, componentes, despliegue y kinds futuros", 
     });
   });
 
+  it("acepta un documento entity-relationship vacío", () => {
+    const document = createEmptyErDocument({
+      createId: sequentialIds(),
+      now: () => FIXED_NOW,
+    });
+    expect(parseDiagramDocument(document)).toEqual({
+      ok: true,
+      value: document,
+    });
+  });
+
   it("rechaza un actor en un documento class", () => {
     const createId = sequentialIds();
     const document = createEmptyClassDocument({
@@ -520,7 +532,7 @@ describe("parser schema 3 — clases, componentes, despliegue y kinds futuros", 
     });
     const parsed = parseDiagramDocument({
       ...document,
-      kind: "entity-relationship",
+      kind: "activity",
     });
     expect(parsed.ok).toBe(false);
     if (parsed.ok) {

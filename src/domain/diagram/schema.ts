@@ -11,6 +11,7 @@ import {
 } from "./defaults.ts";
 import {
   ASSOCIATION_MULTIPLICITIES,
+  ER_CARDINALITIES,
   type DiagramDocument,
   type DiagramDocumentV1,
   type DiagramDocumentV2,
@@ -125,6 +126,28 @@ const artifactSchema = z.strictObject({
   geometry: geometrySchema,
 });
 
+const erEntitySchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("entity"),
+  name: nameSchema,
+  geometry: geometrySchema,
+});
+
+const erAttributeSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("attribute"),
+  name: nameSchema,
+  geometry: geometrySchema,
+  isKey: z.boolean().exactOptional(),
+});
+
+const erRelationshipElementSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("er-relationship"),
+  name: nameSchema,
+  geometry: geometrySchema,
+});
+
 const useCaseElementSchema = z.discriminatedUnion(
   "kind",
   [actorSchema, useCaseSchema, systemBoundarySchema],
@@ -148,6 +171,9 @@ const diagramElementSchema = z.discriminatedUnion(
     umlComponentSchema,
     deploymentNodeSchema,
     artifactSchema,
+    erEntitySchema,
+    erAttributeSchema,
+    erRelationshipElementSchema,
   ],
   { error: "Tipo de elemento no soportado." },
 );
@@ -218,6 +244,18 @@ const deploymentRelationshipSchema = z.strictObject({
   name: messageNameSchema,
 });
 
+const erCardinalitySchema = z.enum(ER_CARDINALITIES, {
+  error: "La cardinalidad no es un valor soportado.",
+});
+
+const erLinkSchema = z.strictObject({
+  id: uuidSchema,
+  kind: z.literal("er-link"),
+  sourceId: uuidSchema,
+  targetId: uuidSchema,
+  cardinality: erCardinalitySchema.exactOptional(),
+});
+
 const relationshipSchemaV2 = z.union([
   useCaseRelationshipSchema,
   sequenceMessageSchema,
@@ -230,6 +268,7 @@ const relationshipSchema = z.union([
   generalizationSchema,
   componentRelationshipSchema,
   deploymentRelationshipSchema,
+  erLinkSchema,
 ]);
 
 const metadataSchema = z.strictObject({
@@ -247,6 +286,7 @@ const SEQUENCE_ELEMENT_KINDS = new Set(["lifeline"]);
 const CLASS_ELEMENT_KINDS = new Set(["class"]);
 const COMPONENT_ELEMENT_KINDS = new Set(["component"]);
 const DEPLOYMENT_ELEMENT_KINDS = new Set(["node", "artifact"]);
+const ER_ELEMENT_KINDS = new Set(["entity", "attribute", "er-relationship"]);
 const USE_CASE_RELATIONSHIP_KINDS = new Set([
   "association",
   "include",
@@ -267,11 +307,23 @@ const DEPLOYMENT_RELATIONSHIP_KINDS = new Set([
   "communication-path",
   "deploy",
 ]);
+const ER_RELATIONSHIP_KINDS = new Set(["er-link"]);
 
 type KindCardinalityDocument = {
-  kind: "use-case" | "sequence" | "class" | "component" | "deployment";
-  elements: readonly { kind: string }[];
-  relationships: readonly { kind: string }[];
+  kind:
+    | "use-case"
+    | "sequence"
+    | "class"
+    | "component"
+    | "deployment"
+    | "entity-relationship";
+  elements: readonly { kind: string; id?: string }[];
+  relationships: readonly {
+    kind: string;
+    sourceId?: string;
+    targetId?: string;
+    cardinality?: string;
+  }[];
 };
 
 function addParentIssues(
@@ -350,7 +402,9 @@ function addKindCardinalityIssues(
           ? COMPONENT_ELEMENT_KINDS
           : document.kind === "deployment"
             ? DEPLOYMENT_ELEMENT_KINDS
-            : USE_CASE_ELEMENT_KINDS;
+            : document.kind === "entity-relationship"
+              ? ER_ELEMENT_KINDS
+              : USE_CASE_ELEMENT_KINDS;
   const allowedRelationships =
     document.kind === "sequence"
       ? SEQUENCE_RELATIONSHIP_KINDS
@@ -360,7 +414,9 @@ function addKindCardinalityIssues(
           ? COMPONENT_RELATIONSHIP_KINDS
           : document.kind === "deployment"
             ? DEPLOYMENT_RELATIONSHIP_KINDS
-            : USE_CASE_RELATIONSHIP_KINDS;
+            : document.kind === "entity-relationship"
+              ? ER_RELATIONSHIP_KINDS
+              : USE_CASE_RELATIONSHIP_KINDS;
 
   document.elements.forEach((element, index) => {
     if (allowedElements.has(element.kind)) {
@@ -377,6 +433,79 @@ function addKindCardinalityIssues(
     if (allowedRelationships.has(relationship.kind)) {
       return;
     }
+    ctx.addIssue({
+      code: "custom",
+      message: "Tipo de relación no soportado en este documento.",
+      path: ["relationships", index, "kind"],
+    });
+  });
+}
+
+function addErLinkCardinalityIssues(
+  document: KindCardinalityDocument,
+  ctx: z.core.$RefinementCtx<KindCardinalityDocument>,
+): void {
+  if (document.kind !== "entity-relationship") {
+    return;
+  }
+
+  const elementsById = new Map(
+    document.elements
+      .filter(
+        (element): element is { kind: string; id: string } =>
+          typeof element.id === "string",
+      )
+      .map((element) => [element.id, element]),
+  );
+
+  document.relationships.forEach((relationship, index) => {
+    if (relationship.kind !== "er-link") {
+      return;
+    }
+    if (
+      typeof relationship.sourceId !== "string" ||
+      typeof relationship.targetId !== "string"
+    ) {
+      return;
+    }
+
+    const source = elementsById.get(relationship.sourceId);
+    const target = elementsById.get(relationship.targetId);
+    if (source === undefined || target === undefined) {
+      return;
+    }
+
+    const attributeEntity =
+      (source.kind === "attribute" && target.kind === "entity") ||
+      (source.kind === "entity" && target.kind === "attribute");
+    const entityRombo =
+      (source.kind === "entity" && target.kind === "er-relationship") ||
+      (source.kind === "er-relationship" && target.kind === "entity");
+
+    if (attributeEntity) {
+      if (relationship.cardinality !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message:
+            "Un enlace atributo–entidad no admite cardinalidad.",
+          path: ["relationships", index, "cardinality"],
+        });
+      }
+      return;
+    }
+
+    if (entityRombo) {
+      if (relationship.cardinality === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message:
+            "Un enlace entidad–relación exige cardinalidad 1 o N.",
+          path: ["relationships", index, "cardinality"],
+        });
+      }
+      return;
+    }
+
     ctx.addIssue({
       code: "custom",
       message: "Tipo de relación no soportado en este documento.",
@@ -429,7 +558,14 @@ export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
     }),
     id: uuidSchema,
     kind: z.enum(
-      ["use-case", "sequence", "class", "component", "deployment"],
+      [
+        "use-case",
+        "sequence",
+        "class",
+        "component",
+        "deployment",
+        "entity-relationship",
+      ],
       {
         error: "kind de documento no soportado.",
       },
@@ -442,6 +578,7 @@ export const diagramDocumentSchema: z.ZodType<DiagramDocument> = z
     addUniqueIdIssues(document, ctx);
     addParentIssues(document, ctx);
     addKindCardinalityIssues(document, ctx);
+    addErLinkCardinalityIssues(document, ctx);
   });
 
 export const viewportSchema = z.strictObject({
@@ -578,6 +715,10 @@ function domainCodeForIssue(issue: z.core.$ZodIssue): DomainErrorCode {
     path.includes("operations")
   ) {
     return "INVALID_NAME";
+  }
+
+  if (path.includes("cardinality") || path.includes("isKey")) {
+    return "INVALID_CONNECTION";
   }
 
   if (path.includes("kind") || issue.code === "invalid_union") {

@@ -1,14 +1,21 @@
 import {
   DEFAULT_ASSOCIATION_MULTIPLICITY,
+  DEFAULT_ER_CARDINALITY,
   DUPLICATE_OFFSET,
   MIN_ARTIFACT_HEIGHT,
   MIN_ARTIFACT_WIDTH,
+  MIN_ATTRIBUTE_HEIGHT,
+  MIN_ATTRIBUTE_WIDTH,
   MIN_BOUNDARY_HEIGHT,
   MIN_BOUNDARY_WIDTH,
   MIN_CLASS_HEIGHT,
   MIN_CLASS_WIDTH,
   MIN_COMPONENT_HEIGHT,
   MIN_COMPONENT_WIDTH,
+  MIN_ENTITY_HEIGHT,
+  MIN_ENTITY_WIDTH,
+  MIN_ER_RELATIONSHIP_HEIGHT,
+  MIN_ER_RELATIONSHIP_WIDTH,
   MIN_LIFELINE_HEIGHT,
   MIN_LIFELINE_STEM_LENGTH,
   MIN_LIFELINE_WIDTH,
@@ -20,11 +27,15 @@ import {
 import {
   createActor,
   createArtifact as buildArtifact,
+  createAttribute as buildAttribute,
   createClass as buildClass,
   createClassRelationship as buildClassRelationship,
   createComponent as buildComponent,
   createComponentRelationship as buildComponentRelationship,
   createDeploymentRelationship as buildDeploymentRelationship,
+  createEntity as buildEntity,
+  createErLink as buildErLink,
+  createErRelationship as buildErRelationship,
   createLifeline as buildLifeline,
   createNode as buildNode,
   createRelationship as buildRelationship,
@@ -42,6 +53,11 @@ import {
   isComponentRelationship,
   isDeploymentNode,
   isDeploymentRelationship,
+  isErAttribute,
+  isErCardinality,
+  isErEntity,
+  isErLink,
+  isErRelationshipElement,
   isGeneralization,
   isLifeline,
   isSequenceMessage,
@@ -56,6 +72,8 @@ import {
   type DeploymentRelationshipKind,
   type DiagramDocument,
   type DiagramElement,
+  type ErAttribute,
+  type ErCardinality,
   type Geometry,
   type Lifeline,
   type Result,
@@ -119,12 +137,20 @@ export type CreateDeploymentRelationshipInput = {
   name?: string;
 };
 
+export type CreateErLinkInput = {
+  kind: "er-link";
+  sourceId: string;
+  targetId: string;
+  cardinality?: ErCardinality;
+};
+
 export type CreateRelationshipInput =
   | CreateUseCaseRelationshipInput
   | CreateSequenceMessageInput
   | CreateClassRelationshipInput
   | CreateComponentRelationshipInput
-  | CreateDeploymentRelationshipInput;
+  | CreateDeploymentRelationshipInput
+  | CreateErLinkInput;
 
 export type ReconnectRelationshipInput = CreateUseCaseRelationshipInput & {
   id: string;
@@ -154,6 +180,8 @@ const COMPONENT_ELEMENT_MESSAGE =
   "El documento de componentes no admite este elemento.";
 const DEPLOYMENT_ELEMENT_MESSAGE =
   "El documento de despliegue no admite este elemento.";
+const ER_ELEMENT_MESSAGE =
+  "El documento entidad-relación no admite este elemento.";
 const USE_CASE_LIFELINE_MESSAGE =
   "El documento de casos de uso no admite lifelines.";
 const USE_CASE_CLASS_MESSAGE = "El documento de casos de uso no admite clases.";
@@ -161,25 +189,41 @@ const USE_CASE_COMPONENT_MESSAGE =
   "El documento de casos de uso no admite componentes.";
 const USE_CASE_DEPLOYMENT_MESSAGE =
   "El documento de casos de uso no admite nodos ni artefactos.";
+const USE_CASE_ER_MESSAGE =
+  "El documento de casos de uso no admite entidades, atributos ni rombos.";
 const CLASS_DOCUMENT_MESSAGE =
   "Solo un documento de clases admite este elemento.";
 const COMPONENT_DOCUMENT_MESSAGE =
   "Solo un documento de componentes admite este elemento.";
 const DEPLOYMENT_DOCUMENT_MESSAGE =
   "Solo un documento de despliegue admite este elemento.";
+const ER_DOCUMENT_MESSAGE =
+  "Solo un documento entidad-relación admite este elemento.";
 const RENAME_RELATIONSHIP_MESSAGE =
   "Solo se puede renombrar un mensaje de secuencia o una relación de clases, componentes o despliegue.";
 const CLASS_SIZE_MESSAGE = "La clase debe medir al menos 120×72.";
 const COMPONENT_SIZE_MESSAGE = "El componente debe medir al menos 120×72.";
 const NODE_SIZE_MESSAGE = "El nodo debe medir al menos 120×72.";
 const ARTIFACT_SIZE_MESSAGE = "El artefacto debe medir al menos 96×48.";
+const ENTITY_SIZE_MESSAGE = "La entidad debe medir al menos 96×48.";
+const ATTRIBUTE_SIZE_MESSAGE = "El atributo debe medir al menos 80×40.";
+const ER_RELATIONSHIP_SIZE_MESSAGE =
+  "La relación entidad-relación debe medir al menos 80×48.";
 const RESIZE_TARGET_ELEMENT_MESSAGE =
-  "Solo se puede redimensionar una clase, un componente, un nodo o un artefacto.";
+  "Solo se puede redimensionar una clase, un componente, un nodo, un artefacto, una entidad, un atributo o un rombo.";
 const GENERALIZATION_ENDS_MESSAGE = "Generalization no admite multiplicidades.";
 const ASSOCIATION_ENDS_MESSAGE =
   "Solo se pueden editar extremos de asociación, agregación o composición.";
 const INVALID_MULTIPLICITY_MESSAGE =
   "La multiplicidad debe ser 0..1, 1, 0..* o 1..*.";
+const ER_CARDINALITY_TARGET_MESSAGE =
+  "Solo se puede fijar cardinalidad en un enlace entidad–relación.";
+const ATTRIBUTE_CARDINALITY_MESSAGE =
+  "Un enlace atributo–entidad no admite cardinalidad.";
+const INVALID_ER_CARDINALITY_MESSAGE =
+  "La cardinalidad debe ser 1 o N.";
+const ATTRIBUTE_KEY_TARGET_MESSAGE =
+  "Solo se puede marcar isKey en un atributo.";
 const MOVE_MESSAGE_TARGET_MESSAGE =
   "Solo se puede mover un mensaje de secuencia.";
 const RECONNECT_MESSAGE_MESSAGE =
@@ -203,6 +247,9 @@ export function createElement(
   }
   if (document.kind === "deployment") {
     return err("UNKNOWN_KIND", DEPLOYMENT_ELEMENT_MESSAGE);
+  }
+  if (document.kind === "entity-relationship") {
+    return err("UNKNOWN_KIND", ER_ELEMENT_MESSAGE);
   }
 
   const name = normalizeName(input.name);
@@ -506,6 +553,136 @@ export function createArtifact(
   );
 }
 
+export function createEntity(
+  document: DiagramDocument,
+  input: { name: string; geometry?: Geometry },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  if (document.kind !== "entity-relationship") {
+    return err("UNKNOWN_KIND", ER_DOCUMENT_MESSAGE);
+  }
+
+  const name = normalizeName(input.name);
+  if (!name.ok) {
+    return name;
+  }
+
+  const geometry = input.geometry;
+  if (geometry !== undefined) {
+    if (!isFiniteGeometry(geometry)) {
+      return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+    }
+    const sizeError = entitySizeError(geometry);
+    if (sizeError !== undefined) {
+      return sizeError;
+    }
+  }
+
+  return commit(
+    document,
+    {
+      elements: [
+        ...document.elements,
+        buildEntity(
+          {
+            name: name.value,
+            ...(geometry === undefined ? {} : { geometry }),
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
+}
+
+export function createAttribute(
+  document: DiagramDocument,
+  input: { name: string; geometry?: Geometry; isKey?: boolean },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  if (document.kind !== "entity-relationship") {
+    return err("UNKNOWN_KIND", ER_DOCUMENT_MESSAGE);
+  }
+
+  const name = normalizeName(input.name);
+  if (!name.ok) {
+    return name;
+  }
+
+  const geometry = input.geometry;
+  if (geometry !== undefined) {
+    if (!isFiniteGeometry(geometry)) {
+      return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+    }
+    const sizeError = attributeSizeError(geometry);
+    if (sizeError !== undefined) {
+      return sizeError;
+    }
+  }
+
+  return commit(
+    document,
+    {
+      elements: [
+        ...document.elements,
+        buildAttribute(
+          {
+            name: name.value,
+            ...(geometry === undefined ? {} : { geometry }),
+            ...(input.isKey === true ? { isKey: true } : {}),
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
+}
+
+export function createErRelationship(
+  document: DiagramDocument,
+  input: { name: string; geometry?: Geometry },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  if (document.kind !== "entity-relationship") {
+    return err("UNKNOWN_KIND", ER_DOCUMENT_MESSAGE);
+  }
+
+  const name = normalizeName(input.name);
+  if (!name.ok) {
+    return name;
+  }
+
+  const geometry = input.geometry;
+  if (geometry !== undefined) {
+    if (!isFiniteGeometry(geometry)) {
+      return err("INVALID_GEOMETRY", INVALID_GEOMETRY_MESSAGE);
+    }
+    const sizeError = erRelationshipSizeError(geometry);
+    if (sizeError !== undefined) {
+      return sizeError;
+    }
+  }
+
+  return commit(
+    document,
+    {
+      elements: [
+        ...document.elements,
+        buildErRelationship(
+          {
+            name: name.value,
+            ...(geometry === undefined ? {} : { geometry }),
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
+}
+
 export function renameElement(
   document: DiagramDocument,
   elementId: string,
@@ -576,6 +753,43 @@ export function setClassMembers(
     attributes: attributes.value,
     operations: operations.value,
   };
+  return commit(
+    document,
+    {
+      elements: replaceElement(document.elements, next),
+    },
+    deps,
+  );
+}
+
+export function setAttributeKey(
+  document: DiagramDocument,
+  input: { id: string; isKey: boolean },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  const element = findElement(document, input.id);
+  if (element === undefined) {
+    return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
+  }
+  if (!isErAttribute(element)) {
+    return err("UNKNOWN_KIND", ATTRIBUTE_KEY_TARGET_MESSAGE);
+  }
+
+  const current = element.isKey === true;
+  if (current === input.isKey) {
+    return ok(document);
+  }
+
+  const next: ErAttribute = {
+    id: element.id,
+    kind: "attribute",
+    name: element.name,
+    geometry: copyGeometry(element.geometry),
+  };
+  if (input.isKey) {
+    next.isKey = true;
+  }
+
   return commit(
     document,
     {
@@ -708,7 +922,10 @@ export function resizeElement(
     !isUmlClass(element) &&
     !isUmlComponent(element) &&
     !isDeploymentNode(element) &&
-    !isArtifact(element)
+    !isArtifact(element) &&
+    !isErEntity(element) &&
+    !isErAttribute(element) &&
+    !isErRelationshipElement(element)
   ) {
     return err("INVALID_GEOMETRY", RESIZE_TARGET_ELEMENT_MESSAGE);
   }
@@ -721,7 +938,13 @@ export function resizeElement(
       ? componentSizeError(input.geometry)
       : isDeploymentNode(element)
         ? nodeSizeError(input.geometry)
-        : artifactSizeError(input.geometry);
+        : isArtifact(element)
+          ? artifactSizeError(input.geometry)
+          : isErEntity(element)
+            ? entitySizeError(input.geometry)
+            : isErAttribute(element)
+              ? attributeSizeError(input.geometry)
+              : erRelationshipSizeError(input.geometry);
   if (sizeError !== undefined) {
     return sizeError;
   }
@@ -884,7 +1107,10 @@ export type ElementCopy =
     }
   | { kind: "component"; name: string; geometry: Geometry }
   | { kind: "node"; name: string; geometry: Geometry }
-  | { kind: "artifact"; name: string; geometry: Geometry };
+  | { kind: "artifact"; name: string; geometry: Geometry }
+  | { kind: "entity"; name: string; geometry: Geometry }
+  | { kind: "attribute"; name: string; geometry: Geometry; isKey: boolean }
+  | { kind: "er-relationship"; name: string; geometry: Geometry };
 
 export function snapshotDuplicableElements(
   document: DiagramDocument,
@@ -957,6 +1183,31 @@ export function snapshotDuplicableElements(
       });
       continue;
     }
+    if (element.kind === "entity") {
+      copies.push({
+        kind: "entity",
+        name: element.name,
+        geometry,
+      });
+      continue;
+    }
+    if (element.kind === "attribute") {
+      copies.push({
+        kind: "attribute",
+        name: element.name,
+        geometry,
+        isKey: element.isKey === true,
+      });
+      continue;
+    }
+    if (element.kind === "er-relationship") {
+      copies.push({
+        kind: "er-relationship",
+        name: element.name,
+        geometry,
+      });
+      continue;
+    }
 
     if (element.parentId !== undefined) {
       copies.push({
@@ -1003,6 +1254,14 @@ export function insertElementCopies(
       return err("UNKNOWN_KIND", DEPLOYMENT_ELEMENT_MESSAGE);
     }
     if (
+      document.kind === "entity-relationship" &&
+      copy.kind !== "entity" &&
+      copy.kind !== "attribute" &&
+      copy.kind !== "er-relationship"
+    ) {
+      return err("UNKNOWN_KIND", ER_ELEMENT_MESSAGE);
+    }
+    if (
       document.kind === "use-case" &&
       copy.kind !== "actor" &&
       copy.kind !== "use-case"
@@ -1015,7 +1274,11 @@ export function insertElementCopies(
             ? USE_CASE_COMPONENT_MESSAGE
             : copy.kind === "node" || copy.kind === "artifact"
               ? USE_CASE_DEPLOYMENT_MESSAGE
-              : USE_CASE_LIFELINE_MESSAGE,
+              : copy.kind === "entity" ||
+                  copy.kind === "attribute" ||
+                  copy.kind === "er-relationship"
+                ? USE_CASE_ER_MESSAGE
+                : USE_CASE_LIFELINE_MESSAGE,
       );
     }
     if (!isFiniteGeometry(copy.geometry)) {
@@ -1062,6 +1325,27 @@ export function insertElementCopies(
     }
     if (copy.kind === "artifact") {
       created.push(buildArtifact({ name: copy.name, geometry }, deps));
+      continue;
+    }
+    if (copy.kind === "entity") {
+      created.push(buildEntity({ name: copy.name, geometry }, deps));
+      continue;
+    }
+    if (copy.kind === "attribute") {
+      created.push(
+        buildAttribute(
+          {
+            name: copy.name,
+            geometry,
+            ...(copy.isKey ? { isKey: true } : {}),
+          },
+          deps,
+        ),
+      );
+      continue;
+    }
+    if (copy.kind === "er-relationship") {
+      created.push(buildErRelationship({ name: copy.name, geometry }, deps));
       continue;
     }
 
@@ -1113,6 +1397,9 @@ export function createRelationship(
   }
   if (isDeploymentRelationshipInput(input)) {
     return createDeploymentDiagramRelationship(document, input, deps);
+  }
+  if (isErLinkInput(input)) {
+    return createErDiagramLink(document, input, deps);
   }
   if (isSequenceMessageInput(input)) {
     return createSequenceRelationship(document, input, deps);
@@ -1259,6 +1546,62 @@ export function setAssociationEnds(
               sourceMultiplicity: input.sourceMultiplicity,
               targetMultiplicity: input.targetMultiplicity,
             }
+          : relationship,
+      ),
+    },
+    deps,
+  );
+}
+
+export function setErCardinality(
+  document: DiagramDocument,
+  input: { id: string; cardinality: ErCardinality },
+  deps?: OperationDeps,
+): Result<DiagramDocument> {
+  const existing = document.relationships.find(
+    (relationship) => relationship.id === input.id,
+  );
+  if (existing === undefined) {
+    return err("UNKNOWN_RELATIONSHIP", UNKNOWN_RELATIONSHIP_MESSAGE);
+  }
+  if (!isErLink(existing)) {
+    return err("INVALID_CONNECTION", ER_CARDINALITY_TARGET_MESSAGE);
+  }
+  if (!isErCardinality(input.cardinality)) {
+    return err("INVALID_CONNECTION", INVALID_ER_CARDINALITY_MESSAGE);
+  }
+
+  const byId = indexElements(document);
+  const source = byId.get(existing.sourceId);
+  const target = byId.get(existing.targetId);
+  if (source === undefined || target === undefined) {
+    return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
+  }
+
+  const attributeEntity =
+    (isErAttribute(source) && isErEntity(target)) ||
+    (isErEntity(source) && isErAttribute(target));
+  if (attributeEntity) {
+    return err("INVALID_CONNECTION", ATTRIBUTE_CARDINALITY_MESSAGE);
+  }
+
+  const entityRombo =
+    (isErEntity(source) && isErRelationshipElement(target)) ||
+    (isErRelationshipElement(source) && isErEntity(target));
+  if (!entityRombo) {
+    return err("INVALID_CONNECTION", ER_CARDINALITY_TARGET_MESSAGE);
+  }
+
+  if (existing.cardinality === input.cardinality) {
+    return ok(document);
+  }
+
+  return commit(
+    document,
+    {
+      relationships: document.relationships.map((relationship) =>
+        relationship.id === input.id
+          ? { ...existing, cardinality: input.cardinality }
           : relationship,
       ),
     },
@@ -1511,6 +1854,12 @@ function isDeploymentRelationshipInput(
   return input.kind === "communication-path" || input.kind === "deploy";
 }
 
+function isErLinkInput(
+  input: CreateRelationshipInput,
+): input is CreateErLinkInput {
+  return input.kind === "er-link";
+}
+
 function createClassDiagramRelationship(
   document: DiagramDocument,
   input: CreateClassRelationshipInput,
@@ -1635,6 +1984,82 @@ function createDeploymentDiagramRelationship(
             sourceId: allowed.value.sourceId,
             targetId: allowed.value.targetId,
             name: name.value,
+          },
+          deps,
+        ),
+      ],
+    },
+    deps,
+  );
+}
+
+function createErDiagramLink(
+  document: DiagramDocument,
+  input: CreateErLinkInput,
+  deps: OperationDeps | undefined,
+): Result<DiagramDocument> {
+  const allowed = canConnect(document, input);
+  if (!allowed.ok) {
+    return allowed;
+  }
+
+  const byId = indexElements(document);
+  const source = byId.get(allowed.value.sourceId);
+  const target = byId.get(allowed.value.targetId);
+  if (source === undefined || target === undefined) {
+    return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
+  }
+
+  const attributeEntity =
+    (isErAttribute(source) && isErEntity(target)) ||
+    (isErEntity(source) && isErAttribute(target));
+  const entityRombo =
+    (isErEntity(source) && isErRelationshipElement(target)) ||
+    (isErRelationshipElement(source) && isErEntity(target));
+
+  if (attributeEntity) {
+    if (input.cardinality !== undefined) {
+      return err("INVALID_CONNECTION", ATTRIBUTE_CARDINALITY_MESSAGE);
+    }
+    return commit(
+      document,
+      {
+        relationships: [
+          ...document.relationships,
+          buildErLink(
+            {
+              sourceId: allowed.value.sourceId,
+              targetId: allowed.value.targetId,
+            },
+            deps,
+          ),
+        ],
+      },
+      deps,
+    );
+  }
+
+  if (!entityRombo) {
+    return err("INVALID_CONNECTION", ER_CARDINALITY_TARGET_MESSAGE);
+  }
+
+  if (
+    input.cardinality !== undefined &&
+    !isErCardinality(input.cardinality)
+  ) {
+    return err("INVALID_CONNECTION", INVALID_ER_CARDINALITY_MESSAGE);
+  }
+
+  return commit(
+    document,
+    {
+      relationships: [
+        ...document.relationships,
+        buildErLink(
+          {
+            sourceId: allowed.value.sourceId,
+            targetId: allowed.value.targetId,
+            cardinality: input.cardinality ?? DEFAULT_ER_CARDINALITY,
           },
           deps,
         ),
@@ -1846,6 +2271,38 @@ function artifactSizeError(geometry: Geometry): Result<never> | undefined {
     geometry.height < MIN_ARTIFACT_HEIGHT
   ) {
     return err("INVALID_GEOMETRY", ARTIFACT_SIZE_MESSAGE);
+  }
+  return undefined;
+}
+
+function entitySizeError(geometry: Geometry): Result<never> | undefined {
+  if (
+    geometry.width < MIN_ENTITY_WIDTH ||
+    geometry.height < MIN_ENTITY_HEIGHT
+  ) {
+    return err("INVALID_GEOMETRY", ENTITY_SIZE_MESSAGE);
+  }
+  return undefined;
+}
+
+function attributeSizeError(geometry: Geometry): Result<never> | undefined {
+  if (
+    geometry.width < MIN_ATTRIBUTE_WIDTH ||
+    geometry.height < MIN_ATTRIBUTE_HEIGHT
+  ) {
+    return err("INVALID_GEOMETRY", ATTRIBUTE_SIZE_MESSAGE);
+  }
+  return undefined;
+}
+
+function erRelationshipSizeError(
+  geometry: Geometry,
+): Result<never> | undefined {
+  if (
+    geometry.width < MIN_ER_RELATIONSHIP_WIDTH ||
+    geometry.height < MIN_ER_RELATIONSHIP_HEIGHT
+  ) {
+    return err("INVALID_GEOMETRY", ER_RELATIONSHIP_SIZE_MESSAGE);
   }
   return undefined;
 }

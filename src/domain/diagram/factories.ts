@@ -3,6 +3,7 @@ import {
   COMPONENT_DOCUMENT_KIND,
   DEFAULT_ASSOCIATION_MULTIPLICITY,
   DEFAULT_ARTIFACT_GEOMETRY,
+  DEFAULT_ATTRIBUTE_GEOMETRY,
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_BOUNDARY_NAME,
   DEFAULT_CLASS_DOCUMENT_TITLE,
@@ -11,6 +12,9 @@ import {
   DEFAULT_COMPONENT_GEOMETRY,
   DEFAULT_DEPLOYMENT_DOCUMENT_TITLE,
   DEFAULT_DOCUMENT_TITLE,
+  DEFAULT_ENTITY_GEOMETRY,
+  DEFAULT_ER_DOCUMENT_TITLE,
+  DEFAULT_ER_RELATIONSHIP_GEOMETRY,
   DEFAULT_LIFELINE_GEOMETRY,
   DEFAULT_LIFELINE_STEM_LENGTH,
   DEFAULT_NODE_GEOMETRY,
@@ -18,6 +22,7 @@ import {
   DEFAULT_VIEWPORT,
   DEPLOYMENT_DOCUMENT_KIND,
   DOCUMENT_KIND,
+  ER_DOCUMENT_KIND,
   SCHEMA_VERSION,
   SEQUENCE_DOCUMENT_KIND,
   STORAGE_VERSION,
@@ -36,6 +41,11 @@ import type {
   DeploymentRelationshipKind,
   DiagramDocument,
   DocumentMetadata,
+  ErAttribute,
+  ErCardinality,
+  ErEntity,
+  ErLink,
+  ErRelationshipElement,
   Geometry,
   Lifeline,
   SequenceMessage,
@@ -323,6 +333,76 @@ export function createDeploymentRelationship(
   };
 }
 
+export function createEntity(
+  input: {
+    name: string;
+    geometry?: Geometry;
+  },
+  deps?: DiagramFactoryDeps,
+): ErEntity {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "entity",
+    name: input.name.trim(),
+    geometry: copyGeometry(input.geometry ?? DEFAULT_ENTITY_GEOMETRY),
+  };
+}
+
+export function createAttribute(
+  input: {
+    name: string;
+    geometry?: Geometry;
+    isKey?: boolean;
+  },
+  deps?: DiagramFactoryDeps,
+): ErAttribute {
+  const attribute: ErAttribute = {
+    id: resolveCreateId(deps)(),
+    kind: "attribute",
+    name: input.name.trim(),
+    geometry: copyGeometry(input.geometry ?? DEFAULT_ATTRIBUTE_GEOMETRY),
+  };
+  if (input.isKey === true) {
+    attribute.isKey = true;
+  }
+  return attribute;
+}
+
+export function createErRelationship(
+  input: {
+    name: string;
+    geometry?: Geometry;
+  },
+  deps?: DiagramFactoryDeps,
+): ErRelationshipElement {
+  return {
+    id: resolveCreateId(deps)(),
+    kind: "er-relationship",
+    name: input.name.trim(),
+    geometry: copyGeometry(input.geometry ?? DEFAULT_ER_RELATIONSHIP_GEOMETRY),
+  };
+}
+
+export function createErLink(
+  input: {
+    sourceId: string;
+    targetId: string;
+    cardinality?: ErCardinality;
+  },
+  deps?: DiagramFactoryDeps,
+): ErLink {
+  const link: ErLink = {
+    id: resolveCreateId(deps)(),
+    kind: "er-link",
+    sourceId: input.sourceId,
+    targetId: input.targetId,
+  };
+  if (input.cardinality !== undefined) {
+    link.cardinality = input.cardinality;
+  }
+  return link;
+}
+
 export function createDocumentMetadata(
   input: { title?: string } = {},
   deps?: DiagramFactoryDeps,
@@ -433,6 +513,24 @@ export function createEmptyDeploymentDocument(
     kind: DEPLOYMENT_DOCUMENT_KIND,
     metadata: createDocumentMetadata(
       { title: DEFAULT_DEPLOYMENT_DOCUMENT_TITLE },
+      deps,
+    ),
+    elements: [],
+    relationships: [],
+  };
+}
+
+export function createEmptyErDocument(
+  deps?: DiagramFactoryDeps,
+): DiagramDocument {
+  const createId = resolveCreateId(deps);
+
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    id: createId(),
+    kind: ER_DOCUMENT_KIND,
+    metadata: createDocumentMetadata(
+      { title: DEFAULT_ER_DOCUMENT_TITLE },
       deps,
     ),
     elements: [],

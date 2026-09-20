@@ -6,6 +6,7 @@ import {
   DEFAULT_COMPONENT_DOCUMENT_TITLE,
   DEFAULT_DEPLOYMENT_DOCUMENT_TITLE,
   DEFAULT_DOCUMENT_TITLE,
+  DEFAULT_ER_DOCUMENT_TITLE,
   DEFAULT_SEQUENCE_DOCUMENT_TITLE,
   DEFAULT_VIEWPORT,
 } from "./defaults.ts";
@@ -15,6 +16,7 @@ import {
   createEmptyClassDocument,
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
+  createEmptyErDocument,
   createEmptySequenceDocument,
   createRelationship,
   createSystemBoundary,
@@ -206,6 +208,22 @@ describe("createEmptyDeploymentDocument", () => {
     expect(document.schemaVersion).toBe(3);
     expect(document.kind).toBe("deployment");
     expect(document.metadata.title).toBe(DEFAULT_DEPLOYMENT_DOCUMENT_TITLE);
+    expect(document.elements).toEqual([]);
+    expect(document.relationships).toEqual([]);
+  });
+});
+
+describe("createEmptyErDocument", () => {
+  it("crea un documento entity-relationship vacío con título por defecto", () => {
+    const createId = sequentialIds();
+    const document = createEmptyErDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+
+    expect(document.schemaVersion).toBe(3);
+    expect(document.kind).toBe("entity-relationship");
+    expect(document.metadata.title).toBe(DEFAULT_ER_DOCUMENT_TITLE);
     expect(document.elements).toEqual([]);
     expect(document.relationships).toEqual([]);
   });

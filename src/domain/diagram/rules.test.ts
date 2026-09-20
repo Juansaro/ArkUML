@@ -9,7 +9,11 @@ import {
   createEmptyClassDocument,
   createEmptyComponentDocument,
   createEmptyDeploymentDocument,
+  createEmptyErDocument,
   createEmptySequenceDocument,
+  createEntity,
+  createAttribute,
+  createErRelationship,
   createLifeline,
   createNode,
   createRelationship,
@@ -660,6 +664,96 @@ describe("canConnect deployment", () => {
         kind: "component-usage",
         sourceId: appServer.id,
         targetId: dbServer.id,
+      }),
+      "INVALID_CONNECTION",
+    );
+  });
+});
+
+describe("canConnect entity-relationship", () => {
+  it("acepta atributo–entidad y entidad–rombo; rechaza atributo–rombo y segundo enlace", () => {
+    const createId = sequentialIds();
+    const document = createEmptyErDocument({
+      createId,
+      now: () => FIXED_NOW,
+    });
+    const cliente = createEntity({ name: "Cliente" }, { createId });
+    const pedido = createEntity(
+      {
+        name: "Pedido",
+        geometry: { x: 240, y: 0, width: 160, height: 80 },
+      },
+      { createId },
+    );
+    const idAttr = createAttribute({ name: "id" }, { createId });
+    const realiza = createErRelationship({ name: "realiza" }, { createId });
+    const erDocument: DiagramDocument = {
+      ...document,
+      elements: [cliente, pedido, idAttr, realiza],
+    };
+
+    expect(
+      canConnect(erDocument, {
+        kind: "er-link",
+        sourceId: idAttr.id,
+        targetId: cliente.id,
+      }).ok,
+    ).toBe(true);
+    expect(
+      canConnect(erDocument, {
+        kind: "er-link",
+        sourceId: cliente.id,
+        targetId: realiza.id,
+      }).ok,
+    ).toBe(true);
+    expect(
+      canConnect(erDocument, {
+        kind: "er-link",
+        sourceId: realiza.id,
+        targetId: pedido.id,
+      }).ok,
+    ).toBe(true);
+    expectCode(
+      canConnect(erDocument, {
+        kind: "er-link",
+        sourceId: idAttr.id,
+        targetId: realiza.id,
+      }),
+      "INVALID_CONNECTION",
+    );
+    expectCode(
+      canConnect(erDocument, {
+        kind: "er-link",
+        sourceId: cliente.id,
+        targetId: cliente.id,
+      }),
+      "SELF_RELATIONSHIP",
+    );
+    expectCode(
+      canConnect(erDocument, {
+        kind: "association",
+        sourceId: cliente.id,
+        targetId: pedido.id,
+      }),
+      "INVALID_CONNECTION",
+    );
+
+    const withAttrLink: DiagramDocument = {
+      ...erDocument,
+      relationships: [
+        {
+          id: "00000000-0000-4000-8000-0000000000aa",
+          kind: "er-link",
+          sourceId: idAttr.id,
+          targetId: cliente.id,
+        },
+      ],
+    };
+    expectCode(
+      canConnect(withAttrLink, {
+        kind: "er-link",
+        sourceId: idAttr.id,
+        targetId: pedido.id,
       }),
       "INVALID_CONNECTION",
     );

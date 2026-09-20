@@ -10,15 +10,18 @@ export const SEQUENCE_DOCUMENT_KIND = "sequence";
 export const CLASS_DOCUMENT_KIND = "class";
 export const COMPONENT_DOCUMENT_KIND = "component";
 export const DEPLOYMENT_DOCUMENT_KIND = "deployment";
+export const ER_DOCUMENT_KIND = "entity-relationship";
 
 export const DEFAULT_DOCUMENT_TITLE = "Diagrama de casos de uso";
 export const DEFAULT_SEQUENCE_DOCUMENT_TITLE = "Diagrama de secuencia";
 export const DEFAULT_CLASS_DOCUMENT_TITLE = "Diagrama de clases";
 export const DEFAULT_COMPONENT_DOCUMENT_TITLE = "Diagrama de componentes";
 export const DEFAULT_DEPLOYMENT_DOCUMENT_TITLE = "Diagrama de despliegue";
+export const DEFAULT_ER_DOCUMENT_TITLE = "Diagrama entidad-relación";
 export const DEFAULT_BOUNDARY_NAME = "Sistema";
 export const DEFAULT_LIFELINE_NAME = "Lifeline";
 export const DEFAULT_ASSOCIATION_MULTIPLICITY = "1";
+export const DEFAULT_ER_CARDINALITY = "N";
 
 export const NAME_MIN_LENGTH = 1;
 export const NAME_MAX_LENGTH = 80;
@@ -53,6 +56,21 @@ export const DEFAULT_ARTIFACT_WIDTH = 140;
 export const DEFAULT_ARTIFACT_HEIGHT = 80;
 export const MIN_ARTIFACT_WIDTH = 96;
 export const MIN_ARTIFACT_HEIGHT = 48;
+
+export const DEFAULT_ENTITY_WIDTH = 160;
+export const DEFAULT_ENTITY_HEIGHT = 80;
+export const MIN_ENTITY_WIDTH = 96;
+export const MIN_ENTITY_HEIGHT = 48;
+
+export const DEFAULT_ATTRIBUTE_WIDTH = 120;
+export const DEFAULT_ATTRIBUTE_HEIGHT = 56;
+export const MIN_ATTRIBUTE_WIDTH = 80;
+export const MIN_ATTRIBUTE_HEIGHT = 40;
+
+export const DEFAULT_ER_RELATIONSHIP_WIDTH = 120;
+export const DEFAULT_ER_RELATIONSHIP_HEIGHT = 80;
+export const MIN_ER_RELATIONSHIP_WIDTH = 80;
+export const MIN_ER_RELATIONSHIP_HEIGHT = 48;
 
 export const DEFAULT_BOUNDARY_GEOMETRY: Geometry = {
   x: 0,
@@ -94,6 +112,27 @@ export const DEFAULT_ARTIFACT_GEOMETRY: Geometry = {
   y: 0,
   width: DEFAULT_ARTIFACT_WIDTH,
   height: DEFAULT_ARTIFACT_HEIGHT,
+};
+
+export const DEFAULT_ENTITY_GEOMETRY: Geometry = {
+  x: 0,
+  y: 0,
+  width: DEFAULT_ENTITY_WIDTH,
+  height: DEFAULT_ENTITY_HEIGHT,
+};
+
+export const DEFAULT_ATTRIBUTE_GEOMETRY: Geometry = {
+  x: 0,
+  y: 0,
+  width: DEFAULT_ATTRIBUTE_WIDTH,
+  height: DEFAULT_ATTRIBUTE_HEIGHT,
+};
+
+export const DEFAULT_ER_RELATIONSHIP_GEOMETRY: Geometry = {
+  x: 0,
+  y: 0,
+  width: DEFAULT_ER_RELATIONSHIP_WIDTH,
+  height: DEFAULT_ER_RELATIONSHIP_HEIGHT,
 };
 
 export const DEFAULT_VIEWPORT: Viewport = {

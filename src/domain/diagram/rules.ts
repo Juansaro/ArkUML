@@ -2,6 +2,10 @@ import {
   err,
   isArtifact,
   isDeploymentNode,
+  isErAttribute,
+  isErEntity,
+  isErLink,
+  isErRelationshipElement,
   isLifeline,
   isUmlClass,
   isUmlComponent,
@@ -62,6 +66,11 @@ const COMMUNICATION_PATH_ENDPOINT_MESSAGE =
   "Un camino de comunicación solo puede unir nodos.";
 const DEPLOY_ENDPOINT_MESSAGE =
   "Deploy solo puede ir de un artefacto a un nodo.";
+const ER_KIND_MESSAGE = "Este documento solo admite enlaces entidad-relación.";
+const ER_ENDPOINT_MESSAGE =
+  "Un enlace solo puede unir atributo–entidad o entidad–relación.";
+const ATTRIBUTE_ALREADY_LINKED_MESSAGE =
+  "Un atributo solo puede enlazar a una entidad.";
 
 export function relationshipLabel(kind: RelationshipKind): string | undefined {
   if (kind === "include") {
@@ -94,6 +103,9 @@ export function canConnect(
   }
   if (document.kind === "deployment") {
     return canConnectDeployment(document, input);
+  }
+  if (document.kind === "entity-relationship") {
+    return canConnectEr(document, input);
   }
   return canConnectUseCase(document, input);
 }
@@ -213,6 +225,57 @@ function canConnectDeployment(
     }
   } else if (!isArtifact(source) || !isDeploymentNode(target)) {
     return err("INVALID_CONNECTION", DEPLOY_ENDPOINT_MESSAGE);
+  }
+
+  return ok({
+    kind: input.kind,
+    sourceId: source.id,
+    targetId: target.id,
+  });
+}
+
+function canConnectEr(
+  document: DiagramDocument,
+  input: ConnectInput,
+): Result<AllowedConnection> {
+  if (input.kind !== "er-link") {
+    return err("INVALID_CONNECTION", ER_KIND_MESSAGE);
+  }
+
+  const byId = indexElements(document);
+  const source = byId.get(input.sourceId);
+  const target = byId.get(input.targetId);
+
+  if (source === undefined || target === undefined) {
+    return err("UNKNOWN_ELEMENT", UNKNOWN_ELEMENT_MESSAGE);
+  }
+
+  if (source.id === target.id) {
+    return err("SELF_RELATIONSHIP", SELF_RELATIONSHIP_MESSAGE);
+  }
+
+  const attributeEntity =
+    (isErAttribute(source) && isErEntity(target)) ||
+    (isErEntity(source) && isErAttribute(target));
+  const entityRombo =
+    (isErEntity(source) && isErRelationshipElement(target)) ||
+    (isErRelationshipElement(source) && isErEntity(target));
+
+  if (!attributeEntity && !entityRombo) {
+    return err("INVALID_CONNECTION", ER_ENDPOINT_MESSAGE);
+  }
+
+  if (attributeEntity) {
+    const attributeId = isErAttribute(source) ? source.id : target.id;
+    const alreadyLinked = document.relationships.some(
+      (relationship) =>
+        isErLink(relationship) &&
+        (relationship.sourceId === attributeId ||
+          relationship.targetId === attributeId),
+    );
+    if (alreadyLinked) {
+      return err("INVALID_CONNECTION", ATTRIBUTE_ALREADY_LINKED_MESSAGE);
+    }
   }
 
   return ok({
