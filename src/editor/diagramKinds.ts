@@ -24,6 +24,13 @@ export const COMPONENT_RELATIONSHIP_TOOLS = [
   "assembly-connector",
 ] as const;
 
+export const DEPLOYMENT_CREATE_TOOLS = ["node", "artifact"] as const;
+
+export const DEPLOYMENT_RELATIONSHIP_TOOLS = [
+  "communication-path",
+  "deploy",
+] as const;
+
 export function isToolForDocumentKind(
   kind: DocumentKind,
   tool: EditorTool,
@@ -52,6 +59,14 @@ export function isToolForDocumentKind(
       tool === "component" ||
       tool === "component-usage" ||
       tool === "assembly-connector"
+    );
+  }
+  if (kind === "deployment") {
+    return (
+      tool === "node" ||
+      tool === "artifact" ||
+      tool === "communication-path" ||
+      tool === "deploy"
     );
   }
   return (

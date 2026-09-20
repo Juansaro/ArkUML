@@ -143,7 +143,7 @@ export function DiagramMinimapNode({
     );
   }
 
-  if (className === "component" || className === "class") {
+  if (className === "component" || className === "class" || className === "artifact") {
     return (
       <g data-minimap-kind={className} onClick={handleClick}>
         <rect
@@ -160,6 +160,43 @@ export function DiagramMinimapNode({
             className={styles.minimapLabel}
             x={x + width / 2}
             y={y + height / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize={NAME_FONT_SIZE}
+            aria-hidden="true"
+          >
+            {name}
+          </text>
+        )}
+      </g>
+    );
+  }
+
+  if (className === "node") {
+    const top = 8;
+    const skew = 8;
+    return (
+      <g data-minimap-kind="node" onClick={handleClick}>
+        <path
+          d={`M ${x + inset} ${y + top} L ${x + width - skew - inset} ${y + top} L ${x + width - inset} ${y + inset} L ${x + skew + inset} ${y + inset} Z`}
+          fill="var(--color-surface)"
+          stroke="var(--color-fg)"
+          strokeWidth={NOTATION_STROKE}
+        />
+        <rect
+          x={x + inset}
+          y={y + top}
+          width={Math.max(0, width - skew - NOTATION_STROKE)}
+          height={Math.max(0, height - top - inset)}
+          fill="var(--color-surface)"
+          stroke="var(--color-fg)"
+          strokeWidth={NOTATION_STROKE}
+        />
+        {name === "" ? null : (
+          <text
+            className={styles.minimapLabel}
+            x={x + (width - skew) / 2}
+            y={y + top + (height - top) / 2}
             textAnchor="middle"
             dominantBaseline="middle"
             fontSize={NAME_FONT_SIZE}

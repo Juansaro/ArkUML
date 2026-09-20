@@ -112,4 +112,22 @@ describe("Icon", () => {
       "M18 8a4 4 0 0 1 0 8",
     );
   });
+
+  it("pinta los glifos de despliegue con camino y deploy", () => {
+    const { rerender } = render(<Icon name="node" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M4 9h14v10H4z");
+    expect(document.querySelector("svg")?.innerHTML).toContain("M4 9l4-4h14l-4 4");
+    rerender(<Icon name="artifact" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M7 3h7l5 5v13H7z");
+    rerender(<Icon name="communicationPath" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain("M3 9h5v8H3z");
+    expect(document.querySelector("svg")?.innerHTML).toContain("M8 13h8");
+    rerender(<Icon name="deploy" />);
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "stroke-dasharray=\"4 3\"",
+    );
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M17 8h3a2 2 0 0 1 0 4h-3",
+    );
+  });
 });

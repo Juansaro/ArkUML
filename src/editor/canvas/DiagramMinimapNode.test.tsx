@@ -20,6 +20,8 @@ describe("DiagramMinimapNode", () => {
     expect(minimapNodeClassName(typed("lifeline"))).toBe("lifeline");
     expect(minimapNodeClassName(typed("component"))).toBe("component");
     expect(minimapNodeClassName(typed("class"))).toBe("class");
+    expect(minimapNodeClassName(typed("node"))).toBe("node");
+    expect(minimapNodeClassName(typed("artifact"))).toBe("artifact");
   });
 
   it("pinta rectángulo, elipse y figura de palo", () => {

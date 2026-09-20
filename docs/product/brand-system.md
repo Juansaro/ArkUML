@@ -460,14 +460,55 @@ Uso y ensamblaje no se distinguen solo por color: discontinua + `U` vs
 bola-zócalo. Estos iconos no sustituyen el icono de componente ni el
 edge bola-zócalo del lienzo.
 
+**`node`** — prisma 3D (caja con cara superior, UML fig. 19.2):
+
+```text
+<path d="M4 9h14v10H4z" />
+<path d="M4 9l4-4h14l-4 4" />
+<path d="M18 9v10l4-4V5" />
+```
+
+**`artifact`** — rectángulo con documento plegado (sin `+`):
+
+```text
+<path d="M7 3h7l5 5v13H7z" />
+<path d="M14 3v5h5" />
+```
+
+**`communicationPath`** — segmento continuo entre dos nodos (prisma
+simplificado), sin punta:
+
+```text
+<path d="M3 9h5v8H3z" />
+<path d="M3 9l2-2h5l-2 2" />
+<path d="M16 9h5v8h-5z" />
+<path d="M16 9l2-2h5l-2 2" />
+<path d="M8 13h8" />
+```
+
+**`deploy`** — discontinua, flecha abierta, distintivo `D`:
+
+```text
+<path d="M3 12h10" stroke-dasharray="4 3" />
+<path d="M11 9.5 14 12l-3 2.5" />
+<path d="M17 8v8" />
+<path d="M17 8h3a2 2 0 0 1 0 4h-3" />
+```
+
+Camino y deploy no se distinguen solo por color: continuo sin punta vs
+discontinua + `D`. Estos iconos no sustituyen el prisma, el documento
+ni el estereotipo «deploy» del lienzo.
+
 Los ids de `Icon` van en camelCase. En paleta se conectan a los `EditorTool`
 existentes sin renombrar ni el icono ni la herramienta: `useCase` →
 `use-case`, `systemBoundary` → `system-boundary`, `syncMessage` →
 `sync-message`, `replyMessage` → `reply-message`, `classAssociation` →
 `class-association`, `componentUsage` → `component-usage`,
-`assemblyConnector` → `assembly-connector`. El resto coincide (`select`,
-`actor`, `association`, `include`, `extend`, `lifeline`, `class`,
-`aggregation`, `composition`, `generalization`, `component`).
+`assemblyConnector` → `assembly-connector`, `communicationPath` →
+`communication-path`. El resto coincide (`select`, `actor`,
+`association`, `include`, `extend`, `lifeline`, `class`, `aggregation`,
+`composition`, `generalization`, `component`, `node`, `artifact`,
+`deploy`).
 
 ## Matriz de controles
 
@@ -507,6 +548,10 @@ es `aria-describedby`, nunca el nombre. Icon-only: el nombre vive en
 | Paleta | `component` | Icono + etiqueta. Solo `document.kind` `"component"` | Componente | «Crear componente.» | — |
 | Paleta | `componentUsage` | Icono + etiqueta. Solo componentes | Uso | «Origen: cliente. Destino: proveedor. Arrastra del origen al destino; el sentido no se invierte.» | — |
 | Paleta | `assemblyConnector` | Icono + etiqueta. Solo componentes | Ensamblaje | «Origen: provee (bola). Destino: requiere (zócalo). Arrastra del origen al destino.» | — |
+| Paleta | `node` | Icono + etiqueta. Solo `document.kind` `"deployment"` | Nodo | «Crear nodo.» | — |
+| Paleta | `artifact` | Icono + etiqueta. Solo despliegue | Artefacto | «Crear artefacto.» | — |
+| Paleta | `communicationPath` | Icono + etiqueta. Solo despliegue | Camino | «Unir dos nodos.» | — |
+| Paleta | `deploy` | Icono + etiqueta. Solo despliegue | Desplegar | «Origen: artefacto. Destino: nodo. Arrastra del origen al destino; el sentido no se invierte.» | — |
 | Lienzo | `zoomIn` | Icon-only | Acercar | «Acercar.» | «El zoom ya está en el máximo (200%).» cuando `zoom >= 2` |
 | Lienzo | `zoomOut` | Icon-only | Alejar | «Alejar.» | «El zoom ya está en el mínimo (50%).» cuando `zoom <= 0.5` |
 | Lienzo | `fitView` | Icon-only | Ajustar vista | «Ajustar todo el diagrama (Ctrl/Cmd+0).» | — |

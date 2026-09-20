@@ -30,6 +30,8 @@ import {
   createLifeline as createLifelineOperation,
   createClass as createClassOperation,
   createComponent as createComponentOperation,
+  createNode as createNodeOperation,
+  createArtifact as createArtifactOperation,
   createRelationship,
   deleteElements as deleteElementsOperation,
   deleteRelationships as deleteRelationshipsOperation,
@@ -97,6 +99,14 @@ export type EditorActions = {
     geometry?: Geometry;
   }) => Result<DiagramDocument>;
   createComponent: (input: {
+    name: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createNode: (input: {
+    name: string;
+    geometry?: Geometry;
+  }) => Result<DiagramDocument>;
+  createArtifact: (input: {
     name: string;
     geometry?: Geometry;
   }) => Result<DiagramDocument>;
@@ -215,6 +225,10 @@ export function createEditorActions(
       apply((document) => createClassOperation(document, input, deps)),
     createComponent: (input) =>
       apply((document) => createComponentOperation(document, input, deps)),
+    createNode: (input) =>
+      apply((document) => createNodeOperation(document, input, deps)),
+    createArtifact: (input) =>
+      apply((document) => createArtifactOperation(document, input, deps)),
     renameElement: (elementId, name) =>
       apply((document) =>
         renameElementOperation(document, elementId, name, deps),

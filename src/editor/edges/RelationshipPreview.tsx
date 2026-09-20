@@ -40,7 +40,8 @@ function RelationshipPreviewView({
     kind === "include" ||
     kind === "extend" ||
     kind === "reply-message" ||
-    kind === "component-usage";
+    kind === "component-usage" ||
+    kind === "deploy";
   const filled = kind === "sync-message";
   const diamond = kind === "aggregation" || kind === "composition";
   const triangle = kind === "generalization";

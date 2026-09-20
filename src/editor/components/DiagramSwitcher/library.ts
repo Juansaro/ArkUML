@@ -43,6 +43,7 @@ export const CREATABLE_DOCUMENT_KINDS = [
   { value: "sequence", label: "Secuencia" },
   { value: "class", label: "Clases" },
   { value: "component", label: "Componentes" },
+  { value: "deployment", label: "Despliegue" },
 ] as const satisfies readonly { value: DocumentKind; label: string }[];
 
 export function filterLibraryDocuments(

@@ -38,6 +38,10 @@ const PALETTE_ICONS: Record<string, IconName> = {
   component: "component",
   "component-usage": "componentUsage",
   "assembly-connector": "assemblyConnector",
+  node: "node",
+  artifact: "artifact",
+  "communication-path": "communicationPath",
+  deploy: "deploy",
 };
 
 const PALETTE_DESCRIPTIONS: Record<string, string> = {
@@ -67,6 +71,11 @@ const PALETTE_DESCRIPTIONS: Record<string, string> = {
     "Origen: cliente. Destino: proveedor. Arrastra del origen al destino; el sentido no se invierte.",
   "assembly-connector":
     "Origen: provee (bola). Destino: requiere (zócalo). Arrastra del origen al destino.",
+  node: "Crear nodo.",
+  artifact: "Crear artefacto.",
+  "communication-path": "Unir dos nodos.",
+  deploy:
+    "Origen: artefacto. Destino: nodo. Arrastra del origen al destino; el sentido no se invierte.",
 };
 
 function paletteIcon(id: string): IconName {

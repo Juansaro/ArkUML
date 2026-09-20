@@ -2,8 +2,10 @@ import {
   DEFAULT_BOUNDARY_GEOMETRY,
   DEFAULT_CLASS_GEOMETRY,
   DEFAULT_COMPONENT_GEOMETRY,
+  DEFAULT_ARTIFACT_GEOMETRY,
   DEFAULT_LIFELINE_GEOMETRY,
   DEFAULT_LIFELINE_WIDTH,
+  DEFAULT_NODE_GEOMETRY,
 } from "../../domain/diagram/defaults.ts";
 import type {
   DiagramDocument,
@@ -21,6 +23,8 @@ export const CREATE_ELEMENT_TOOLS = [
   "lifeline",
   "class",
   "component",
+  "node",
+  "artifact",
 ] as const;
 
 export type CreateElementTool = (typeof CREATE_ELEMENT_TOOLS)[number];
@@ -32,6 +36,8 @@ export const DEFAULT_ELEMENT_NAMES = {
   lifeline: "Lifeline",
   class: "Clase",
   component: "Componente",
+  node: "Nodo",
+  artifact: "Artefacto",
 } as const;
 
 export const DEFAULT_ELEMENT_SIZES: Record<
@@ -56,6 +62,14 @@ export const DEFAULT_ELEMENT_SIZES: Record<
     width: DEFAULT_COMPONENT_GEOMETRY.width,
     height: DEFAULT_COMPONENT_GEOMETRY.height,
   },
+  node: {
+    width: DEFAULT_NODE_GEOMETRY.width,
+    height: DEFAULT_NODE_GEOMETRY.height,
+  },
+  artifact: {
+    width: DEFAULT_ARTIFACT_GEOMETRY.width,
+    height: DEFAULT_ARTIFACT_GEOMETRY.height,
+  },
 };
 
 export function isCreateElementTool(
@@ -67,7 +81,9 @@ export function isCreateElementTool(
     tool === "system-boundary" ||
     tool === "lifeline" ||
     tool === "class" ||
-    tool === "component"
+    tool === "component" ||
+    tool === "node" ||
+    tool === "artifact"
   );
 }
 
@@ -155,6 +171,10 @@ export function defaultPlacementPosition(
   }
 
   if (kind === "component") {
+    return { x: 80 + offset, y: 80 + offset };
+  }
+
+  if (kind === "node" || kind === "artifact") {
     return { x: 80 + offset, y: 80 + offset };
   }
 
@@ -263,6 +283,20 @@ function createByKind(
 
   if (kind === "component") {
     return state.createComponent({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "node") {
+    return state.createNode({
+      name,
+      geometry: geometryAt(kind, flowPosition),
+    });
+  }
+
+  if (kind === "artifact") {
+    return state.createArtifact({
       name,
       geometry: geometryAt(kind, flowPosition),
     });

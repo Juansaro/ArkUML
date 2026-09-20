@@ -37,6 +37,10 @@ export const EDITOR_TOOLS = [
   "component",
   "component-usage",
   "assembly-connector",
+  "node",
+  "artifact",
+  "communication-path",
+  "deploy",
 ] as const;
 
 export type EditorTool = (typeof EDITOR_TOOLS)[number];

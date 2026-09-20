@@ -587,6 +587,46 @@ describe("EditorShell", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("Nuevo con Despliegue añade el kind y cambia la paleta", async () => {
+    const user = userEvent.setup();
+    const createId = sequentialIds(100);
+    const deps = {
+      createId,
+      now: () => new Date("2026-09-07T12:00:00.000Z"),
+    };
+    const store = createEditorStore({
+      document: createDiagramDocument(deps),
+      deps: { ...deps, now: () => new Date("2026-09-08T08:00:00.000Z") },
+    });
+    render(
+      <EditorStoreProvider store={store}>
+        <EditorShell />
+      </EditorStoreProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Nuevo" }));
+    await user.click(screen.getByRole("radio", { name: "Despliegue" }));
+    await user.click(
+      screen.getByRole("button", { name: "Crear diagrama nuevo" }),
+    );
+
+    expect(store.getState().document.kind).toBe("deployment");
+    expect(store.getState().document.metadata.title).toBe(
+      "Diagrama de despliegue",
+    );
+    expect(screen.getByRole("button", { name: "Nodo" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Artefacto" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Camino" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Desplegar" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Actor" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("devuelve el foco al control que abrió el diálogo", async () => {
     const user = userEvent.setup();
     render(<EditorShell />);

@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -63,10 +63,10 @@ Host vacío prohibido. Notación = `deployment-model.md`. Sin kit.
 
 ## Criterios de aceptación
 
-- [ ] Paleta y lienzo propios; path y deploy visibles.
-- [ ] Nuevo Despliegue añade a la biblioteca.
-- [ ] PNG sin shell. Módulos previos intactos.
-- [ ] Iconos en addendum de marca.
+- [x] Paleta y lienzo propios; path y deploy visibles.
+- [x] Nuevo Despliegue añade a la biblioteca.
+- [x] PNG sin shell. Módulos previos intactos.
+- [x] Iconos en addendum de marca.
 
 ## Tests
 
@@ -90,4 +90,12 @@ Módulo deployment completo.
 
 ## Evidencia de cierre
 
-Pendiente.
+2026-09-20: módulo deployment; paleta Nodo/Artefacto/Camino/Desplegar;
+DeploymentNode (prisma) + ArtifactNode; path continuo y deploy
+discontinuo con «deploy»; Nuevo y combobox «Despliegue»; addendum de
+iconos en `brand-system.md`. `npx vitest run src/editor src/domain`
+(398 tests). `npx playwright test --project=chromium` (71 tests).
+`tsc -p tsconfig.app.json` limpio. `tsc -b` sigue fallando por
+`e2e/include-extend.spec.ts` (`SVGPathElement`/`DOMPoint` en
+`tsconfig.node` sin lib DOM; preexistente, fuera de alcance). Pin
+`html-to-image@1.11.11` intacto. Sin nested nodes ni Device.

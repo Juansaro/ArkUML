@@ -4,16 +4,18 @@ import type {
   DiagramElement,
   Result,
 } from "../../domain/diagram/model.ts";
-import {
-  isClassRelationship,
-  isComponentRelationship,
-  isLifeline,
-  isSequenceMessage,
-  isUseCaseRelationship,
-} from "../../domain/diagram/model.ts";
 import type {
   ClassRelationshipKind,
   ComponentRelationshipKind,
+  DeploymentRelationshipKind,
+} from "../../domain/diagram/model.ts";
+import {
+  isClassRelationship,
+  isComponentRelationship,
+  isDeploymentRelationship,
+  isLifeline,
+  isSequenceMessage,
+  isUseCaseRelationship,
 } from "../../domain/diagram/model.ts";
 import { canConnect } from "../../domain/diagram/rules.ts";
 import type {
@@ -35,6 +37,8 @@ export const RELATIONSHIP_TOOLS = [
   "generalization",
   "component-usage",
   "assembly-connector",
+  "communication-path",
+  "deploy",
 ] as const;
 
 export type RelationshipTool = (typeof RELATIONSHIP_TOOLS)[number];
@@ -62,7 +66,9 @@ export function isRelationshipTool(tool: EditorTool): tool is RelationshipTool {
     tool === "composition" ||
     tool === "generalization" ||
     tool === "component-usage" ||
-    tool === "assembly-connector"
+    tool === "assembly-connector" ||
+    tool === "communication-path" ||
+    tool === "deploy"
   );
 }
 
@@ -81,6 +87,12 @@ export function isComponentRelationshipTool(
   tool: EditorTool,
 ): tool is ComponentRelationshipKind {
   return tool === "component-usage" || tool === "assembly-connector";
+}
+
+export function isDeploymentRelationshipTool(
+  tool: EditorTool,
+): tool is DeploymentRelationshipKind {
+  return tool === "communication-path" || tool === "deploy";
 }
 
 export function isSequenceRelationshipTool(
@@ -143,6 +155,12 @@ export function createdRelationshipAnnouncement(
   if (kind === "assembly-connector") {
     return "Se creó el ensamblaje.";
   }
+  if (kind === "communication-path") {
+    return "Se creó el camino de comunicación.";
+  }
+  if (kind === "deploy") {
+    return "Se creó deploy.";
+  }
   return "Se creó extend.";
 }
 
@@ -188,6 +206,12 @@ export function relationshipConnectionHelp(
     }
     return "Origen: cliente. Destino: proveedor. Arrastra del origen al destino; el sentido no se invierte.";
   }
+  if (isDeploymentRelationshipTool(tool)) {
+    if (tool === "deploy") {
+      return "Origen: artefacto. Destino: nodo. Arrastra del origen al destino; el sentido no se invierte.";
+    }
+    return "Unir dos nodos.";
+  }
   if (tool === "sync-message") {
     return "Mensaje síncrono (llamada).";
   }
@@ -215,6 +239,9 @@ export function relationshipEndpointFieldLabels(kind: RelationshipTool): {
   }
   if (kind === "assembly-connector") {
     return { source: "Origen (provee)", target: "Destino (requiere)" };
+  }
+  if (kind === "deploy") {
+    return { source: "Origen (artefacto)", target: "Destino (nodo)" };
   }
   return { source: "Origen", target: "Destino" };
 }
@@ -304,6 +331,12 @@ function isConnectableEndpoint(
   if (isComponentRelationshipTool(kind)) {
     return element.kind === "component";
   }
+  if (kind === "communication-path") {
+    return element.kind === "node";
+  }
+  if (kind === "deploy") {
+    return element.kind === "artifact" || element.kind === "node";
+  }
   if (kind === "sync-message" || kind === "reply-message") {
     return isLifeline(element);
   }
@@ -363,6 +396,13 @@ export function relationshipInputFromConnection(
     };
   }
   if (isComponentRelationshipTool(kind)) {
+    return {
+      kind,
+      sourceId: connection.source,
+      targetId: connection.target,
+    };
+  }
+  if (isDeploymentRelationshipTool(kind)) {
     return {
       kind,
       sourceId: connection.source,
@@ -445,7 +485,8 @@ export function commitRelationship(
       isUseCaseRelationship(created) ||
       isSequenceMessage(created) ||
       isClassRelationship(created) ||
-      isComponentRelationship(created)
+      isComponentRelationship(created) ||
+      isDeploymentRelationship(created)
     ) {
       store.getState().setMessage(createdRelationshipAnnouncement(created.kind));
     }

@@ -51,7 +51,8 @@ export function Inspector({ headingId }: InspectorProps) {
       view.status !== "relationship" &&
       view.status !== "message" &&
       view.status !== "class-relationship" &&
-      view.status !== "component-relationship" ? (
+      view.status !== "component-relationship" &&
+      view.status !== "deployment-relationship" ? (
         <>
           {connectionHelp !== undefined ? (
             <ConnectionHelp text={connectionHelp} />
@@ -184,6 +185,30 @@ function InspectorBody({
           />
         </label>
         <ComponentRelationshipEndpoints view={view} labels={endpoints} />
+      </div>
+    );
+  }
+
+  if (view.status === "deployment-relationship") {
+    const endpoints = relationshipEndpointFieldLabels(view.kind);
+    return (
+      <div className={styles.fields}>
+        {connectionHelp !== undefined ? (
+          <ConnectionHelp text={connectionHelp} />
+        ) : null}
+        <TypeField label={view.typeLabel} />
+        <label className={styles.field}>
+          <span className={styles.label}>Nombre</span>
+          <ElementNameField
+            key={view.id}
+            elementId={view.id}
+            name={view.name}
+            ariaLabel="Nombre"
+            showError
+            commitName={(id, name) => store.getState().renameRelationship(id, name)}
+          />
+        </label>
+        <DeploymentRelationshipEndpoints view={view} labels={endpoints} />
       </div>
     );
   }
@@ -368,6 +393,34 @@ function ComponentRelationshipEndpoints({
   view: Extract<
     ReturnType<typeof selectInspectorView>,
     { status: "component-relationship" }
+  >;
+  labels: { source: string; target: string };
+}) {
+  return (
+    <>
+      <div className={styles.field}>
+        <p className={styles.label}>{labels.source}</p>
+        <p className={styles.value} data-testid="inspector-source">
+          {view.sourceLabel}
+        </p>
+      </div>
+      <div className={styles.field}>
+        <p className={styles.label}>{labels.target}</p>
+        <p className={styles.value} data-testid="inspector-target">
+          {view.targetLabel}
+        </p>
+      </div>
+    </>
+  );
+}
+
+function DeploymentRelationshipEndpoints({
+  view,
+  labels,
+}: {
+  view: Extract<
+    ReturnType<typeof selectInspectorView>,
+    { status: "deployment-relationship" }
   >;
   labels: { source: string; target: string };
 }) {

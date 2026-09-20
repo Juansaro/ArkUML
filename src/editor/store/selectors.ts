@@ -3,6 +3,7 @@ import type {
   AssociationMultiplicity,
   ClassRelationshipKind,
   ComponentRelationshipKind,
+  DeploymentRelationshipKind,
   DiagramDocument,
   DiagramElement,
   DocumentKind,
@@ -14,6 +15,7 @@ import {
   isClassAssociation,
   isClassRelationship,
   isComponentRelationship,
+  isDeploymentRelationship,
   isSequenceMessage,
   isUmlClass,
   isUseCaseRelationship,
@@ -240,6 +242,17 @@ export type InspectorView =
       targetId: string;
       sourceLabel: string;
       targetLabel: string;
+    }
+  | {
+      status: "deployment-relationship";
+      id: string;
+      kind: DeploymentRelationshipKind;
+      typeLabel: string;
+      name: string;
+      sourceId: string;
+      targetId: string;
+      sourceLabel: string;
+      targetLabel: string;
     };
 
 const EMPTY_INSPECTOR_VIEW: InspectorView = { status: "empty" };
@@ -319,6 +332,19 @@ export function selectInspectorView(state: EditorStore): InspectorView {
   if (isComponentRelationship(relationship)) {
     return {
       status: "component-relationship",
+      id: relationship.id,
+      kind: relationship.kind,
+      typeLabel: relationshipTypeLabel(relationship.kind),
+      name: relationship.name,
+      sourceId: relationship.sourceId,
+      targetId: relationship.targetId,
+      sourceLabel: endpointLabel(state.document, relationship.sourceId),
+      targetLabel: endpointLabel(state.document, relationship.targetId),
+    };
+  }
+  if (isDeploymentRelationship(relationship)) {
+    return {
+      status: "deployment-relationship",
       id: relationship.id,
       kind: relationship.kind,
       typeLabel: relationshipTypeLabel(relationship.kind),

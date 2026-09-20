@@ -41,6 +41,17 @@ export const COMPONENT_ELEMENT_TOOLS = [
   },
 ] as const;
 
+export const DEPLOYMENT_ELEMENT_TOOLS = [
+  {
+    id: "node",
+    label: "Nodo",
+  },
+  {
+    id: "artifact",
+    label: "Artefacto",
+  },
+] as const;
+
 export const BOUNDARY_EXISTS_REASON =
   "Ya existe un límite del sistema. El documento admite uno solo.";
 
@@ -109,6 +120,19 @@ export const COMPONENT_RELATIONSHIP_TOOLS = [
   },
 ] as const;
 
+export const DEPLOYMENT_RELATIONSHIP_TOOLS = [
+  {
+    id: "communication-path",
+    label: "Camino",
+    hint: "Unir dos nodos.",
+  },
+  {
+    id: "deploy",
+    label: "Desplegar",
+    hint: "Origen: artefacto. Destino: nodo. Arrastra del origen al destino; el sentido no se invierte.",
+  },
+] as const;
+
 export function paletteElementTools(kind: DocumentKind) {
   if (kind === "sequence") {
     return SEQUENCE_ELEMENT_TOOLS;
@@ -118,6 +142,9 @@ export function paletteElementTools(kind: DocumentKind) {
   }
   if (kind === "component") {
     return COMPONENT_ELEMENT_TOOLS;
+  }
+  if (kind === "deployment") {
+    return DEPLOYMENT_ELEMENT_TOOLS;
   }
   return PALETTE_ELEMENT_TOOLS;
 }
@@ -131,6 +158,9 @@ export function paletteRelationshipTools(kind: DocumentKind) {
   }
   if (kind === "component") {
     return COMPONENT_RELATIONSHIP_TOOLS;
+  }
+  if (kind === "deployment") {
+    return DEPLOYMENT_RELATIONSHIP_TOOLS;
   }
   return PALETTE_RELATIONSHIP_TOOLS;
 }

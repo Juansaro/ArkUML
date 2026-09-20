@@ -1,0 +1,49 @@
+.node {
+  position: relative;
+  min-width: 120px;
+  min-height: 72px;
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+}
+
+.prism {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.face {
+  fill: var(--color-surface);
+  stroke: var(--color-fg);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.node[data-selected="true"] .face {
+  stroke: var(--color-focus);
+}
+
+.name {
+  position: absolute;
+  inset: 18px 20px 8px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  pointer-events: none;
+}
+
+.nameText {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: auto;
+}

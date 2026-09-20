@@ -32,6 +32,10 @@ export const ICON_NAMES = [
   "component",
   "componentUsage",
   "assemblyConnector",
+  "node",
+  "artifact",
+  "communicationPath",
+  "deploy",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -293,6 +297,40 @@ export function IconPaths({ name }: { name: IconName }) {
           <circle cx="6" cy="12" r="2.5" fill="currentColor" stroke="none" />
           <path d="M9 12h6" />
           <path d="M18 8a4 4 0 0 1 0 8" />
+        </>
+      );
+    case "node":
+      return (
+        <>
+          <path d="M4 9h14v10H4z" />
+          <path d="M4 9l4-4h14l-4 4" />
+          <path d="M18 9v10l4-4V5" />
+        </>
+      );
+    case "artifact":
+      return (
+        <>
+          <path d="M7 3h7l5 5v13H7z" />
+          <path d="M14 3v5h5" />
+        </>
+      );
+    case "communicationPath":
+      return (
+        <>
+          <path d="M3 9h5v8H3z" />
+          <path d="M3 9l2-2h5l-2 2" />
+          <path d="M16 9h5v8h-5z" />
+          <path d="M16 9l2-2h5l-2 2" />
+          <path d="M8 13h8" />
+        </>
+      );
+    case "deploy":
+      return (
+        <>
+          <path d="M3 12h10" strokeDasharray="4 3" />
+          <path d="M11 9.5 14 12l-3 2.5" />
+          <path d="M17 8v8" />
+          <path d="M17 8h3a2 2 0 0 1 0 4h-3" />
         </>
       );
   }

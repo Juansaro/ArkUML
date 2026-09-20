@@ -14,7 +14,8 @@
 .line[data-kind="include"],
 .line[data-kind="extend"],
 .line[data-kind="reply-message"],
-.line[data-kind="component-usage"] {
+.line[data-kind="component-usage"],
+.line[data-kind="deploy"] {
   stroke-dasharray: 8 6;
 }
 

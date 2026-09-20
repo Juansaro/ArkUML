@@ -3,15 +3,18 @@ import {
   createDiagramDocument,
   createEmptyClassDocument,
   createEmptyComponentDocument,
+  createEmptyDeploymentDocument,
   createEmptySequenceDocument,
   type IdFactory,
 } from "../../domain/diagram/factories.ts";
 import type { DiagramDocument, Geometry } from "../../domain/diagram/model.ts";
 import {
+  createArtifact,
   createClass,
   createComponent,
   createElement,
   createLifeline,
+  createNode,
   createRelationship,
   moveElements,
   setClassMembers,
@@ -572,6 +575,98 @@ describe("mapDocumentToReactFlow", () => {
     expect(edges[1]).toMatchObject({
       type: "assembly-connector",
       data: { kind: "assembly-connector", name: "link" },
+    });
+  });
+
+  it("proyecta nodos y artefactos con camino y deploy", () => {
+    const deps = { createId: sequentialIds(140), now: () => CREATED_AT };
+    const empty = createEmptyDeploymentDocument(deps);
+    const withApp = expectOk(
+      createNode(
+        empty,
+        {
+          name: "AppServer",
+          geometry: { x: 0, y: 0, width: 200, height: 120 },
+        },
+        deps,
+      ),
+    );
+    const withDb = expectOk(
+      createNode(
+        withApp,
+        {
+          name: "DbServer",
+          geometry: { x: 280, y: 0, width: 200, height: 120 },
+        },
+        deps,
+      ),
+    );
+    const withWar = expectOk(
+      createArtifact(
+        withDb,
+        {
+          name: "app.war",
+          geometry: { x: 40, y: 180, width: 140, height: 80 },
+        },
+        deps,
+      ),
+    );
+    const app = withWar.elements[0];
+    const db = withWar.elements[1];
+    const war = withWar.elements[2];
+    if (app === undefined || db === undefined || war === undefined) {
+      throw new Error("Faltan elementos de despliegue");
+    }
+    const withPath = expectOk(
+      createRelationship(
+        withWar,
+        {
+          kind: "communication-path",
+          sourceId: app.id,
+          targetId: db.id,
+        },
+        deps,
+      ),
+    );
+    const document = expectOk(
+      createRelationship(
+        withPath,
+        {
+          kind: "deploy",
+          sourceId: war.id,
+          targetId: app.id,
+          name: "",
+        },
+        deps,
+      ),
+    );
+
+    const { nodes, edges } = mapDocumentToReactFlow(document, {
+      elementIds: [app.id],
+      relationshipIds: [document.relationships[0]!.id],
+    });
+
+    expect(nodes).toHaveLength(3);
+    expect(nodes[0]).toMatchObject({
+      type: "node",
+      width: 200,
+      height: 120,
+      data: { kind: "node", name: "AppServer" },
+      selected: true,
+    });
+    expect(nodes[2]).toMatchObject({
+      type: "artifact",
+      data: { kind: "artifact", name: "app.war" },
+    });
+    expect(edges[0]).toMatchObject({
+      type: "communication-path",
+      reconnectable: false,
+      data: { kind: "communication-path", name: "" },
+      selected: true,
+    });
+    expect(edges[1]).toMatchObject({
+      type: "deploy",
+      data: { kind: "deploy", name: "" },
     });
   });
 });

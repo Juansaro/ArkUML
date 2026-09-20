@@ -11,6 +11,7 @@ import {
   defaultMessageY,
   isClassRelationshipTool,
   isComponentRelationshipTool,
+  isDeploymentRelationshipTool,
   isSequenceRelationshipTool,
   relationshipEndpointFieldLabels,
   type RelationshipTool,
@@ -63,7 +64,11 @@ export function ConnectForm({ kind }: ConnectFormProps) {
       });
       return;
     }
-    if (isClassRelationshipTool(kind) || isComponentRelationshipTool(kind)) {
+    if (
+      isClassRelationshipTool(kind) ||
+      isComponentRelationshipTool(kind) ||
+      isDeploymentRelationshipTool(kind)
+    ) {
       commitRelationship(store, {
         kind,
         sourceId: source,
