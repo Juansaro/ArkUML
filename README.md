@@ -36,6 +36,8 @@ Safari/WebKit puede omitir de forma intermitente los `marker-end` SVG (flechas d
 
 ## Scripts
 
+Servidor MCP local (stdio): `npm run mcp`.
+
 | Script                  | Descripción                                     |
 | ----------------------- | ----------------------------------------------- |
 | `npm run dev`           | Servidor de desarrollo Vite                     |

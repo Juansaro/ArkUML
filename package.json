@@ -16,9 +16,11 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "mcp": "node mcp/server.ts",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
     "@xyflow/react": "12.11.6",
     "html-to-image": "1.11.11",
     "react": "19.2.8",

@@ -85,7 +85,7 @@ código.
 | O-05 | Dark mode, temas, webfonts y animación de marca | `docs/product/brand-system.md:444-450`; `TASK-024.md:49-58` | Permanece exclusión (W16-04, W16-05) |
 | O-06 | Editor paralelo/semántico para lector de pantalla | `docs/product/mvp-spec.md:171-181` | Entra como más tarde / bloqueado (W16-01, W16-02) |
 | O-07 | Touch y edición móvil | `docs/product/mvp-spec.md:48-53,192-205` | Permanece exclusión (W16-03) |
-| O-08 | Backend, auth, colaboración, hosting, analytics, SaaS y PWA | `docs/product/mvp-spec.md:192-205` | Se parte: SaaS/PWA/analytics/remoto permanecen exclusión; runbook estático in-scope (W17-05) |
+| O-08 | Backend, auth, colaboración, hosting, analytics, SaaS y PWA | `docs/product/mvp-spec.md:192-205` | Se parte: SaaS/PWA/analytics/remoto permanecen exclusión; runbook estático in-scope (W17-05); Release 3 MCP local (W17-20–22, ADR-009) in-scope |
 | O-09 | Husky, lint-staged, commitlint, Jest, Cypress, Tailwind, shadcn, Router y TS7 | `docs/decisions/ADR-001-frontend-stack.md:41-49`; `ADR-005-testing.md:35-41` | Se parte: Husky/stack permanecen exclusión; TS7 más tarde / bloqueado (W17-06) |
 | O-10 | X6/Konva, Canvas/WebGL, DI, event bus, Redux y arquitectura ceremonial | `docs/architecture/architecture.md:116-122`; `ADR-002-diagram-engine.md:28-45` | Permanece exclusión programada; W17-08/09 solo contingencia medida |
 

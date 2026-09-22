@@ -12,11 +12,12 @@ La política de migraciones está en
 [`schema-evolution.md`](../architecture/schema-evolution.md). Cómo se
 añade un `document.kind` está en
 [`diagram-kinds.md`](../architecture/diagram-kinds.md). Una TASK de
-freeze (como TASK-033, TASK-037, TASK-045 o TASK-051) es la única que
+freeze (como TASK-033, TASK-037, TASK-045, TASK-051 o TASK-064) es la única que
 puede promover un subconjunto maduro a TASK ejecutables. Hasta un freeze
 no hay Generalization en casos de uso, IndexedDB, PDF, temas ni un tipo
 a medias (regla TASK-020). TASK-045 congeló **Release 1** (línea 2.0).
-TASK-051 congeló **Release 2** (línea 3.0).
+TASK-051 congeló **Release 2** (línea 3.0). TASK-064 congeló **Release 3
+(MCP)** (ecosistema agentes; schema `3` sin bump).
 
 ## Resumen
 
@@ -26,7 +27,10 @@ local, un usuario, sin SaaS. El ciclo **Release 1** abre la línea
 (subconjunto cerrado). El ciclo **Release 2** abre la línea **3.0**:
 seis kinds más (clases, componentes, despliegue, ER Chen, actividades,
 interacción general), cada uno con metamodelo cerrado y módulo completo.
-No es un producto en la nube. Los seis no aterrizan en un solo chat.
+El ciclo **Release 3** añade un servidor **MCP** local para hosts de IA
+(Cursor, Claude, Grok, GPT y compatibles): no es un producto en la nube
+ni un chat embebido. Los seis kinds no aterrizan en un solo chat; el MCP
+tampoco.
 
 Supuestos que **no** cambian hasta una revisión explícita de este
 contrato:
@@ -51,7 +55,7 @@ Hay tres números distintos. No se sustituyen entre sí.
 
 | Número | Qué identifica | Valor actual |
 | --- | --- | --- |
-| Producto | Promesa al usuario (SemVer de distribución) | MVP shipped (TASK-030) = línea **1.x** (tag **1.0.0**). **Release 1** = línea **2.0** (tag **2.0.0**). **Release 2** = línea **3.0** (tag **3.0.0** cuando TASK-052–063 estén `Hecha`). `package.json` sigue `0.0.0` hasta un tag explícito; este contrato no lo cambia. |
+| Producto | Promesa al usuario (SemVer de distribución) | MVP shipped (TASK-030) = línea **1.x** (tag **1.0.0**). **Release 1** = línea **2.0** (tag **2.0.0**). **Release 2** = línea **3.0** (tag **3.0.0** cuando TASK-052–063 estén `Hecha`). **Release 3** = aditivo **3.x** (MCP; sin bump de schema). `package.json` sigue `0.0.0` hasta un tag explícito; este contrato no lo cambia. |
 | `schemaVersion` | Forma de `DiagramDocument` | `2` vigente en `src/` (Release 1). Release 2 autoriza `3`. |
 | `storageVersion` | Envelope de `WorkspaceSnapshot` | `2` vigente (ADR-007). Release 2 **no** lo sube. |
 
@@ -67,6 +71,7 @@ biblioteca). Línea **3.x** = schema `3` (kinds de Release 2). Un cliente
 | Minor `1.x.0` | FR Post-MVP **aditivos** que un documento schema `1` sigue abriendo en 1.0 (solo chrome, warnings, o archivo JSON del mismo documento) | Schema `1`. Campos persistidos nuevos no entran: `strictObject` los haría unloadable en 1.0 (`schema-evolution.md`). `storageVersion` solo sube si cambia el envelope, no el documento |
 | Major `2.0.0` | Primer `document.kind` distinto de `use-case` (secuencia); biblioteca local | `schemaVersion` 2, `storageVersion` 2 |
 | Major `3.0.0` | Kinds de Release 2 (W17-13, W17-15–19); `formatVersion` 3 | `schemaVersion` 3; `storageVersion` sigue 2 |
+| Minor `3.x.0` | Release 3 MCP (FR-A01–A03): servidor stdio + runbook; sin metamodelo nuevo | Schema `3` / storage `2` intactos |
 
 ### Qué rompe el MVP (prohibido en 1.x)
 
@@ -92,7 +97,7 @@ Solo hay FR donde el comportamiento cabe en fuentes ya acordadas
 ítem sin fuente UML o de persistencia **no** es FR: queda en el catálogo
 bloqueado.
 
-Los «P0» de cada freeze los elige esa TASK (033, 037, 045, 051). «P1» /
+Los «P0» de cada freeze los elige esa TASK (033, 037, 045, 051, 064). «P1» /
 «P2» no entran salvo que el freeze los nombre.
 
 | ID | Requisito | Prioridad | Destino |
@@ -113,6 +118,9 @@ Los «P0» de cada freeze los elige esa TASK (033, 037, 045, 051). «P1» /
 | FR-R07 | Diagrama entidad-relación Chen (`"entity-relationship"`): [`er-model.md`](../architecture/er-model.md); [ADR-008](../decisions/ADR-008-chen-er.md). | P0 | In-scope (Release 2) |
 | FR-R08 | Diagrama de actividades (`"activity"`): [`activity-model.md`](../architecture/activity-model.md). | P0 | In-scope (Release 2) |
 | FR-R09 | Diagrama de interacción general (`"interaction-overview"`): [`interaction-overview-model.md`](../architecture/interaction-overview-model.md). `ref` por nombre, no por id de biblioteca. | P0 | In-scope (Release 2) |
+| FR-A01 | Servidor MCP local (stdio) que expone resources de catálogo y tools de sesión/lectura/escritura sobre `DiagramDocument`, según [`mcp.md`](../architecture/mcp.md) y [ADR-009](../decisions/ADR-009-mcp-ai-integration.md). | P0 | In-scope (Release 3) |
+| FR-A02 | Toda mutación MCP delega a operaciones de `src/domain`; persistencia del agente = envelope FR-P03 en disco (no `localStorage`). Errores de reglas estructurados. | P0 | In-scope (Release 3) |
+| FR-A03 | Prompts MCP + runbook de configuración para hosts stdio (Cursor, Claude Desktop, nota genérica Grok/GPT/otros). Sin secrets de modelos. | P1 | In-scope (Release 3) |
 
 FR-P01 no declara que un ciclo sea ilegal en UML: no hay fuente UML
 acordada en el repo. El producto avisa para no rechazar diagramas que el
@@ -133,6 +141,10 @@ mensajes async. FR-R04–R09 no se implementan en un solo chat: cada kind
 tiene TASK de dominio y TASK de chrome; «Nuevo» no lista un kind sin
 módulo. FR-R07 no es UML. FR-R09 no embebe una secuencia ni resuelve
 `ref` a otro documento.
+
+FR-A01–A03 no son un chat en la SPA, no son API keys, no son MCP HTTP
+remoto ni SaaS. El modelo LLM vive en el host. W17-02 sigue exclusión
+para backend/auth/collab.
 
 ## Waves 12–17
 
@@ -214,6 +226,9 @@ roadmap es la proyección operativa.
 | W17-17 | In-scope | P0 | Entidad-relación Chen. FR-R07. `er-model.md`; ADR-008. Release 2. |
 | W17-18 | In-scope | P0 | Diagrama de actividades. FR-R08. `activity-model.md`. Release 2. |
 | W17-19 | In-scope | P0 | Interacción general. FR-R09. `interaction-overview-model.md` (UML 2.5.1 §17.9). Release 2. |
+| W17-20 | In-scope | P0 | Facade de dominio para agentes. Release 3. |
+| W17-21 | In-scope | P0 | Servidor MCP stdio + tools. FR-A01/A02. ADR-009. Release 3. |
+| W17-22 | In-scope | P1 | Prompts + runbook de clientes MCP. FR-A03. Release 3. |
 
 ### Contingencias
 
@@ -241,7 +256,7 @@ revisar este contrato.
 | O-05 | Dark mode, temas, webfonts, animación de marca | **Permanece** exclusión (W16-04, W16-05). |
 | O-06 | Editor paralelo para lector de pantalla | **Entra** como más tarde / bloqueado (W16-01, W16-02). No es FR hasta existir el documento de estrategia. |
 | O-07 | Touch y edición móvil | **Permanece** exclusión (W16-03). |
-| O-08 | Backend, auth, collab, analytics, SaaS, PWA | **Se parte.** Permanecen exclusión: W17-02, W17-03, W17-04, W17-10. Entra el runbook estático (W17-05), que no es SaaS. |
+| O-08 | Backend, auth, collab, analytics, SaaS, PWA | **Se parte.** Permanecen exclusión: W17-02, W17-03, W17-04, W17-10. Entra el runbook estático (W17-05). **Release 3:** entran W17-20–22 (MCP local stdio); no es SaaS ni secrets de modelos. |
 | O-09 | Toolchain (Husky, Jest, Cypress, Tailwind, Router, TS7) | **Se parte.** Permanecen exclusión: W17-07, W17-12. TS7 entra como más tarde / bloqueado (W17-06), no como FR. |
 | O-10 | X6/Konva, Canvas/WebGL, DI, event bus, Redux | **Permanece** exclusión como trabajo programado. W17-08/09 solo por contingencia medida. DI, event bus y Redux no entran al catálogo. |
 
@@ -257,6 +272,8 @@ de este contrato:
   foot, edición táctil/móvil.
 - Sync multi-tab, workspace remoto. IndexedDB hasta C-QUOTA.
 - Backend, autenticación, usuarios, colaboración, PWA, analytics, SEO/SSR.
+- LLM embebido en la SPA, API keys de proveedores de modelos, MCP HTTP
+  remoto con auth (Release 3 solo autoriza stdio local).
 - Husky / lint-staged / commitlint como requisito.
 - Jest, Cypress, Vitest Browser, Tailwind, shadcn, router de aplicación.
 - DI framework-level, event bus, Redux, arquitectura ceremonial.
@@ -284,8 +301,11 @@ futura tendría que hacerlo **antes** de tocar código.
 | [ADR-006](../decisions/ADR-006-export.md) | C-EXPORT, fallo nuevo de raster, o W15-01/02 (SVG/PDF). | FR-P05 si es exporter hermano que reutiliza `exportDiagram` y el pin `1.11.11`. Markers Safari ya aceptados. |
 | [ADR-002](../decisions/ADR-002-diagram-engine.md) | Segundo motor (X6/Konva) o waypoints persistidos (W13-01). | Addendum TASK-051: proyección custom (compartimentos, prisma, Chen, marcos `ref`) **sin** cambiar de motor. |
 | [ADR-008](../decisions/ADR-008-chen-er.md) | (Aceptada en TASK-051.) ER Chen. | Crow’s foot; class-as-ER. |
+| [ADR-009](../decisions/ADR-009-mcp-ai-integration.md) | (Aceptada en TASK-064.) MCP stdio. | LLM en SPA; HTTP remoto; secrets. |
 
 ADR-001 (TS7 / hooks Git) se reabre en la TASK que lo necesite, no aquí.
+ADR-001 **sí** recibe el pin de `@modelcontextprotocol/server` vía
+ADR-009 + TASK-066 (dependencia nueva autorizada; no es TS7).
 
 ## Primera wave (TASK-033)
 
@@ -352,11 +372,27 @@ Zod aditiva. Host vacío prohibido.
 
 TASK-051 crea `TASK-052`–`TASK-063` solo para ítems `Lista`.
 
+## Release 3 (TASK-064, 2026-09-21)
+
+Nombre: **MCP / agentes**. Línea de producto **3.x** aditiva. **No**
+sube `schemaVersion` ni `storageVersion`.
+
+1. W17-20 — facade de dominio para agentes (TASK-065).
+2. W17-21 / FR-A01–A02 — servidor MCP stdio + tools (TASK-066–067);
+   ADR-009.
+3. W17-22 / FR-A03 — prompts + runbook de clientes (TASK-068).
+
+Puente con la SPA: envelope FR-P03. Sin LLM en el browser. Sin SaaS.
+
+TASK-064 crea `TASK-065`–`TASK-068` solo para ítems `Lista`.
+
 ## Fuera de este contrato
 
-- Código de Release 1 (TASK-046–050) y de Release 2 (TASK-052–063).
-- Pins. El árbol `src/` permanece schema `2` / storage `2` hasta TASK-052+.
+- Código de Release 1 (TASK-046–050), Release 2 (TASK-052–063) y
+  Release 3 (TASK-065–068).
+- Pins salvo el de `@modelcontextprotocol/server` en TASK-066.
 - IndexedDB, PDF, temas, Crow’s foot, fragmentos de secuencia, Interaction
   inline, Generalization en casos de uso.
 - Reabrir ADR-006. Reabrir ADR-002 como segundo motor (el addendum de
   proyección ya está en TASK-051).
+- MCP HTTP remoto, API keys de modelos, chat embebido.

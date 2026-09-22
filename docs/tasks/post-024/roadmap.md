@@ -9,7 +9,8 @@ TASK-033 congeló la Wave 1; TASK-037 congeló la Wave 2; TASK-045 congeló
 **Release 1**; TASK-051 congeló **Release 2**. Solo esas filas tienen
 archivo TASK. TASK-036 revisó W17-01/W17-13; TASK-045 sustituye el primer
 tipo extra por secuencia (W17-14) y levanta W14-02. TASK-051 desbloquea
-W17-13 y añade W17-15–19.
+W17-13 y añade W17-15–19. TASK-064 congela **Release 3 (MCP)** y añade
+W17-20–22.
 
 ## Estados de catálogo
 
@@ -84,6 +85,20 @@ Nombre: **Seis kinds (schema 3)**. Línea **3.0**. ADR-008 (ER Chen).
 
 IndexedDB no. Crow’s foot no. Fragmentos de secuencia no. Sin `16-a11y/`.
 
+## Release 3 congelada (TASK-064, 2026-09-21)
+
+Nombre: **MCP / agentes**. Línea **3.x** aditiva. ADR-009. Schema `3`
+y `storageVersion` 2 **sin bump**.
+
+| ID catálogo | TASK | FR |
+| --- | --- | --- |
+| W17-20 | [`17-ecosystem/TASK-065.md`](17-ecosystem/TASK-065.md) | — (facade dominio) |
+| W17-21 | [`17-ecosystem/TASK-066.md`](17-ecosystem/TASK-066.md), [`17-ecosystem/TASK-067.md`](17-ecosystem/TASK-067.md) | FR-A01, FR-A02 |
+| W17-22 | [`17-ecosystem/TASK-068.md`](17-ecosystem/TASK-068.md) | FR-A03 |
+
+Sin LLM en la SPA. Sin MCP HTTP remoto. Sin secrets de modelos.
+IndexedDB no. Sin `16-a11y/`.
+
 ## Fase 12 — Semántica UML
 
 | ID | Capacidad | Pri. | Fuente | Valor / riesgo | Decisiones | ADR | Depende | Estado |
@@ -146,6 +161,9 @@ IndexedDB no. Crow’s foot no. Fragmentos de secuencia no. Sin `16-a11y/`.
 | W17-17 | Entidad-relación Chen | P0 | `er-model.md`; ADR-008; FR-R07 | Release 2; no UML | Cerrada: Chen 1976; no Crow’s foot | Schema `3`; ADR-008 | TASK-058, TASK-059 | Congelada |
 | W17-18 | Diagrama de actividades | P0 | `activity-model.md`; FR-R08 | Release 2 | Cerrada: action + control nodes + control-flow | Schema `3` | TASK-060, TASK-061 | Congelada |
 | W17-19 | Interacción general | P0 | `interaction-overview-model.md` (UML 2.5.1 §17.9); FR-R09 | Release 2 | Cerrada: `ref` por nombre; sin inline | Schema `3` | TASK-062, TASK-063 | Congelada |
+| W17-20 | Facade dominio para agentes | P0 | `mcp.md`; ADR-009; FR-A01/A02 | API pura para MCP | Cerrada: sin UI; errores estructurados | ADR-009 | TASK-065 | Congelada |
+| W17-21 | Servidor MCP stdio + tools | P0 | `mcp.md`; ADR-009; FR-A01/A02 | Cursor/Claude/Grok/GPT | Cerrada: stdio; archivos FR-P03; pin SDK en TASK-066 | ADR-009; addendum ADR-001 (dep) | TASK-066, TASK-067 | Congelada |
+| W17-22 | Prompts + runbook clientes MCP | P1 | `mcp.md`; FR-A03 | DX agentes | Cerrada: sin secrets; recetas ilustrativas | — | TASK-068 | Congelada |
 | W17-02 | Backend / auth / collab | — | `mvp-spec.md`; `post-mvp-spec.md` | SaaS | Excluido | No en dominio | — | Fuera de alcance vigente |
 | W17-03 | Remote `DiagramRepository` | — | `architecture.md`; `post-mvp-spec.md` | Sync | Excluido | ADR-004 | W17-02 | Fuera de alcance vigente |
 | W17-04 | PWA | — | `mvp-spec.md`; `post-mvp-spec.md` | Offline/install | Excluido | — | — | Fuera de alcance vigente |
@@ -181,6 +199,10 @@ W17-13 y W17-15–19 in-scope; ER = Chen (ADR-008); IOD `ref` = string;
 W12-02/06 solo en clases/ER; unión Zod aditiva; envelope
 `formatVersion` 3.
 
+Cerradas en TASK-064 (2026-09-21): Release 3 = MCP local (ADR-009);
+W17-20–22; FR-A01–A03; sin bump de schema; bridge = envelope FR-P03;
+sin LLM en SPA ni HTTP remoto.
+
 Cerradas en TASK-036
 ([`diagram-kinds.md`](../../architecture/diagram-kinds.md)): un
 documento, un kind; plataforma por módulo; host vacío prohibido.
@@ -210,6 +232,7 @@ Los grupos O-01–O-10 de [risk-register.md](risk-register.md) están
 dispuestos en `post-mvp-spec.md`. TASK-033 congeló W12-01 y W13-02.
 TASK-037 congeló W14-03, W13-03, W15-03 y W17-05. TASK-036 revisó
 W17-01/13. TASK-045 congeló W14-02, W14-04, W17-01, W17-14 y el envelope
-2.x. TASK-051 congeló W17-13 y W17-15–19. El resto permanece catálogo
-hasta un freeze posterior. Nadie pinta un kind «porque está en el
-backlog» sin su TASK `Lista` y dependencias `Hecha`.
+2.x. TASK-051 congeló W17-13 y W17-15–19. TASK-064 congeló W17-20–22.
+El resto permanece catálogo hasta un freeze posterior. Nadie pinta un
+kind «porque está en el backlog» sin su TASK `Lista` y dependencias
+`Hecha`. Nadie embebe un LLM «porque hay MCP» sin ADR-009.

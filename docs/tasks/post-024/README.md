@@ -33,7 +33,7 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 congeló **Release 1** (biblioteca + secuencia, schema 2). TASK-046,
 TASK-047, TASK-048, TASK-049 y TASK-050 están `Hecha`. Release 1
 cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
-(seis kinds, schema 3). TASK-052 está `Hecha`. TASK-053, TASK-054, TASK-055, TASK-056, TASK-057, TASK-058, TASK-059, TASK-060, TASK-061, TASK-062 y TASK-063 están `Hecha`. Release 2 cerrada a nivel de TASKs ejecutables.
+(seis kinds, schema 3). TASK-052 está `Hecha`. TASK-053, TASK-054, TASK-055, TASK-056, TASK-057, TASK-058, TASK-059, TASK-060, TASK-061, TASK-062 y TASK-063 están `Hecha`. Release 2 cerrada a nivel de TASKs ejecutables. TASK-064 congeló **Release 3 (MCP)**. TASK-065 está `Hecha`. TASK-066–068 están `Lista`.
 
 ## Estado
 
@@ -78,6 +78,11 @@ cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
 | 061 | [`13-editor/TASK-061.md`](13-editor/TASK-061.md) | Hecha | P0 | 060 | 2026-09-20: módulo actividades; paleta, nodos de control, flujo+guarda, inspector, Nuevo |
 | 062 | [`12-uml/TASK-062.md`](12-uml/TASK-062.md) | Hecha | P0 | 061 | 2026-09-20: dominio interaction-overview; occurrence+control-flow; sin action; mezclas UNKNOWN_KIND; envelope 3.x; sin chrome |
 | 063 | [`13-editor/TASK-063.md`](13-editor/TASK-063.md) | Hecha | P0 | 062 | 2026-09-20: módulo interacción general; paleta, marco ref, flujo+guarda, inspector, Nuevo; Release 2 TASKs cerrada |
+| 064 | [`11-governance/TASK-064.md`](11-governance/TASK-064.md) | Hecha | P0 | 051, 063 | 2026-09-21: freeze **Release 3 (MCP)**; ADR-009; `mcp.md`; FR-A01–A03; TASK-065–068 |
+| 065 | [`17-ecosystem/TASK-065.md`](17-ecosystem/TASK-065.md) | Hecha | P0 | 064 | 2026-09-21: facade `agentApi`; kinds, envelope 3, mutaciones y warnings; sin `mcp/` |
+| 066 | [`17-ecosystem/TASK-066.md`](17-ecosystem/TASK-066.md) | Hecha | P0 | 065 | 2026-09-21: MCP stdio; resources kinds; tools lectura/sesión; SDK `2.0.0` |
+| 067 | [`17-ecosystem/TASK-067.md`](17-ecosystem/TASK-067.md) | Hecha | P0 | 066 | 2026-09-21: cinco tools de mutación MCP; Zod, errores de dominio, cascada y round-trip |
+| 068 | [`17-ecosystem/TASK-068.md`](17-ecosystem/TASK-068.md) | Lista | P1 | 067 | Prompts + runbook clientes MCP |
 
 ## Fases y gates
 
@@ -103,8 +108,10 @@ TASK-033 congeló la Wave 1 y creó TASK-034 y TASK-035. TASK-036 publicó
 W17-01/W17-13. TASK-037 congeló la Wave 2 y creó TASK-038–041. TASK-045
 congeló **Release 1** (ADR-007, `sequence-model.md`, TASK-046–050).
 TASK-051 congeló **Release 2** (ADR-008, seis metamodelos, TASK-052–063).
+TASK-064 congeló **Release 3** (ADR-009, MCP, TASK-065–068).
 
-Gate (cumplido 2026-09-09; Release 1 2026-09-14; Release 2 2026-09-14):
+Gate (cumplido 2026-09-09; Release 1 2026-09-14; Release 2 2026-09-14;
+Release 3 2026-09-21):
 
 - FR, non-goals y versión objetivo aprobados (TASK-031).
 - Compatibilidad y migración publicadas (TASK-032).
@@ -117,6 +124,7 @@ Gate (cumplido 2026-09-09; Release 1 2026-09-14; Release 2 2026-09-14):
 - Release 1 acotada: **Biblioteca local y diagrama de secuencia
   (schema 2)** (TASK-045).
 - Release 2 acotada: **Seis kinds (schema 3)** (TASK-051).
+- Release 3 acotada: **MCP / agentes** (TASK-064); schema 3 sin bump.
 
 ### Fases 12–17 — Catálogo salvo las waves congeladas
 
@@ -127,7 +135,7 @@ TASK-060, TASK-062), `13-editor/` (TASK-035, TASK-039,
 TASK-042, TASK-043, TASK-044, TASK-048, TASK-049, TASK-053, TASK-055,
 TASK-057, TASK-059, TASK-061, TASK-063),
 `14-persistence/` (TASK-038, TASK-047, TASK-050), `15-export/` (TASK-040) y
-`17-ecosystem/` (TASK-041). No hay `16-a11y/`. El resto del
+`17-ecosystem/` (TASK-041, TASK-065–068). No hay `16-a11y/`. El resto del
 catálogo no congelado no es ejecutable.
 
 ## Registro de auditoría
@@ -145,11 +153,11 @@ no como 94 features pendientes.
 
 ## Próximo paso
 
-TASK-063 está `Hecha` (módulo chrome de interacción general). Release 2
-de TASKs ejecutables cerrada. El catálogo restante vive en
-[roadmap.md](roadmap.md); no hay siguiente TASK ejecutable en este árbol
-sin un nuevo freeze.
+TASK-067 está `Hecha` (tools MCP de mutación de grafo). Una TASK por
+chat: `@docs/tasks/post-024/17-ecosystem/TASK-068.md`. Release 3 MCP
+sigue con TASK-068. El catálogo restante vive en
+[roadmap.md](roadmap.md).
 Una TASK por chat. IndexedDB: no elegido (condicional C-QUOTA). No
 implementar Generalization en casos de uso, PDF, temas, fragmentos de
-secuencia, Crow’s foot, Interaction inline ni un kind cuyo dominio no
-esté `Hecha`.
+secuencia, Crow’s foot, Interaction inline, LLM en la SPA ni MCP HTTP
+remoto.

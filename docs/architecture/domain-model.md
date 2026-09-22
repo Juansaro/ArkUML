@@ -245,6 +245,15 @@ initial/final que activity; `guard` 0–80. Sin `action`. El `ref` de
 
 Todas devuelven un documento nuevo o un error de dominio con `code` estable y `message` para UI.
 
+`src/domain/diagram/agentApi.ts` es la facade pura que un proceso Node
+(el servidor MCP) llama para listar kinds, crear un documento vacío,
+parsear y serializar el envelope `arkuml-document-json` (`documentFile`
++ `migrateDocument`), validar con Zod y `collectWarnings`, y aplicar
+create/update/delete de elementos y relaciones. Delega en factories,
+operations y `canConnect`. Un rechazo devuelve `Result` con `code` y
+`message`; no lanza. No importa React, el store ni `mcp/`. Contrato de
+tools: [mcp.md](mcp.md).
+
 | Operación | Comportamiento |
 | --- | --- |
 | `createElement` | Inserta actor, use case o boundary según reglas de máximo uno. |

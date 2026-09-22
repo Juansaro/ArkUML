@@ -41,6 +41,7 @@ src/
   persistence/         DiagramRepository, LocalStorage, autosave
   export/              bounds, raster, download
   test/                setup de Vitest
+mcp/                   servidor MCP (stdio); importa solo domain
 e2e/
 ```
 
@@ -54,6 +55,7 @@ e2e/
 | `editor` UI | Interacción y presentación | store, adapters, xyflow | Mutar el documento a mano |
 | `persistence` | load/save/clear, autosave | `domain` (schema/factories) | React Flow |
 | `export` | Bounds, clon, raster, Blob, download | adapter público, DOM | Store interno no público de xyflow |
+| `mcp/` | Tools/resources/prompts para hosts de IA | `domain/diagram` (facade agente) | React, Zustand, DOM, `@xyflow/react`, `localStorage` |
 
 ## Flujo de una mutación
 
@@ -119,6 +121,11 @@ prohibido.
 
 **Backend futuro:** sustituir la implementación de `DiagramRepository`. Auth, sync y multi-usuario no entran en dominio.
 
+**Agentes (Release 3):** servidor MCP local ([`mcp.md`](mcp.md),
+[ADR-009](../decisions/ADR-009-mcp-ai-integration.md)). Mutaciones vía
+dominio; persistencia = archivos del envelope FR-P03, no el autosave
+browser. El modelo LLM vive en el host (Cursor, Claude, Grok, GPT, …).
+
 **Segundo motor gráfico:** reescribir `editor/adapters` y nodos/edges. Dominio, persistencia y store permanecen.
 
 ## Qué no hay en el MVP
@@ -134,15 +141,16 @@ prohibido.
 ```text
 docs/
   product/{mvp-spec,brand-system,post-mvp-spec}.md
-  architecture/{architecture,domain-model,schema-evolution,diagram-kinds,sequence-model,class-model,component-model,deployment-model,er-model,activity-model,interaction-overview-model,rendering-and-export,testing-strategy,performance}.md
-  operations/static-hosting.md
-  decisions/ADR-001 … ADR-008
+  architecture/{architecture,domain-model,schema-evolution,diagram-kinds,sequence-model,class-model,component-model,deployment-model,er-model,activity-model,interaction-overview-model,mcp,rendering-and-export,testing-strategy,performance}.md
+  operations/{static-hosting,mcp-clients}.md
+  decisions/ADR-001 … ADR-009
   development/{agent-workflow,task-template}.md
   tasks/TASK-001 … TASK-025
   tasks/post-024/          índice, registro, roadmap y TASK-026+
 .cursor/rules/{00-core,domain,testing}.mdc
 src/
+mcp/
 e2e/
 ```
 
-`performance.md` registra los números de TASK-019. La a11y del chrome cabe en mvp-spec; no hay `accessibility.md` aparte. `static-hosting.md` es el runbook de `dist/` (FR-P06); no es un proveedor soportado ni un backend.
+`performance.md` registra los números de TASK-019. La a11y del chrome cabe en mvp-spec; no hay `accessibility.md` aparte. `static-hosting.md` es el runbook de `dist/` (FR-P06); no es un proveedor soportado ni un backend. `mcp.md` + `mcp-clients.md` (TASK-068) son el contrato y el runbook de agentes; no son SaaS.
