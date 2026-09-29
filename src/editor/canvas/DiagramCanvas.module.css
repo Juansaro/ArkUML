@@ -29,6 +29,20 @@
   box-shadow: none;
 }
 
+.flow :global(.react-flow__node-initial-node) :global(.react-flow__handle),
+.flow :global(.react-flow__node-activity-final) :global(.react-flow__handle) {
+  pointer-events: none;
+}
+
+.root[data-show-handles="true"]
+  :global(.react-flow__node-initial-node)
+  :global(.react-flow__handle),
+.root[data-show-handles="true"]
+  :global(.react-flow__node-activity-final)
+  :global(.react-flow__handle) {
+  pointer-events: auto;
+}
+
 .flow :global(.react-flow__node-system-boundary),
 .flow :global(.react-flow__node-lifeline) {
   overflow: visible;

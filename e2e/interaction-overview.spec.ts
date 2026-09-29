@@ -1,9 +1,10 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   canvasElementName,
   createNewDiagram,
   diagramCanvas,
   downloadBytes,
+  dragBy,
   PNG_SIGNATURE,
 } from "./support.ts";
 
@@ -39,7 +40,9 @@ test("crea overview con ref, flujo, exporta y vuelve a casos de uso", async ({
   await page.getByRole("button", { name: "Interacción" }).click();
   await canvas.click({ position: { x: 300, y: 140 } });
   await expect(canvasElementName(page, "Interacción")).toBeVisible();
-  await expect(canvas.getByTestId("interaction-occurrence-frame")).toBeVisible();
+  await expect(
+    canvas.getByTestId("interaction-occurrence-frame"),
+  ).toBeVisible();
   await expect(canvas.getByTestId("interaction-occurrence-ref")).toHaveText(
     "ref",
   );
@@ -106,5 +109,43 @@ test("crea overview con ref, flujo, exporta y vuelve a casos de uso", async ({
   await useCaseOption.click({ position: { x: 12, y: 16 } });
   await expect(page.getByRole("button", { name: "Actor" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Caso de uso" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Interacción" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Interacción" })).toHaveCount(
+    0,
+  );
 });
+
+test("Inicial ya seleccionado se arrastra y deshacer restaura", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await createInteractionOverviewDiagram(page);
+  const canvas = diagramCanvas(page);
+
+  await page.getByRole("button", { name: "Inicial" }).click();
+  await canvas.click({ position: { x: 160, y: 200 } });
+  const initial = canvas.locator(".react-flow__node-initial-node");
+  await expect(initial.locator("[data-selected='true']")).toBeVisible();
+  const atRest = await dragSelected(page, initial);
+  await page.getByRole("button", { name: "Deshacer" }).click();
+  await expect.poll(async () => translateOf(initial)).toBe(atRest);
+
+  await canvas
+    .locator(".react-flow__pane")
+    .click({ position: { x: 24, y: 24 } });
+  await initial.click();
+  await expect(initial.locator("[data-selected='true']")).toBeVisible();
+  await dragSelected(page, initial);
+});
+
+async function translateOf(node: Locator): Promise<string> {
+  const style = (await node.getAttribute("style")) ?? "";
+  return /translate\([^)]+\)/.exec(style)?.[0] ?? "";
+}
+
+async function dragSelected(page: Page, node: Locator): Promise<string> {
+  const before = await translateOf(node);
+  expect(before.length).toBeGreaterThan(0);
+  await dragBy(page, node, 80, 48);
+  await expect.poll(async () => translateOf(node)).not.toBe(before);
+  return before;
+}
