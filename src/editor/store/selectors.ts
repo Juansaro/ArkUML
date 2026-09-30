@@ -88,6 +88,10 @@ export function selectTool(state: EditorStore): EditorTool {
   return state.tool;
 }
 
+export function selectSnapEnabled(state: EditorStore): boolean {
+  return state.ui.snapEnabled;
+}
+
 export function selectHasSystemBoundary(state: EditorStore): boolean {
   return state.document.elements.some(
     (element) => element.kind === "system-boundary",

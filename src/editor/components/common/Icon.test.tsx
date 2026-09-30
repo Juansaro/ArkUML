@@ -16,6 +16,14 @@ describe("Icon", () => {
     }
   });
 
+  it("pinta el glifo de Ajuste con ejes y un rectángulo en la esquina", () => {
+    render(<Icon name="snap" />);
+    const markup = document.querySelector("svg")?.innerHTML;
+    expect(markup).toContain("M12 2v20");
+    expect(markup).toContain("M2 12h20");
+    expect(markup).toContain("M12 12h7v7h-7z");
+  });
+
   it("pinta el puntero de Selección", () => {
     render(<Icon name="select" />);
     expect(document.querySelector("svg")?.innerHTML).toContain("M6 4v16");
@@ -67,7 +75,7 @@ describe("Icon", () => {
     );
     rerender(<Icon name="replyMessage" />);
     expect(document.querySelector("svg")?.innerHTML).toContain(
-      "stroke-dasharray=\"3 2\"",
+      'stroke-dasharray="3 2"',
     );
     expect(document.querySelector("svg")?.innerHTML).toContain("M16 8l5 4-5 4");
   });
@@ -90,7 +98,9 @@ describe("Icon", () => {
       'fill="currentColor"',
     );
     rerender(<Icon name="generalization" />);
-    expect(document.querySelector("svg")?.innerHTML).toContain("M13 7l8 5-8 5z");
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M13 7l8 5-8 5z",
+    );
   });
 
   it("pinta los glifos de componentes con uso y ensamblaje", () => {
@@ -99,7 +109,7 @@ describe("Icon", () => {
     expect(document.querySelector("svg")?.innerHTML).toContain("M4 8h5v3H4z");
     rerender(<Icon name="componentUsage" />);
     expect(document.querySelector("svg")?.innerHTML).toContain(
-      "stroke-dasharray=\"4 3\"",
+      'stroke-dasharray="4 3"',
     );
     expect(document.querySelector("svg")?.innerHTML).toContain(
       "M17 8v5a2.5 2.5 0 0 0 5 0V8",
@@ -116,15 +126,19 @@ describe("Icon", () => {
   it("pinta los glifos de despliegue con camino y deploy", () => {
     const { rerender } = render(<Icon name="node" />);
     expect(document.querySelector("svg")?.innerHTML).toContain("M4 9h14v10H4z");
-    expect(document.querySelector("svg")?.innerHTML).toContain("M4 9l4-4h14l-4 4");
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M4 9l4-4h14l-4 4",
+    );
     rerender(<Icon name="artifact" />);
-    expect(document.querySelector("svg")?.innerHTML).toContain("M7 3h7l5 5v13H7z");
+    expect(document.querySelector("svg")?.innerHTML).toContain(
+      "M7 3h7l5 5v13H7z",
+    );
     rerender(<Icon name="communicationPath" />);
     expect(document.querySelector("svg")?.innerHTML).toContain("M3 9h5v8H3z");
     expect(document.querySelector("svg")?.innerHTML).toContain("M8 13h8");
     rerender(<Icon name="deploy" />);
     expect(document.querySelector("svg")?.innerHTML).toContain(
-      "stroke-dasharray=\"4 3\"",
+      'stroke-dasharray="4 3"',
     );
     expect(document.querySelector("svg")?.innerHTML).toContain(
       "M17 8h3a2 2 0 0 1 0 4h-3",
@@ -159,9 +173,7 @@ describe("Icon", () => {
       'fill="currentColor"',
     );
     rerender(<Icon name="activityFinal" />);
-    expect(document.querySelector("svg")?.innerHTML).toContain(
-      'r="8"',
-    );
+    expect(document.querySelector("svg")?.innerHTML).toContain('r="8"');
     rerender(<Icon name="mergeNode" />);
     expect(document.querySelector("svg")?.innerHTML).toContain("M8 12h8");
     rerender(<Icon name="forkNode" />);

@@ -15,6 +15,7 @@ export const ICON_NAMES = [
   "fitView",
   "collapseView",
   "select",
+  "snap",
   "actor",
   "useCase",
   "systemBoundary",
@@ -182,6 +183,14 @@ export function IconPaths({ name }: { name: IconName }) {
       );
     case "select":
       return <path d="M6 4v16l4.5-4.5 2.2 5.3 2.4-1-2.2-5.3H19z" />;
+    case "snap":
+      return (
+        <>
+          <path d="M12 2v20" />
+          <path d="M2 12h20" />
+          <path d="M12 12h7v7h-7z" />
+        </>
+      );
     case "actor":
       return (
         <>

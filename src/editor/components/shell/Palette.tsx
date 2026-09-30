@@ -10,6 +10,7 @@ import {
 import {
   selectDocumentKind,
   selectHasSystemBoundary,
+  selectSnapEnabled,
   selectTool,
 } from "../../store/selectors.ts";
 import {
@@ -114,6 +115,10 @@ function paletteDescription(id: string): string {
   return PALETTE_DESCRIPTIONS[id] ?? "";
 }
 
+const SNAP_LABEL = "Ajuste";
+const SNAP_DESCRIPTION =
+  "Ajustar al arrastrar: ejes de otros elementos y grilla de 16 px.";
+
 type PaletteProps = {
   headingId: string;
 };
@@ -123,6 +128,7 @@ export function Palette({ headingId }: PaletteProps) {
   const tool = useEditorStore(selectTool);
   const kind = useEditorStore(selectDocumentKind);
   const hasBoundary = useEditorStore(selectHasSystemBoundary);
+  const snapEnabled = useEditorStore(selectSnapEnabled);
   const elementTools = paletteElementTools(kind);
   const relationshipTools = paletteRelationshipTools(kind);
 
@@ -147,6 +153,25 @@ export function Palette({ headingId }: PaletteProps) {
               pressed={tool === PALETTE_SELECT_TOOL.id}
               onClick={() => {
                 selectElementTool(PALETTE_SELECT_TOOL.id);
+              }}
+            />
+          </li>
+        </ul>
+      </section>
+      <section className={styles.group}>
+        <ul className={styles.list}>
+          <li>
+            <ToolButton
+              variant="row"
+              icon="snap"
+              label={SNAP_LABEL}
+              description={SNAP_DESCRIPTION}
+              placement="right"
+              pressed={snapEnabled}
+              onClick={() => {
+                store
+                  .getState()
+                  .setSnapEnabled(!store.getState().ui.snapEnabled);
               }}
             />
           </li>

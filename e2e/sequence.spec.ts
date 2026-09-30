@@ -6,6 +6,7 @@ import {
   diagramCanvas,
   diagramElement,
   downloadBytes,
+  dragBy,
   PNG_SIGNATURE,
   sourceHandle,
   targetHandle,
@@ -103,4 +104,70 @@ test("crea lifelines, sync, reply, rename, export y vuelve a casos de uso", asyn
   await expect(page.getByRole("button", { name: "Actor" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Caso de uso" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Lifeline" })).toHaveCount(0);
+});
+
+test("Ajuste alinea una lifeline al eje vertical y un arrastre corto no imanta", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await createSequenceDiagram(page);
+  const canvas = diagramCanvas(page);
+
+  await page.getByRole("button", { name: "Lifeline" }).click();
+  await canvas.click({ position: { x: 220, y: 120 } });
+  await expect(canvasElementName(page, "Lifeline")).toBeVisible();
+
+  await page.getByRole("button", { name: "Lifeline" }).click();
+  await canvas.click({ position: { x: 268, y: 200 } });
+  await expect(canvasElementName(page, "Lifeline 2")).toBeVisible();
+
+  const ajuste = page.getByRole("button", { name: "Ajuste" });
+  const select = page.getByRole("button", { name: "Selección" });
+  await expect(ajuste).toHaveAttribute("aria-pressed", "false");
+  await expect(select).toHaveAttribute("aria-pressed", "true");
+
+  await ajuste.click();
+  await expect(ajuste).toHaveAttribute("aria-pressed", "true");
+  await expect(select).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Lifeline" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+
+  const anchor = diagramElement(page, "lifeline", "Lifeline").getByTestId(
+    "lifeline-head",
+  );
+  const moving = diagramElement(page, "lifeline", "Lifeline 2").getByTestId(
+    "lifeline-head",
+  );
+  const anchorBox = await anchor.boundingBox();
+  const movingBox = await moving.boundingBox();
+  if (anchorBox === null || movingBox === null) {
+    throw new Error("No se pudieron medir las cabeceras");
+  }
+  expect(Math.abs(movingBox.x - anchorBox.x)).toBeGreaterThan(8);
+
+  await dragBy(page, moving, anchorBox.x + 4 - movingBox.x, 0);
+
+  const alignedAnchor = await anchor.boundingBox();
+  const alignedMoving = await moving.boundingBox();
+  if (alignedAnchor === null || alignedMoving === null) {
+    throw new Error("No se pudieron medir las cabeceras alineadas");
+  }
+  expect(Math.abs(alignedMoving.x - alignedAnchor.x)).toBeLessThan(2);
+
+  await ajuste.click();
+  await expect(ajuste).toHaveAttribute("aria-pressed", "false");
+  await expect(select).toHaveAttribute("aria-pressed", "true");
+
+  const beforeShort = await moving.boundingBox();
+  if (beforeShort === null) {
+    throw new Error("No se pudo medir la cabecera antes del arrastre corto");
+  }
+  await dragBy(page, moving, 10, 0);
+  const afterShort = await moving.boundingBox();
+  if (afterShort === null) {
+    throw new Error("No se pudo medir la cabecera tras el arrastre corto");
+  }
+  expect(Math.abs(afterShort.x - beforeShort.x - 10)).toBeLessThan(3);
 });

@@ -167,6 +167,97 @@ describe("EditorShell", () => {
     }
   });
 
+  it("alterna Ajuste sin cambiar la herramienta y lo conserva al cambiar de diagrama", async () => {
+    const user = userEvent.setup();
+    const createId = sequentialIds(70);
+    const deps = {
+      createId,
+      now: () => new Date("2026-09-07T12:00:00.000Z"),
+    };
+    const store = createEditorStore({
+      document: createDiagramDocument(deps),
+      deps: { ...deps, now: () => new Date("2026-09-08T08:00:00.000Z") },
+    });
+    render(
+      <EditorStoreProvider store={store}>
+        <EditorShell />
+      </EditorStoreProvider>,
+    );
+
+    const ajuste = screen.getByRole("button", { name: "Ajuste" });
+    const select = screen.getByRole("button", { name: "Selección" });
+    const actor = screen.getByRole("button", { name: "Actor" });
+    const association = screen.getByRole("button", { name: "Asociación" });
+
+    expect(ajuste).toHaveAttribute("aria-pressed", "false");
+    expect(store.getState().ui.snapEnabled).toBe(false);
+    expect(store.getState().tool).toBe("select");
+
+    await user.click(actor);
+    expect(actor).toHaveAttribute("aria-pressed", "true");
+    await user.click(ajuste);
+    expect(screen.getByTestId("editor-tooltip")).toHaveTextContent(
+      "Ajustar al arrastrar: ejes de otros elementos y grilla de 16 px.",
+    );
+    expect(ajuste).toHaveAttribute("aria-pressed", "true");
+    expect(actor).toHaveAttribute("aria-pressed", "true");
+    expect(select).toHaveAttribute("aria-pressed", "false");
+    expect(association).toHaveAttribute("aria-pressed", "false");
+    expect(store.getState().tool).toBe("actor");
+    expect(store.getState().ui.snapEnabled).toBe(true);
+
+    await user.keyboard(" ");
+    expect(ajuste).toHaveAttribute("aria-pressed", "false");
+    expect(actor).toHaveAttribute("aria-pressed", "true");
+    expect(store.getState().tool).toBe("actor");
+    expect(store.getState().ui.snapEnabled).toBe(false);
+
+    await user.keyboard("{Enter}");
+    expect(ajuste).toHaveAttribute("aria-pressed", "true");
+    expect(store.getState().tool).toBe("actor");
+
+    const previousId = store.getState().document.id;
+    await user.click(screen.getByRole("button", { name: "Nuevo" }));
+    await user.click(screen.getByRole("radio", { name: "Secuencia" }));
+    await user.click(
+      screen.getByRole("button", { name: "Crear diagrama nuevo" }),
+    );
+
+    const ajusteOnSequence = screen.getByRole("button", { name: "Ajuste" });
+    expect(ajusteOnSequence).toHaveAttribute("aria-pressed", "true");
+    expect(store.getState().ui.snapEnabled).toBe(true);
+    expect(store.getState().tool).toBe("select");
+    expect(screen.getByRole("button", { name: "Lifeline" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(
+      screen.getByRole("button", { name: "Mensaje síncrono" }),
+    ).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "Reply" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(screen.getByRole("button", { name: "Selección" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    act(() => {
+      store.getState().activateDocument(previousId);
+    });
+    expect(screen.getByRole("button", { name: "Ajuste" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Actor" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(store.getState().ui.snapEnabled).toBe(true);
+    expect(store.getState().tool).toBe("select");
+  });
+
   it("habilita el boundary cuando el documento no tiene uno", () => {
     const createId = sequentialIds();
     const deps = {
@@ -410,6 +501,7 @@ describe("EditorShell", () => {
 
     await user.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Ajuste" })).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Cerrar paneles" }),
     ).toBeInTheDocument();
@@ -527,6 +619,7 @@ describe("EditorShell", () => {
     expect(
       screen.getByRole("button", { name: "Lifeline" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ajuste" })).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Mensaje síncrono" }),
     ).toBeInTheDocument();
@@ -658,7 +751,9 @@ describe("EditorShell", () => {
     expect(
       screen.getByRole("button", { name: "Atributo" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Relación" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Relación" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Enlace" })).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Actor" }),
@@ -693,9 +788,12 @@ describe("EditorShell", () => {
       "Diagrama de actividades",
     );
     expect(screen.getByRole("button", { name: "Acción" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ajuste" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Inicial" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Final" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Decisión" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Decisión" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Fusión" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Fork" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Join" })).toBeInTheDocument();
@@ -739,7 +837,9 @@ describe("EditorShell", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Inicial" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Final" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Decisión" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Decisión" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Fusión" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Fork" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Join" })).toBeInTheDocument();

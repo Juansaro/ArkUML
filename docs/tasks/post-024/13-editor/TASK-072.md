@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -82,15 +82,15 @@ sigue el puntero sin imán.
 
 ## Criterios de aceptación
 
-- [ ] La paleta muestra Ajuste en casos de uso, secuencia y al menos
+- [x] La paleta muestra Ajuste en casos de uso, secuencia y al menos
       un tercer kind (actividades).
-- [ ] El estado inicial es no oprimido (`snapEnabled` false).
-- [ ] Pulsar lo marca oprimido y el drag siguiente imanta; pulsar de
+- [x] El estado inicial es no oprimido (`snapEnabled` false).
+- [x] Pulsar lo marca oprimido y el drag siguiente imanta; pulsar de
       nuevo lo apaga y el drag no imanta.
-- [ ] Pulsar Ajuste no selecciona la herramienta Actor, Lifeline ni
+- [x] Pulsar Ajuste no selecciona la herramienta Actor, Lifeline ni
       ninguna relación.
-- [ ] El nombre accesible es «Ajuste» y el tooltip es el de esta TASK.
-- [ ] El botón no aparece en el raster.
+- [x] El nombre accesible es «Ajuste» y el tooltip es el de esta TASK.
+- [x] El botón no aparece en el raster.
 
 ## Tests
 
@@ -121,5 +121,25 @@ el E2E de secuencia muestra el imán; criterios `[x]` con evidencia.
 
 ## Evidencia de cierre
 
-Pendiente. Al cerrar: fecha, criterios comprobados, comandos realmente
-ejecutados y commit/PR/handoff si existe.
+2026-09-29. Criterios `[x]`. El botón Ajuste está en la paleta de todos
+los kinds (casos de uso, secuencia, actividades y el drawer compacto,
+que reutiliza `Palette`). `aria-pressed` sigue `snapEnabled` (default
+`false`). Pulsarlo no cambia `tool`: Actor, Lifeline y las relaciones
+siguen como estaban. El nombre accesible es «Ajuste» y el tooltip es
+«Ajustar al arrastrar: ejes de otros elementos y grilla de 16 px.»
+El flag vive en la UI de sesión: sigue encendido al crear un diagrama
+de secuencia y al volver al anterior; no entra en `EditorTool`. El
+botón es chrome de paleta, fuera del viewport que se rasteriza. Sin
+commit.
+
+Comandos realmente corridos:
+
+```bash
+npm run test -- src/editor/components/shell src/editor/components/common/Icon.test.tsx
+npx playwright test e2e/sequence.spec.ts --project=chromium
+npx eslint src/editor/components/shell/Palette.tsx src/editor/components/shell/EditorShell.test.tsx src/editor/components/common/icons.tsx src/editor/components/common/Icon.test.tsx src/editor/store/selectors.ts e2e/sequence.spec.ts
+npm run typecheck
+npm run lint
+```
+
+Unidad de paleta e icono: 3 archivos, 40 tests. Secuencia en Chromium: 2 tests. ESLint de los archivos tocados: limpio. `npm run typecheck` falla solo en `e2e/include-extend.spec.ts` (`SVGPathElement`, `DOMPoint`), ajeno a este cambio. `npm run lint` falla en e2e previos (`alignment-guides`, `include-extend`, `minimap`, `performance`); ningún archivo de esta TASK. `npm run check` se detiene en `format:check` por Prettier de archivos ajenos (92); ninguno de esta TASK.
