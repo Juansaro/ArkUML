@@ -65,6 +65,47 @@ test("reparenta un caso de uso al entrar y salir del boundary", async ({
   await expect(useCase).toHaveAttribute("data-parented", "false");
 });
 
+test("redimensionar desde un asa que mueve el origen no traslada el caso", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const canvas = page.getByTestId("diagram-canvas");
+  await expect(canvas).toBeVisible();
+
+  await page.getByRole("button", { name: "Caso de uso" }).click();
+  await canvas.click({ position: { x: 280, y: 160 } });
+  const useCase = canvas.locator('[data-kind="use-case"]');
+  await expect(useCase).toBeVisible();
+  await expect(useCase).toHaveAttribute("data-parented", "true");
+
+  const boundary = canvas.locator(".react-flow__node").filter({
+    has: page.getByTestId("system-boundary-rect"),
+  });
+  const boundaryBefore = await boundary.boundingBox();
+  const childBefore = await useCase.boundingBox();
+  if (boundaryBefore === null || childBefore === null) {
+    throw new Error("No se pudo medir el límite o el caso");
+  }
+
+  const handle = canvas.locator(".react-flow__resize-control.handle.top.left");
+  await expect(handle).toBeVisible();
+  await dragBy(page, handle, 48, 32);
+
+  const boundaryAfter = await boundary.boundingBox();
+  const childAfter = await useCase.boundingBox();
+  if (boundaryAfter === null || childAfter === null) {
+    throw new Error("No se pudo medir el límite o el caso tras el resize");
+  }
+
+  expect(boundaryAfter.x).toBeGreaterThan(boundaryBefore.x + 20);
+  expect(boundaryAfter.y).toBeGreaterThan(boundaryBefore.y + 12);
+  expect(boundaryAfter.width).toBeLessThan(boundaryBefore.width - 20);
+  expect(Math.abs(childAfter.x - childBefore.x)).toBeLessThan(8);
+  expect(Math.abs(childAfter.y - childBefore.y)).toBeLessThan(8);
+  await expect(useCase).toHaveAttribute("data-parented", "true");
+});
+
 test("redimensiona el boundary en un gesto y no baja de 320×240", async ({
   page,
 }) => {

@@ -259,7 +259,7 @@ tools: [mcp.md](mcp.md).
 | `createElement` | Inserta actor, use case o boundary según reglas de máximo uno. |
 | `renameElement` | Valida longitud. |
 | `moveElements` | Actualiza geometría; al mover boundary, los hijos se mueven con él (coordenadas relativas). |
-| `resizeBoundary` | Mínimo 320×240. |
+| `resizeBoundary` | Mínimo 320×240. No traslada la posición absoluta de los hijos: si cambia el origen, ajusta sus coordenadas relativas; si el centro queda fuera del rectángulo nuevo, el caso pasa al lienzo sin salto. |
 | `reparentUseCase` | Convierte coordenadas para preservar posición visual. |
 | `deleteElements` | Cascada de relaciones; unboundarying si se borra el boundary. |
 | `duplicateElements` | Solo actor/use case; offset 24; sin relaciones. |

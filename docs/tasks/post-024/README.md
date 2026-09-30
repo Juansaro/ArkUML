@@ -33,7 +33,7 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 congeló **Release 1** (biblioteca + secuencia, schema 2). TASK-046,
 TASK-047, TASK-048, TASK-049 y TASK-050 están `Hecha`. Release 1
 cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
-(seis kinds, schema 3). TASK-052 está `Hecha`. TASK-053, TASK-054, TASK-055, TASK-056, TASK-057, TASK-058, TASK-059, TASK-060, TASK-061, TASK-062 y TASK-063 están `Hecha`. Release 2 cerrada a nivel de TASKs ejecutables. TASK-064 congeló **Release 3 (MCP)**. TASK-065–067 están `Hecha`. TASK-068 está `Lista`. TASK-069 está `Hecha` y TASK-070 está `Lista` (remediación): mover Inicial/Final seleccionados; resize del límite sin trasladar casos.
+(seis kinds, schema 3). TASK-052 está `Hecha`. TASK-053, TASK-054, TASK-055, TASK-056, TASK-057, TASK-058, TASK-059, TASK-060, TASK-061, TASK-062 y TASK-063 están `Hecha`. Release 2 cerrada a nivel de TASKs ejecutables. TASK-064 congeló **Release 3 (MCP)**. TASK-065–067 están `Hecha`. TASK-068 está `Lista`. TASK-069 y TASK-070 están `Hecha` (remediación): mover Inicial/Final seleccionados; resize del límite sin trasladar casos.
 
 ## Estado
 
@@ -84,7 +84,7 @@ cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
 | 067 | [`17-ecosystem/TASK-067.md`](17-ecosystem/TASK-067.md) | Hecha | P0 | 066 | 2026-09-21: cinco tools de mutación MCP; Zod, errores de dominio, cascada y round-trip |
 | 068 | [`17-ecosystem/TASK-068.md`](17-ecosystem/TASK-068.md) | Lista | P1 | 067 | Prompts + runbook clientes MCP |
 | 069 | [`13-editor/TASK-069.md`](13-editor/TASK-069.md) | Hecha | P0 | 061 | 2026-09-28: Inicial/Final seleccionados se arrastran en activity y overview; undo restaura; Acción no regresiona |
-| 070 | [`13-editor/TASK-070.md`](13-editor/TASK-070.md) | Lista | P0 | 011 | Remediación: resize del límite traslada los casos contenidos |
+| 070 | [`13-editor/TASK-070.md`](13-editor/TASK-070.md) | Hecha | P0 | 011 | 2026-09-29: resize del límite no traslada casos; mover el límite sí |
 
 ## Fases y gates
 
@@ -157,10 +157,8 @@ no como 94 features pendientes.
 
 TASK-067 está `Hecha` (tools MCP de mutación de grafo). Una TASK por
 chat: `@docs/tasks/post-024/17-ecosystem/TASK-068.md`. Release 3 MCP
-sigue con TASK-068. En paralelo, TASK-069 está `Hecha`. Remediación
-`Lista` que no bloquea el MCP:
-`@docs/tasks/post-024/13-editor/TASK-070.md`. El catálogo restante vive
-en [roadmap.md](roadmap.md).
+sigue con TASK-068. TASK-069 y TASK-070 están `Hecha`. El catálogo
+restante vive en [roadmap.md](roadmap.md).
 Una TASK por chat. IndexedDB: no elegido (condicional C-QUOTA). No
 implementar Generalization en casos de uso, PDF, temas, fragmentos de
 secuencia, Crow’s foot, Interaction inline, LLM en la SPA ni MCP HTTP

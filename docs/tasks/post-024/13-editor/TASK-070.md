@@ -2,7 +2,7 @@
 
 ## Estado documental
 
-Lista
+Hecha
 
 ## Objetivo
 
@@ -89,18 +89,18 @@ origen. Arrastrar el límite entero sigue llevándose el caso.
 
 ## Criterios de aceptación
 
-- [ ] Resize que solo cambia ancho/alto no modifica `x`/`y` relativos
+- [x] Resize que solo cambia ancho/alto no modifica `x`/`y` relativos
       de los casos contenidos.
-- [ ] Resize que cambia el origen del límite ajusta las coordenadas
+- [x] Resize que cambia el origen del límite ajusta las coordenadas
       relativas para que la posición absoluta del caso no cambie.
-- [ ] Mover el límite sigue desplazando los casos contenidos (el
+- [x] Mover el límite sigue desplazando los casos contenidos (el
       caso del E2E de arrastre del título sigue cumpliéndose).
-- [ ] Por debajo de 320×240 el resize no se aplica.
-- [ ] Si el centro del caso queda fuera del rectángulo encogido, deja
+- [x] Por debajo de 320×240 el resize no se aplica.
+- [x] Si el centro del caso queda fuera del rectángulo encogido, deja
       de tener `parentId` y no salta en el lienzo.
-- [ ] Undo del resize restaura geometría del límite y de los hijos
+- [x] Undo del resize restaura geometría del límite y de los hijos
       (y el `parentId` si hubo reparent).
-- [ ] `domain-model.md` describe el resize sin traslado absoluto.
+- [x] `domain-model.md` describe el resize sin traslado absoluto.
 
 ## Tests
 
@@ -132,5 +132,20 @@ evidencia.
 
 ## Evidencia de cierre
 
-Pendiente. Al cerrar: fecha, criterios comprobados, comandos realmente
-ejecutados y commit/PR/handoff si existe.
+2026-09-29: un resize que solo cambia ancho y alto conserva las
+coordenadas relativas del caso; si el origen se mueve, esas relativas
+se ajustan y el caso permanece en el mismo sitio del lienzo (E2E del
+asa superior izquierda). Arrastrar el título del límite sigue
+desplazando al hijo. Por debajo de 320×240 el gesto no se aplica. Si
+el centro queda fuera del rectángulo nuevo, el caso pierde `parentId`
+y su geometría pasa a absoluta equivalente. Un gesto es una entrada
+de historial; deshacer restaura límite, relativas y `parentId`. Fila
+`resizeBoundary` de `domain-model.md` alineada. Schema `3` intacto.
+Sin commit.
+
+Comandos: `npm run test -- src/domain/diagram/operations.test.ts src/editor/interactions/boundaryResize.test.ts src/editor/interactions/reparent.test.ts`
+(31 passed). `npx playwright test e2e/reparent-resize.spec.ts --project=chromium`
+(4 passed). `npm run typecheck` falla en `e2e/include-extend.spec.ts`
+(`SVGPathElement`, `DOMPoint`), ajeno a este cambio. `npm run lint`
+falla en E2E previos (`alignment-guides`, `include-extend`, `minimap`,
+`performance`); los archivos de esta TASK no aparecen.

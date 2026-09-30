@@ -317,6 +317,122 @@ describe("moveElements and resizeBoundary", () => {
     expect(movedChild?.geometry).toEqual(child?.geometry);
   });
 
+  it("no cambia las relativas si solo varían ancho y alto, y las ajusta si cambia el origen", () => {
+    const createId = sequentialIds();
+    const document = emptyDocument(createId);
+    const boundary = boundaryOf(document);
+    const withChild = expectOk(
+      createElement(
+        document,
+        {
+          kind: "use-case",
+          name: "Login",
+          geometry: USE_CASE_GEOMETRY,
+          parentId: boundary.id,
+        },
+        { createId, now: () => UPDATED_AT },
+      ),
+    );
+    const child = withChild.elements.find(
+      (element): element is UseCase => element.kind === "use-case",
+    );
+    if (child === undefined) {
+      throw new Error("Falta el caso");
+    }
+
+    const sized = expectOk(
+      resizeBoundary(
+        withChild,
+        {
+          id: boundary.id,
+          geometry: {
+            x: boundary.geometry.x,
+            y: boundary.geometry.y,
+            width: 700,
+            height: 360,
+          },
+        },
+        { now: () => UPDATED_AT },
+      ),
+    );
+    const sizedChild = sized.elements.find(
+      (element): element is UseCase => element.kind === "use-case",
+    );
+    expect(sizedChild).toBe(child);
+    expect(sizedChild?.geometry).toEqual(USE_CASE_GEOMETRY);
+
+    const movedOrigin = expectOk(
+      resizeBoundary(
+        withChild,
+        {
+          id: boundary.id,
+          geometry: {
+            x: boundary.geometry.x + 40,
+            y: boundary.geometry.y + 24,
+            width: boundary.geometry.width,
+            height: boundary.geometry.height,
+          },
+        },
+        { now: () => UPDATED_AT },
+      ),
+    );
+    const shifted = movedOrigin.elements.find(
+      (element): element is UseCase => element.kind === "use-case",
+    );
+    expect(shifted?.parentId).toBe(boundary.id);
+    expect(shifted?.geometry).toEqual({
+      x: USE_CASE_GEOMETRY.x - 40,
+      y: USE_CASE_GEOMETRY.y - 24,
+      width: USE_CASE_GEOMETRY.width,
+      height: USE_CASE_GEOMETRY.height,
+    });
+  });
+
+  it("suelta al lienzo el caso cuyo centro sale del rectángulo sin cambiar su posición absoluta", () => {
+    const createId = sequentialIds();
+    const document = emptyDocument(createId);
+    const boundary = boundaryOf(document);
+    const relative: Geometry = { x: 20, y: 40, width: 160, height: 80 };
+    const withChild = expectOk(
+      createElement(
+        document,
+        {
+          kind: "use-case",
+          name: "Login",
+          geometry: relative,
+          parentId: boundary.id,
+        },
+        { createId, now: () => UPDATED_AT },
+      ),
+    );
+
+    const shrunk = expectOk(
+      resizeBoundary(
+        withChild,
+        {
+          id: boundary.id,
+          geometry: {
+            x: 160,
+            y: boundary.geometry.y,
+            width: 480,
+            height: boundary.geometry.height,
+          },
+        },
+        { now: () => UPDATED_AT },
+      ),
+    );
+    const released = shrunk.elements.find(
+      (element): element is UseCase => element.kind === "use-case",
+    );
+    expect(released?.parentId).toBeUndefined();
+    expect(released?.geometry).toEqual({
+      x: boundary.geometry.x + relative.x,
+      y: boundary.geometry.y + relative.y,
+      width: relative.width,
+      height: relative.height,
+    });
+  });
+
   it("rechaza ids desconocidos, geometría no finita y tamaños bajo el mínimo", () => {
     const document = emptyDocument();
     const boundary = boundaryOf(document);

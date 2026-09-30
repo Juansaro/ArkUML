@@ -260,10 +260,8 @@ const ER_RELATIONSHIP_SIZE_MESSAGE =
 const ACTION_SIZE_MESSAGE = "La acción debe medir al menos 96×40.";
 const INTERACTION_OCCURRENCE_SIZE_MESSAGE =
   "La ocurrencia de interacción debe medir al menos 140×56.";
-const INITIAL_NODE_SIZE_MESSAGE =
-  "El nodo inicial debe medir al menos 16×16.";
-const ACTIVITY_FINAL_SIZE_MESSAGE =
-  "El nodo final debe medir al menos 20×20.";
+const INITIAL_NODE_SIZE_MESSAGE = "El nodo inicial debe medir al menos 16×16.";
+const ACTIVITY_FINAL_SIZE_MESSAGE = "El nodo final debe medir al menos 20×20.";
 const DECISION_NODE_SIZE_MESSAGE =
   "El nodo de decisión o fusión debe medir al menos 32×32.";
 const FORK_NODE_SIZE_MESSAGE =
@@ -279,8 +277,7 @@ const ER_CARDINALITY_TARGET_MESSAGE =
   "Solo se puede fijar cardinalidad en un enlace entidad–relación.";
 const ATTRIBUTE_CARDINALITY_MESSAGE =
   "Un enlace atributo–entidad no admite cardinalidad.";
-const INVALID_ER_CARDINALITY_MESSAGE =
-  "La cardinalidad debe ser 1 o N.";
+const INVALID_ER_CARDINALITY_MESSAGE = "La cardinalidad debe ser 1 o N.";
 const ATTRIBUTE_KEY_TARGET_MESSAGE =
   "Solo se puede marcar isKey en un atributo.";
 const CONTROL_FLOW_GUARD_TARGET_MESSAGE =
@@ -1138,14 +1135,37 @@ export function resizeBoundary(
     return sizeError;
   }
 
+  const nextGeometry = copyGeometry(input.geometry);
+  const byId = indexElements(document);
+  const nextElements: DiagramElement[] = [];
+
+  for (const candidate of document.elements) {
+    if (candidate.id === input.id) {
+      nextElements.push({ ...candidate, geometry: nextGeometry });
+      continue;
+    }
+
+    if (candidate.kind !== "use-case" || candidate.parentId !== input.id) {
+      nextElements.push(candidate);
+      continue;
+    }
+
+    const adjusted = adjustContainedUseCase(
+      candidate,
+      element.geometry,
+      nextGeometry,
+      byId,
+    );
+    if (!adjusted.ok) {
+      return adjusted;
+    }
+    nextElements.push(adjusted.value);
+  }
+
   return commit(
     document,
     {
-      elements: document.elements.map((candidate) =>
-        candidate.id === input.id
-          ? { ...candidate, geometry: copyGeometry(input.geometry) }
-          : candidate,
-      ),
+      elements: nextElements,
     },
     deps,
   );
@@ -1645,9 +1665,7 @@ export function insertElementCopies(
       continue;
     }
     if (copy.kind === "component") {
-      created.push(
-        buildComponent({ name: copy.name, geometry }, deps),
-      );
+      created.push(buildComponent({ name: copy.name, geometry }, deps));
       continue;
     }
     if (copy.kind === "node") {
@@ -2453,10 +2471,7 @@ function createErDiagramLink(
     return err("INVALID_CONNECTION", ER_CARDINALITY_TARGET_MESSAGE);
   }
 
-  if (
-    input.cardinality !== undefined &&
-    !isErCardinality(input.cardinality)
-  ) {
+  if (input.cardinality !== undefined && !isErCardinality(input.cardinality)) {
     return err("INVALID_CONNECTION", INVALID_ER_CARDINALITY_MESSAGE);
   }
 
@@ -2636,6 +2651,61 @@ function relativeTo(absolute: Geometry, parent: Geometry): Geometry {
     width: absolute.width,
     height: absolute.height,
   };
+}
+
+function adjustContainedUseCase(
+  useCase: UseCase,
+  previousBoundary: Geometry,
+  nextBoundary: Geometry,
+  byId: Map<string, DiagramElement>,
+): Result<UseCase> {
+  const absolute = absoluteGeometry(useCase, byId);
+  if (!absolute.ok) {
+    return absolute;
+  }
+
+  if (!rectContainsCenter(nextBoundary, absolute.value)) {
+    return ok({
+      id: useCase.id,
+      kind: "use-case",
+      name: useCase.name,
+      geometry: absolute.value,
+    });
+  }
+
+  const originMoved =
+    previousBoundary.x !== nextBoundary.x ||
+    previousBoundary.y !== nextBoundary.y;
+  if (!originMoved) {
+    return ok(useCase);
+  }
+
+  const relative = relativeTo(absolute.value, nextBoundary);
+  if (
+    useCase.parentId === undefined ||
+    (relative.x === useCase.geometry.x && relative.y === useCase.geometry.y)
+  ) {
+    return ok(useCase);
+  }
+
+  return ok({
+    id: useCase.id,
+    kind: "use-case",
+    name: useCase.name,
+    parentId: useCase.parentId,
+    geometry: relative,
+  });
+}
+
+function rectContainsCenter(rect: Geometry, geometry: Geometry): boolean {
+  const x = geometry.x + geometry.width / 2;
+  const y = geometry.y + geometry.height / 2;
+  return (
+    x >= rect.x &&
+    x <= rect.x + rect.width &&
+    y >= rect.y &&
+    y <= rect.y + rect.height
+  );
 }
 
 function offsetGeometry(geometry: Geometry, offset: number): Geometry {

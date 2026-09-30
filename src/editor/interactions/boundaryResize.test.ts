@@ -8,6 +8,7 @@ import {
   createDiagramDocument,
   type IdFactory,
 } from "../../domain/diagram/factories.ts";
+import type { Result, UseCase } from "../../domain/diagram/model.ts";
 import { createEditorStore } from "../store/editorStore.ts";
 import {
   isBoundaryResizing,
@@ -38,6 +39,14 @@ function createStore() {
   });
 }
 
+function expectOk<T>(result: Result<T>): T {
+  expect(result.ok).toBe(true);
+  if (!result.ok) {
+    throw new Error("Expected ok result");
+  }
+  return result.value;
+}
+
 function boundaryOf(store: ReturnType<typeof createStore>) {
   const boundary = store
     .getState()
@@ -46,6 +55,18 @@ function boundaryOf(store: ReturnType<typeof createStore>) {
     throw new Error("Falta el boundary");
   }
   return boundary;
+}
+
+function useCaseOf(store: ReturnType<typeof createStore>): UseCase {
+  const useCase = store
+    .getState()
+    .document.elements.find(
+      (element): element is UseCase => element.kind === "use-case",
+    );
+  if (useCase === undefined) {
+    throw new Error("Falta el caso");
+  }
+  return useCase;
 }
 
 describe("boundary resize transaction", () => {
@@ -112,6 +133,86 @@ describe("boundary resize transaction", () => {
     expect(store.getState().document).toBe(baseline);
     expect(store.getState().history.past).toHaveLength(0);
     expect(store.getState().ui.message).toMatch(/320/);
+  });
+});
+
+describe("boundary resize conserva la posición absoluta del caso", () => {
+  it("ajusta las relativas al mover el origen y el undo restaura límite e hijo", () => {
+    const store = createStore();
+    const boundary = boundaryOf(store);
+    const childGeometry = { x: 80, y: 80, width: 160, height: 80 };
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: childGeometry,
+        parentId: boundary.id,
+      }),
+    );
+    const pastBefore = store.getState().history.past.length;
+
+    startBoundaryResize(store);
+    updateBoundaryResize(store, boundary.id, {
+      x: 30,
+      y: 10,
+      width: DEFAULT_BOUNDARY_GEOMETRY.width,
+      height: DEFAULT_BOUNDARY_GEOMETRY.height,
+    });
+    stopBoundaryResize(store, boundary.id, {
+      x: 36,
+      y: 12,
+      width: DEFAULT_BOUNDARY_GEOMETRY.width,
+      height: DEFAULT_BOUNDARY_GEOMETRY.height,
+    });
+
+    const child = useCaseOf(store);
+    expect(child.parentId).toBe(boundary.id);
+    expect(child.geometry).toEqual({
+      x: childGeometry.x - 36,
+      y: childGeometry.y - 12,
+      width: childGeometry.width,
+      height: childGeometry.height,
+    });
+    expect(store.getState().history.past).toHaveLength(pastBefore + 1);
+
+    expect(store.getState().undo()).toBe(true);
+    expect(boundaryOf(store).geometry).toEqual(DEFAULT_BOUNDARY_GEOMETRY);
+    expect(useCaseOf(store).parentId).toBe(boundary.id);
+    expect(useCaseOf(store).geometry).toEqual(childGeometry);
+  });
+
+  it("suelta el caso si el centro sale y el undo restaura el parentId", () => {
+    const store = createStore();
+    const boundary = boundaryOf(store);
+    const childGeometry = { x: 20, y: 40, width: 160, height: 80 };
+    expectOk(
+      store.getState().createUseCase({
+        name: "Login",
+        geometry: childGeometry,
+        parentId: boundary.id,
+      }),
+    );
+
+    startBoundaryResize(store);
+    stopBoundaryResize(store, boundary.id, {
+      x: 160,
+      y: 0,
+      width: 480,
+      height: DEFAULT_BOUNDARY_GEOMETRY.height,
+    });
+
+    const released = useCaseOf(store);
+    expect(released.parentId).toBeUndefined();
+    expect(released.geometry).toEqual({
+      x: boundary.geometry.x + childGeometry.x,
+      y: boundary.geometry.y + childGeometry.y,
+      width: childGeometry.width,
+      height: childGeometry.height,
+    });
+
+    expect(store.getState().undo()).toBe(true);
+    expect(boundaryOf(store).geometry).toEqual(DEFAULT_BOUNDARY_GEOMETRY);
+    expect(useCaseOf(store).parentId).toBe(boundary.id);
+    expect(useCaseOf(store).geometry).toEqual(childGeometry);
   });
 });
 
