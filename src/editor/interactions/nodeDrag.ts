@@ -2,6 +2,7 @@ import type { DiagramDocument } from "../../domain/diagram/model.ts";
 import type { ElementMove } from "../../domain/diagram/operations.ts";
 import type { EditorStoreApi } from "../store/editorStore.ts";
 import { applyReparentOnDrop } from "./reparent.ts";
+import { snapDraggedPositions } from "./snap.ts";
 
 export type DraggedNodePosition = {
   id: string;
@@ -43,7 +44,11 @@ export function updateNodeDrag(
   store: EditorStoreApi,
   nodes: readonly DraggedNodePosition[],
 ): void {
-  const moves = movesFromDraggedNodes(store.getState().document, nodes);
+  const state = store.getState();
+  const positions = state.ui.snapEnabled
+    ? snapDraggedPositions(state.document, nodes)
+    : nodes;
+  const moves = movesFromDraggedNodes(state.document, positions);
   if (moves.length === 0) {
     return;
   }

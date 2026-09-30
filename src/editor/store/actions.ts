@@ -236,6 +236,7 @@ export type EditorActions = {
   endRename: () => void;
   setViewport: (viewport: Viewport) => void;
   setTool: (tool: EditorTool) => void;
+  setSnapEnabled: (snapEnabled: boolean) => void;
   setHover: (hover: HoverState) => void;
   setSaveStatus: (saveStatus: SaveStatus, lastSavedAt?: string) => void;
   setMessage: (message: string | undefined) => void;
@@ -311,9 +312,7 @@ export function createEditorActions(
     createAttribute: (input) =>
       apply((document) => createAttributeOperation(document, input, deps)),
     createErRelationship: (input) =>
-      apply((document) =>
-        createErRelationshipOperation(document, input, deps),
-      ),
+      apply((document) => createErRelationshipOperation(document, input, deps)),
     createAction: (input) =>
       apply((document) => createActionOperation(document, input, deps)),
     createInitialNode: (input) =>
@@ -535,6 +534,18 @@ export function createEditorActions(
         tool: isToolForDocumentKind(state.document.kind, tool)
           ? tool
           : "select",
+      });
+    },
+    setSnapEnabled: (snapEnabled) => {
+      const state = get();
+      if (state.ui.snapEnabled === snapEnabled) {
+        return;
+      }
+      set({
+        ui: {
+          ...state.ui,
+          snapEnabled,
+        },
       });
     },
     setHover: (hover) => {

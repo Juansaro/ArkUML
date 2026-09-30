@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_BOUNDARY_GEOMETRY } from "../../domain/diagram/defaults.ts";
+import {
+  DEFAULT_BOUNDARY_GEOMETRY,
+  STORAGE_VERSION,
+} from "../../domain/diagram/defaults.ts";
 import {
   createDiagramDocument,
   createEmptySequenceDocument,
@@ -18,6 +21,7 @@ import type {
   Result,
   Viewport,
 } from "../../domain/diagram/model.ts";
+import { parseWorkspaceSnapshot } from "../../domain/diagram/schema.ts";
 import { createEditorStore } from "./editorStore.ts";
 import { HISTORY_LIMIT } from "./history.ts";
 import {
@@ -411,6 +415,50 @@ describe("non-document slices stay out of history", () => {
     expect(selectMessage(store.getState())).toBe("aviso");
     expect(selectSaveStatus(store.getState())).toBe("saving");
     expect(selectSelectedElementIds(store.getState())).toEqual([]);
+  });
+
+  it("snapEnabled queda fuera del documento, del historial y del snapshot", () => {
+    const store = createStore();
+    const document = store.getState().document;
+    const history = store.getState().history;
+
+    expect(store.getState().ui.snapEnabled).toBe(false);
+    store.getState().setSnapEnabled(true);
+    store.getState().setSnapEnabled(true);
+
+    expect(store.getState().ui.snapEnabled).toBe(true);
+    expect(store.getState().document).toBe(document);
+    expect(store.getState().history).toBe(history);
+    expect(document.schemaVersion).toBe(3);
+    expect(Object.keys(document).sort()).toEqual([
+      "elements",
+      "id",
+      "kind",
+      "metadata",
+      "relationships",
+      "schemaVersion",
+    ]);
+
+    const snapshot = {
+      storageVersion: STORAGE_VERSION,
+      activeDocumentId: store.getState().activeDocumentId,
+      documents: store.getState().documents.map((entry) => ({
+        document: entry.document,
+        view: entry.view,
+      })),
+    };
+    expect(Object.keys(snapshot).sort()).toEqual([
+      "activeDocumentId",
+      "documents",
+      "storageVersion",
+    ]);
+    expect(JSON.stringify(snapshot)).not.toContain("snapEnabled");
+    expect(
+      parseWorkspaceSnapshot(JSON.parse(JSON.stringify(snapshot))),
+    ).toEqual({
+      ok: true,
+      value: snapshot,
+    });
   });
 
   it("undo no restaura viewport ni selección", () => {

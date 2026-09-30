@@ -87,6 +87,7 @@ export type UiState = {
   message: string | undefined;
   dialogMode: DialogMode;
   editingElementId: string | undefined;
+  snapEnabled: boolean;
 };
 
 export type HistorySlice = DocumentHistory & {
@@ -156,6 +157,7 @@ function createInitialSlices(options?: CreateEditorStoreOptions): EditorSlices {
       message: undefined,
       dialogMode: "none",
       editingElementId: undefined,
+      snapEnabled: false,
     },
     clipboard: EMPTY_CLIPBOARD,
   };

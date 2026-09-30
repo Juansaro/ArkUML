@@ -33,7 +33,7 @@ y TASK-035 están `Hecha`. TASK-036 revisó el catálogo multi-kind
 congeló **Release 1** (biblioteca + secuencia, schema 2). TASK-046,
 TASK-047, TASK-048, TASK-049 y TASK-050 están `Hecha`. Release 1
 cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
-(seis kinds, schema 3). TASK-052 está `Hecha`. TASK-053, TASK-054, TASK-055, TASK-056, TASK-057, TASK-058, TASK-059, TASK-060, TASK-061, TASK-062 y TASK-063 están `Hecha`. Release 2 cerrada a nivel de TASKs ejecutables. TASK-064 congeló **Release 3 (MCP)**. TASK-065–067 están `Hecha`. TASK-068 está `Lista`. TASK-069 y TASK-070 están `Hecha` (remediación): mover Inicial/Final seleccionados; resize del límite sin trasladar casos.
+(seis kinds, schema 3). TASK-052 está `Hecha`. TASK-053, TASK-054, TASK-055, TASK-056, TASK-057, TASK-058, TASK-059, TASK-060, TASK-061, TASK-062 y TASK-063 están `Hecha`. Release 2 cerrada a nivel de TASKs ejecutables. TASK-064 congeló **Release 3 (MCP)**. TASK-065–067 están `Hecha`. TASK-068 está `Lista`. TASK-069 y TASK-070 están `Hecha` (remediación): mover Inicial/Final seleccionados; resize del límite sin trasladar casos. TASK-071 está `Hecha`: imantar el arrastre a ejes y grilla. TASK-072 está `Lista`: botón de paleta Ajuste.
 
 ## Estado
 
@@ -85,6 +85,8 @@ cerrada a nivel de TASKs ejecutables. TASK-051 congeló **Release 2**
 | 068 | [`17-ecosystem/TASK-068.md`](17-ecosystem/TASK-068.md) | Lista | P1 | 067 | Prompts + runbook clientes MCP |
 | 069 | [`13-editor/TASK-069.md`](13-editor/TASK-069.md) | Hecha | P0 | 061 | 2026-09-28: Inicial/Final seleccionados se arrastran en activity y overview; undo restaura; Acción no regresiona |
 | 070 | [`13-editor/TASK-070.md`](13-editor/TASK-070.md) | Hecha | P0 | 011 | 2026-09-29: resize del límite no traslada casos; mover el límite sí |
+| 071 | [`13-editor/TASK-071.md`](13-editor/TASK-071.md) | Hecha | P1 | 035 | 2026-09-29: drag imanta a ejes ajenos (8 px) y a la grilla de 16 px solo con `snapEnabled` |
+| 072 | [`13-editor/TASK-072.md`](13-editor/TASK-072.md) | Lista | P1 | 071 | Botón de paleta Ajuste (enciende y apaga el imán) |
 
 ## Fases y gates
 
@@ -135,7 +137,8 @@ El inventario completo vive en [roadmap.md](roadmap.md), alineado con
 `12-uml/` (TASK-034, TASK-046, TASK-052, TASK-054, TASK-056, TASK-058,
 TASK-060, TASK-062), `13-editor/` (TASK-035, TASK-039,
 TASK-042, TASK-043, TASK-044, TASK-048, TASK-049, TASK-053, TASK-055,
-TASK-057, TASK-059, TASK-061, TASK-063, TASK-069, TASK-070),
+TASK-057, TASK-059, TASK-061, TASK-063, TASK-069, TASK-070,
+TASK-071, TASK-072),
 `14-persistence/` (TASK-038, TASK-047, TASK-050), `15-export/` (TASK-040) y
 `17-ecosystem/` (TASK-041, TASK-065–068). No hay `16-a11y/`. El resto del
 catálogo no congelado no es ejecutable.
@@ -157,7 +160,8 @@ no como 94 features pendientes.
 
 TASK-067 está `Hecha` (tools MCP de mutación de grafo). Una TASK por
 chat: `@docs/tasks/post-024/17-ecosystem/TASK-068.md`. Release 3 MCP
-sigue con TASK-068. TASK-069 y TASK-070 están `Hecha`. El catálogo
+sigue con TASK-068. TASK-069, TASK-070 y TASK-071 están `Hecha`. Siguiente de ajuste:
+`@docs/tasks/post-024/13-editor/TASK-072.md`. El catálogo
 restante vive en [roadmap.md](roadmap.md).
 Una TASK por chat. IndexedDB: no elegido (condicional C-QUOTA). No
 implementar Generalization en casos de uso, PDF, temas, fragmentos de
